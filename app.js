@@ -26,7 +26,6 @@ app.use('/', routes);
 app.use('/users', users);
 
 var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
-MatMult.bootstrap();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

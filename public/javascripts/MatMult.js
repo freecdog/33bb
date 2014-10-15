@@ -45,16 +45,6 @@
         return MATMUL(a,X);
     }
 
-    // _j
-
-    function bootstrap(){
-        var cmplx1 = new Complex(4,-3);
-        var cmplx2 = new Complex(3,-2);
-        var ans = cmplx1.times(cmplx2);
-        console.log(ans.toString());
-        return -1;
-    }
-    exports.bootstrap = bootstrap;
 
     // expand Number class, so we can operate
     Number.prototype.toComplex = function(b) {
@@ -103,18 +93,12 @@
         },
         times: function(other) {
             other = other.toComplex();
-            /* (a + bi)(c + di) = ac + adi + bci + bdii = (ac - bd) + (ad + bc)i */
             return new Complex(this.a * other.a - this.b * other.b, this.a * other.b + this.b * other.a);
         },
         multiply: function(other) {
             other = other.toComplex();
             this.a = this.a * other.a - this.b * other.b;
             this.b = this.a * other.b + this.b * other.a;
-            //var r = this.a * other.a - this.b * other.b;
-            //var i = this.a * other.b + this.b * other.a;
-            //this.a = r;
-            //this.b = i;
-            //return new Complex(r, i);
         },
         modulus: function() {
             return Math.sqrt(this.mod2());
@@ -158,6 +142,8 @@
             return new Complex(Math.log(this.modulus()), this.angle() + 2 * Math.PI * k);
         }
     };
+
+    exports.Complex = Complex;
 
     //function importLanguage(language){ return -1; }
     //exports.importLanguage = importLanguage;
