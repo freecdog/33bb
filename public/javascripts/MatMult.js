@@ -18,7 +18,10 @@
 //
 // // что значат слеши?
 // Tr=RESHAPE(Mat,(/SIZE(Mat,2), SIZE(Mat,1)/),ORDER=(/2,1/))
-
+//
+// // разница между :: и пробелом?
+// INTEGER :: N           ! number of equations
+// INTEGER PivRow, TarRow,I,K
 (function(exports){
 
     //!
@@ -75,8 +78,106 @@
         //REAL, DIMENSION(:,:),INTENT(IN) :: Mat
         //REAL, DIMENSION( SIZE(Mat,2), SIZE(Mat,1) ) :: Tr
         //Tr=RESHAPE(Mat,(/SIZE(Mat,2), SIZE(Mat,1)/),ORDER=(/2,1/))
-        return RESHAPE(Mat,[]);
+        return RESHAPE(Mat,[]); // TODO what to do with ORDER( [2,1] )????
     }
+
+    function Inv(Mat){
+        //REAL, DIMENSION(:,:),INTENT(IN) :: Mat
+        //REAL, DIMENSION( SIZE(Mat,1), SIZE(Mat,1) ) :: Inv  ! must be square
+        //REAL(KIND(0.D0)), DIMENSION( SIZE(Mat,1), 2 * SIZE(Mat,1) ) :: A ! augmented
+        var A;
+        //REAL(KIND(0.D0)), DIMENSION(:), ALLOCATABLE :: TempRow      ! spare row
+        var TempRow;
+        //REAL(KIND(0.D0))  :: PivElt, TarElt
+        var PivElt, TarElt;
+        var N;
+        var PivRow, TarRow,I,K;
+        N = getArraySize(Mat)[0];
+        A = createArray(N, N);
+        var i;
+        for (i = 0; i < N; i++){
+            // ??? what is for
+            A[i][N+i] = 1;
+        }
+        for (PivRow = 0; PivRow < N; PivRow++){
+            PivElt = A[PivRow][PivRow];
+            K = PivRow;
+            for (i = PivRow+1; i < n; i++){
+                if (Math.abs(PivElt) < Math.abs(A[i][PivRow])) {
+                    K = i
+                    PivElt = A[i][PivRow];
+                }
+            }
+        }
+        if (PivElt == 0){
+            console.error("Couldn't find a non-zero pivot: solution rubbish");
+            return null;
+        } else {
+            // IF (K/=PivRow)	"/="  === "!="
+            if (K != PivRow){
+                TempRow = new Array(2*n);
+                for (var j = 0; j < 2*n; j++) { }
+            }
+        }
+    }
+    /*
+    FUNCTION Inv( Mat )
+    REAL, DIMENSION(:,:),INTENT(IN) :: Mat
+    REAL, DIMENSION( SIZE(Mat,1), SIZE(Mat,1) ) :: Inv  ! must be
+    ! square
+    REAL(KIND(0.D0)), DIMENSION( SIZE(Mat,1), 2 * SIZE(Mat,1) ) :: A ! augmented
+    REAL(KIND(0.D0)), DIMENSION(:), ALLOCATABLE :: TempRow      ! spare row
+    REAL(KIND(0.D0))  :: PivElt, TarElt
+    INTEGER :: N           ! number of equations
+    INTEGER PivRow, TarRow,I,K
+
+    N = SIZE( Mat, 1 )
+    A = 0               ! initialize
+    A( 1:N, 1:N ) = Mat        ! first N columns
+    DO I = 1, N            ! identity in cols N+1 to 2N
+    A( I, N+I ) = 1
+    END DO
+
+    DO PivRow = 1, N         ! process every row
+    PivElt = A( PivRow, PivRow )  ! choose pivot element
+    K= PivRow
+    DO I = PivRow+1, N
+    IF (ABS(PivElt)<ABS(A(I,PivRow))) THEN      ! check for maximum pivot
+    K = I   ! run down rows to find a maximum pivot
+    PivElt = A( I, PivRow )
+    END IF
+    END DO
+    IF (PivElt == 0) THEN     ! it's still zero
+    PRINT*, "Couldn't find a non-zero pivot: solution rubbish"
+    RETURN
+    ELSE
+    ! maximum pivot in row K, so swop rows PivRow and K:
+        IF (K/=PivRow)	THEN
+    ALLOCATE( TempRow(2*N) )  ! dynamic store
+    TempRow = A( PivRow, 1:2*N )
+    A( PivRow, 1:2*N ) = A( K, 1:2*N )
+    A( K, 1:2*N ) = TempRow
+    DEALLOCATE( TempRow )    ! throw away
+    END IF
+    END IF
+    A( PivRow, 1:2*N ) = A( PivRow, 1:2*N ) / PivElt ! divide
+    ! whole row
+    ! now replace all other rows by target row minus pivot row ...
+    ! ... times element in target row and pivot column:
+
+        DO TarRow = 1, N
+    IF (TarRow /= PivRow) THEN
+    TarElt = A( TarRow, PivRow )
+    A( TarRow, 1:2*N ) = A( TarRow, 1:2*N )  &
+    - A( PivRow, 1:2*N ) * TarElt
+    END IF
+    END DO
+    END DO
+
+    ! finally extract the inverse from columns N+1 to 2N:
+        Inv = A( 1:N, N+1:2*N )
+    END FUNCTION Inv
+    */
 
     // creates array with specific length createArray(2,3) -> [[,,],[,,]]
     function createArray(length){
@@ -122,6 +223,132 @@
         return ans;
     }
     exports.getArraySize = getArraySize;
+
+    function TransMatrix(A)       //На входе двумерный массив
+    {
+        var m = A.length, n = A[0].length, AT = [];
+        for (var i = 0; i < n; i++)
+        { AT[i] = [];
+            for (var j = 0; j < m; j++) AT[i][j] = A[j][i];
+        }
+        return AT;
+    }
+    function SumMatrix(A,B)       //На входе двумерные массивы одинаковой размерности
+    {
+        var m = A.length, n = A[0].length, C = [];
+        for (var i = 0; i < m; i++)
+        { C[i] = [];
+            for (var j = 0; j < n; j++) C[i][j] = A[i][j]+B[i][j];
+        }
+        return C;
+    }
+    function multMatrixNumber(a,A)  // a - число, A - матрица (двумерный массив)
+    {
+        var m = A.length, n = A[0].length, B = [];
+        for (var i = 0; i < m; i++)
+        { B[i] = [];
+            for (var j = 0; j < n; j++) B[i][j] = a*A[i][j];
+        }
+        return B;
+    }
+    function MultiplyMatrix(A,B)
+    {
+        var rowsA = A.length, colsA = A[0].length,
+            rowsB = B.length, colsB = B[0].length,
+            C = [];
+        if (colsA != rowsB) return false;
+        for (var i = 0; i < rowsA; i++) C[i] = [];
+        for (var k = 0; k < colsB; k++)
+        { for (var i = 0; i < rowsA; i++)
+        { var t = 0;
+            for (var j = 0; j < rowsB; j++) t += A[i][j]*B[j][k];
+            C[i][k] = t;
+        }
+        }
+        return C;
+    }
+    function MatrixPow(n,A)
+    {
+        if (n == 1) return A;     // Функцию MultiplyMatrix см. выше
+        else return MultiplyMatrix( A, MatrixPow(n-1,A) );
+    }
+    function Determinant(A)   // Используется алгоритм Барейса, сложность O(n^3)
+    {
+        var N = A.length, B = [], denom = 1, exchanges = 0;
+        for (var i = 0; i < N; ++i)
+        { B[i] = [];
+            for (var j = 0; j < N; ++j) B[i][j] = A[i][j];
+        }
+        for (var i = 0; i < N-1; ++i)
+        { var maxN = i, maxValue = Math.abs(B[i][i]);
+            for (var j = i+1; j < N; ++j)
+            { var value = Math.abs(B[j][i]);
+                if (value > maxValue){ maxN = j; maxValue = value; }
+            }
+            if (maxN > i)
+            { var temp = B[i]; B[i] = B[maxN]; B[maxN] = temp;
+                ++exchanges;
+            }
+            else { if (maxValue == 0) return maxValue; }
+            var value1 = B[i][i];
+            for (var j = i+1; j < N; ++j)
+            { var value2 = B[j][i];
+                B[j][i] = 0;
+                for (var k = i+1; k < N; ++k) B[j][k] = (B[j][k]*value1-B[i][k]*value2)/denom;
+            }
+            denom = value1;
+        }
+        if (exchanges%2) return -B[N-1][N-1];
+        else return B[N-1][N-1];
+    }
+    function MatrixRank(A)
+    {
+        var m = A.length, n = A[0].length, k = (m < n ? m : n), r = 1, rank = 0;
+        while (r <= k)
+        { var B = [];
+            for (var i = 0; i < r; i++) B[i] = [];
+            for (var a = 0; a < m-r+1; a++)
+            { for (var b = 0; b < n-r+1; b++)
+            { for (var c = 0; c < r; c++)
+            { for (var d = 0; d < r; d++) B[c][d] = A[a+c][b+d]; }
+                if (Determinant(B) != 0) rank = r;
+            }       // Функцию Determinant см. выше
+            }
+            r++;
+        }
+        return rank;
+    }
+    function AdjugateMatrix(A)   // A - двумерный квадратный массив
+    {
+        var N = A.length, adjA = [];
+        for (var i = 0; i < N; i++)
+        { adjA[i] = [];
+            for (var j = 0; j < N; j++)
+            { var B = [], sign = ((i+j)%2==0) ? 1 : -1;
+                for (var m = 0; m < j; m++)
+                { B[m] = [];
+                    for (var n = 0; n < i; n++)   B[m][n] = A[m][n];
+                    for (var n = i+1; n < N; n++) B[m][n-1] = A[m][n];
+                }
+                for (var m = j+1; m < N; m++)
+                { B[m-1] = [];
+                    for (var n = 0; n < i; n++)   B[m-1][n] = A[m][n];
+                    for (var n = i+1; n < N; n++) B[m-1][n-1] = A[m][n];
+                }
+                adjA[i][j] = sign*Determinant(B);   // Функцию Determinant см. выше
+            }
+        }
+        return adjA;
+    }
+    function InverseMatrix(A)   // A - двумерный квадратный массив
+    {
+        var det = Determinant(A);                // Функцию Determinant см. выше
+        if (det == 0) return false;
+        var N = A.length, A = AdjugateMatrix(A); // Функцию AdjugateMatrix см. выше
+        for (var i = 0; i < N; i++)
+        { for (var j = 0; j < N; j++) A[i][j] /= det; }
+        return A;
+    }
 
     // expand Number class, so we can operate
     Number.prototype.toComplex = function(b) {
@@ -234,6 +461,6 @@
 3) УНИВЕРСАЛЬНЫЙ КАЛЬКУЛЯТОР КОМПЛЕКСНЫХ ЧИСЕЛ ОНЛАЙН, http://abak.pozitiv-r.ru/math/68-kulyator-complex
 4) A Look at Fortran 90, http://www.lahey.com/lookat90.htm
 5) Современный Фортран (2000 г., МИФИ), http://mephi-v05.narod.ru/files/infa1.pdf
-
+6) Операции над матрицами, http://mathhelpplanet.com/static.php?p=javascript-operatsii-nad-matritsami
 
 */
