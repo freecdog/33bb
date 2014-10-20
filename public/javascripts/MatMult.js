@@ -2,6 +2,23 @@
  * Created by jaric on 19.09.2014.
  */
 
+// TODO should ask
+// INTERFACE OPERATOR(.x.)
+// // порядок вызова процедур? Полагаю все требуют две переменные на вход, как результат передается от одной к другой
+// MODULE PROCEDURE MatTimesMat, MatTimesVector,MatTimesMatC, MatTimesVectorC,VectorTimesVector
+// END INTERFACE
+//
+// // В функции Tr не понятен порядок вызовов или указание ORDER?
+// Tr=RESHAPE(Mat,(/SIZE(Mat,2), SIZE(Mat,1)/),ORDER=(/2,1/))
+//
+// // размерность?
+// COMPLEX, DIMENSION(:,:),INTENT(IN) :: A, B
+// // размеры таблицы взяты из размера А по столбцам, у B по рядам?
+// COMPLEX, DIMENSION( SIZE(A,1), SIZE(B,2) ) :: MatTimesMatC
+//
+// // что значат слеши?
+// Tr=RESHAPE(Mat,(/SIZE(Mat,2), SIZE(Mat,1)/),ORDER=(/2,1/))
+
 (function(exports){
 
     //!
@@ -41,10 +58,70 @@
         // http://mephi-v05.narod.ru/files/infa1.pdf
         //  real a(3, 6, *), b(0:*)
         //  print *, size(a, 2) ! 6
-        var a = A[1];
-        return MATMUL(a,X);
+        //var a = A[1];
+        // TODO, should be vector as I understand
+        return MATMUL(A,X);
     }
 
+    function MatTimesVectorC(A, X){
+        //COMPLEX, DIMENSION(:,:),INTENT(IN) :: A
+        //COMPLEX, DIMENSION(:),INTENT(IN)  :: X
+        //COMPLEX, DIMENSION( SIZE(A,1) ) :: MatTimesVectorC
+        // TODO, should be vector as I understand
+        return MATMUL(A,X);
+    }
+
+    function Tr(Mat){
+        //REAL, DIMENSION(:,:),INTENT(IN) :: Mat
+        //REAL, DIMENSION( SIZE(Mat,2), SIZE(Mat,1) ) :: Tr
+        //Tr=RESHAPE(Mat,(/SIZE(Mat,2), SIZE(Mat,1)/),ORDER=(/2,1/))
+        return RESHAPE(Mat,[]);
+    }
+
+    // creates array with specific length createArray(2,3) -> [[,,],[,,]]
+    function createArray(length){
+        var arr = new Array(length || 0), i = length;
+
+        if (arguments.length > 1) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            while(i--) arr[length-1 - i] = createArray.apply(this, args);
+        }
+
+        return arr;
+    }
+    exports.createArray = createArray;
+
+    // creates array with specific length given from createArrayFromSizeArray([2,3]) -> [[,,],[,,]]
+    function createArrayFromSizeArray(sizeArr){
+        // isn't the method slow?
+        var recToStr = Object.prototype.toString.call( sizeArr );
+        if (recToStr !== '[object Array]' ) return [];
+
+        var arr = new Array(sizeArr[0] || 0), i = sizeArr[0];
+
+        if (sizeArr.length > 1) {
+            var args = Array.prototype.slice.call(sizeArr, 1);
+            //while(i--) arr[sizeArr[0]-1 - i] = createArrayFromSizeArray.apply(this, args);
+            while(i--) arr[sizeArr[0]-1 - i] = createArrayFromSizeArray.call(this, args);
+        }
+
+        return arr;
+    }
+    exports.createArrayFromSizeArray = createArrayFromSizeArray;
+
+    // getting array of dimension sizes from first elements
+    function getArraySize(arr, ans){
+        ans = ans || [];
+
+        var recToStr = Object.prototype.toString.call( arr );
+        if (recToStr === '[object Array]' ) {
+            ans.push(arr.length);
+
+            getArraySize(arr[0], ans);
+        }
+        return ans;
+    }
+    exports.getArraySize = getArraySize;
 
     // expand Number class, so we can operate
     Number.prototype.toComplex = function(b) {
@@ -155,5 +232,8 @@
 1) fortran to c++ converter FABLE, http://cci.lbl.gov/fable/
 2) JavaScript complex function graphing tool, http://www.fortwain.com/complex.html (especially http://www.fortwain.com/complex.js)
 3) УНИВЕРСАЛЬНЫЙ КАЛЬКУЛЯТОР КОМПЛЕКСНЫХ ЧИСЕЛ ОНЛАЙН, http://abak.pozitiv-r.ru/math/68-kulyator-complex
+4) A Look at Fortran 90, http://www.lahey.com/lookat90.htm
+5) Современный Фортран (2000 г., МИФИ), http://mephi-v05.narod.ru/files/infa1.pdf
+
 
 */

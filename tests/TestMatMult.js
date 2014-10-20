@@ -120,3 +120,31 @@ TestMatMult.prototype.testDivide = function() {
     }
 
 };
+
+TestMatMult.prototype.testArrays = function() {
+    var tests = [
+        {
+            dimensions: [2,2,2]
+        },
+        {
+            dimensions: [5]
+        },
+        {
+            dimensions: [3,3]
+        },
+        {
+            dimensions: []
+        }
+    ];
+    for (var i = 0; i < tests.length; i++) {
+        var c1 = MatMult.createArrayFromSizeArray(tests[i].dimensions);
+        //var c2 = MatMult.createArray(2,2,2);
+        //console.log('arr', c1, c2);
+        var ans = MatMult.getArraySize(c1);
+        //console.log('sizes', ans, tests[i].dimensions);
+        for (var j = 0; j < tests[i].dimensions.length; j++) {
+            assertEquals(tests[i].dimensions[j], ans[j]);
+        }
+    }
+
+};
