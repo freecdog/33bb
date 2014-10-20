@@ -462,5 +462,6 @@
 4) A Look at Fortran 90, http://www.lahey.com/lookat90.htm
 5) Современный Фортран (2000 г., МИФИ), http://mephi-v05.narod.ru/files/infa1.pdf
 6) Операции над матрицами, http://mathhelpplanet.com/static.php?p=javascript-operatsii-nad-matritsami
+7 !!! ) Advanced mathematics toolkit for JavaScript and Node.js, https://github.com/sjkaliski/numbers.js (numbers.complex, matrix operations)
 
 */
