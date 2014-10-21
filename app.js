@@ -27,6 +27,11 @@ app.use('/users', users);
 
 var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 
+var numbers = require('numbers');
+console.log(numbers.basic.sum([1,2,3]));
+console.log(numbers.matrix.multiply([[2,3]], [[4],[5]]));
+console.log(numbers.matrix.multiply([[2],[3]], [[4,5]]));
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
