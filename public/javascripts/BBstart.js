@@ -5,7 +5,7 @@
 (function(exports){
 
     // TODO use FUNC2
-    var FUNC2 = require('public/javascripts/Func2');
+    var FUNC2 = require('./Func2.js');
     // TODO use MATMULT
 
     // JS dependencies
