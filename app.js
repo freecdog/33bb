@@ -35,7 +35,7 @@ var Complex = numbers.complex;
 console.log(new Complex(-5, -6));
 
 var BBstart = require(path.join(__dirname, 'public', 'javascripts', 'BBstart.js'));
-BBstart.STARTPROC();
+BBstart.STARTPROC ();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
