@@ -1,0 +1,45 @@
+{
+    ALFA: 0,
+    SPLIT: false,
+    RZ: 2.55E-02,
+    X: 10,
+    RO2: 2.8E03,
+    C2: 4.5E03,
+    GAPOIS: false,
+    POIS: .25,
+    GAMMA: 0.6,
+    XDESTR: 1.0,
+
+    EPUR: 2,
+
+    waveShapes: [
+        {
+            LS:0.67, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+        },
+        {
+            LS: 2.0, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
+        },
+        {
+            LS: 0.67, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
+        },
+        {
+            LS: 2.0, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+        }
+    ],
+
+    INDEX: 0,
+    FRIC: 0,
+    M0: 1.5,
+
+    ТМ: 5,
+    DT: 0.02,
+    DFI: 3.0,
+    DX: 0.02,
+    NTP: 7,
+    printPoints: [ 0,15,30,45,60,75,90 ],
+    OMG: 0.98,
+    BET: 0.7,
+    STEP: 0.1,
+    STEPX: 0.1,
+    DELTA: 1
+}
