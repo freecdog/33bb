@@ -328,7 +328,95 @@
     }
 
     function STEPFI(){
-        console.error('STEPFI DO NOTHING!!!');
+        var I,J,NI,K,K0,K1,M; // integer
+        var RO,ROM,TET,LL,TETA; // real
+        var ADF, ATAR; // of real
+        NI = Math.ceil(2*Math.PI/H)+10;
+        ADF = new Array(NI + 1); // TODO, original ALLOCATE(ADF(0:NI),ATAR(0:NI)); , is it correct JS interpretation
+        ATAR = new Array(NI + 1);
+        for (var i = 0; i <= NI; i++) {
+            ADF[i] = 0;
+            ATAR[i] = 0;
+        }
+        TET=180*TET0/Math.PI;
+        for (J = 1; J <= NTP; J++) {
+            if (TP[J] >= TET) {
+                if (TP[J] == TET) {
+                    NTP = NTP - 1;
+                } else {
+                    for (I = NTP; I >= J; I--){
+                        TP[I+1] = TP[I];
+                    }
+                    TP[J] = TET;
+                }
+                JTP = J;
+                for (I = 1; I <= J-1; I++){
+                    TP[I] = 360 + TP[I];
+                }
+                // TODO, originally there is EXIT, is it correct? So,
+                // it will breaks for loop and count only for J == 1
+            }
+        }
+        TET = TET0;
+        ATAR[0] = TET0;
+        ADF[0] = 0;
+        NI = Math.ceil(DFI/H);
+        NFI = 0;
+        K1 = 0;
+        while (true) {
+            if (TET>TET0+2*Math.PI) break;
+            K0 = K1 + 1;
+            ROM = L;
+            for (I=1; I <= NI; I++) {
+                RCURB(TET,RO,LL);
+                RO=1/RO;
+                if (RO < ROM) ROM = RO;
+                TET = TET + H;
+            }
+            K = Math.ceil(Math.min(L/ROM, DFI/H));
+            K1 = K0 + K - 1;
+            NFI = NFI + K;
+            // TODO what is it?
+            // ADF(K0:K1)=MAX(DFI/K,H);
+            for (I = K0; I <= K1; I++) {
+                ATAR[I] = ATAR[I-1] + 0.5*(ADF[I-1] +  ADF[i]);
+            }
+        }
+        // TODO, should check correctness
+        // ALLOCATE (DF(0:NFI+1),TAR(0:NFI+1),COURB(0:NFI+1),FAR(0:NFI+1), LONG(0:NFI+1));
+        DF = new Array(NFI+1 +1);
+        TAR = new Array(NFI+1 +1);
+        COURB = new Array(NFI+1 +1);
+        FAR = new Array(NFI+1 +1);
+        LONG = new Array(NFI+1 +1);
+        for (I = 0; I <= NFI+1; I++){
+            DF[I] = ADF[I];
+            TETA = ATAR[I];
+            TAR[I] = TETA;
+            RCURB(TETA, COURB[I], LONG[I]);
+            FAR[I] = ATN(TETA) - ALFA;
+        }
+        I = 0;
+        J = JTP;
+        while (true){
+            if (J == NTP+2) {
+                J = 1;
+                if (J == JTP) break;
+            }
+            TET=Math.PI * TP[J]/180;
+            for (M = I; M <= NFI + 1; M++){
+                if (TET <+ TAR[M]){
+                    I = M + 1;
+                    ITP[J] = M;
+                    break;
+                }
+            }
+            J++;
+            if (J == JTP) break;
+        }
+        for (J = 1; J <= JTP-1; J++){
+            TP[J] = TP[J] - 360;
+        }
     }
 
     function STARTOUT(){

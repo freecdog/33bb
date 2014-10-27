@@ -32,4 +32,28 @@
         return RTET;
     }
     exports.RTET = RTET;
+
+    function RCURB(T, A, B) {
+        var R, DR1, DR2, R0, R1, DT = 0.001;
+        R = RTET(T);
+        R1 = RTET(T + DT);
+        R0 = RTET(T - DT);
+        DR1 = (R1 - R0) / (2*DT);
+        DR2 = (R1 - 2*R + R0) / (DT*DT);
+        DR2 = Math.abs((-DR2 + R)*R + 2*DR1*DR1);
+        B = Math.sqrt(R*R + DR1*DR1);
+        A = DR2 / (Math.pow(B,3));
+        // return A, B;
+        // DERIV(RTET,1,T,0.02,0.5); DERIV(RTET,2,T,0.02,0.5);
+    }
+    exports.RCURB = RCURB;
+
+    function ATN(T){
+        var DR1, DT = 0.001;
+        DR1 = (RTET(T + DT) - RTET(T - DT)) / (2*DT);
+        // DR1=DERIV(RTET,1,T,0.02,0.1);
+        return T - Math.atan(DR1 / RTET(T));
+    }
+    exports.ATN = ATN;
+
 })(typeof exports === 'undefined'? this['FUNC2']={} : exports);
