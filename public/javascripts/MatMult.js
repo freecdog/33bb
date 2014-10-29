@@ -26,6 +26,7 @@
 
     //!
     function oINV() {
+        // type overriding Inv, InvC
         return -1;
     }
 

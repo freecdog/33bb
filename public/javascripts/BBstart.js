@@ -206,10 +206,10 @@
             pos.DELTA = data.indexOf('=',pos.STEP)+1;
             DELTA = parseInt(data.substr( pos.DELTA, 10 ));
 
-            // TODO STEPFI do nothing
             STEPFI();
 
             T0 = 1.1 * XDESTR;
+            // TODO, Harry NINT == Round
             // NINT from what part of code is it? Seems like NINT equal to Math.ceil
             NT = Math.ceil(TM/DT);
             NXDST = Math.ceil(XDESTR/STEPX);
@@ -254,6 +254,7 @@
                 JC = JC + calculus.adaptiveSimpson(RTET,0,TETA,H);
                 //JC = JC + SIMPS(RTET,4,0,TETA,H);
                 // TODO What type returns SIMPS function float or Complex?
+                // SOLVED, SIMPS are defined in BBstart, it is complex
                 MOM = MOM.subtract(new Complex(calculus.adaptiveSimpson(RTET,1,TETA,H)/3, 0));      // TODO interval from 1 to 0 (TETA initialized with ZERO)
                 //MOM = MOM - SIMPS(RTET,3,1,TETA,H)/3;
                 RT = RTET(TETA);
@@ -262,6 +263,7 @@
             }
 
             S = S / 2;
+            // L - характерный размер
             L = Math.sqrt(S / Math.PI);
             //WRITE(*,'()');
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
@@ -322,6 +324,7 @@
             //ZC = ZC / L * Math.exp(-IM*ALFA);
             ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
             // TODO JC initialized as float, why there is
+            // SOLVED coz it is real value
             JC = JC - Math.PI * ((ZC.multiply(ZC.conjugate())).re); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
             RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
         });
@@ -355,6 +358,8 @@
                 }
                 // TODO, originally there is EXIT, is it correct? So,
                 // it will breaks for loop and count only for J == 1
+                // SOLVED, just put the break here as in main part
+                break;
             }
         }
         TET = TET0;
@@ -378,12 +383,14 @@
             NFI = NFI + K;
             // TODO what is it?
             // ADF(K0:K1)=MAX(DFI/K,H);
+            // SOLVED
+            for (var adfi = K0; adfi <= K1; adfi++) {
+                ADF[adfi] = Math.max(DFI / K, H);
+            }
             for (I = K0; I <= K1; I++) {
                 ATAR[I] = ATAR[I-1] + 0.5*(ADF[I-1] +  ADF[i]);
             }
         }
-        // TODO, should check correctness
-        // ALLOCATE (DF(0:NFI+1),TAR(0:NFI+1),COURB(0:NFI+1),FAR(0:NFI+1), LONG(0:NFI+1));
         DF = new Array(NFI+1 +1);
         TAR = new Array(NFI+1 +1);
         COURB = new Array(NFI+1 +1);
@@ -403,7 +410,7 @@
                 J = 1;
                 if (J == JTP) break;
             }
-            TET=Math.PI * TP[J]/180;
+            TET = Math.PI * TP[J]/180;
             for (M = I; M <= NFI + 1; M++){
                 if (TET <+ TAR[M]){
                     I = M + 1;

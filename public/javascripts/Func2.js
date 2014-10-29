@@ -10,8 +10,10 @@
         var T0, T, FI, M, EPS1; // float
 
         T0 = Math.PI * VORTEX / 180;    // TODO it is zero always, isn't it???
+        // SOLVED, VORTEX could be changed, MANUALLY
         EPS1 = B * Math.cos(T0) / C;
-        RTET = 2.2; // return; // TODO return ?!?!?!??!?! Looks like in FORTRAN return doesn't breaks function with return.
+        // SOLVED, если окружность, то return, иначе комментируем эту строчку
+        RTET = 2.2; return; // TODO return ?!?!?!??!?! Looks like in FORTRAN return doesn't breaks function with return.
 
         T = TT;
         if (T > 2 * Math.PI) T = T - 2 * Math.PI;
