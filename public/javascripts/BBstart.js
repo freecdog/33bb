@@ -233,7 +233,7 @@
         fs.open(CavformPath, 'w', function(err, fd){
             // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
             // write to file here
-            var recBuffer = ' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) ';
+            var recBuffer = new Buffer(' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) ');
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             S = 0;
             JC = 0;
