@@ -244,22 +244,28 @@
             var RTET = FUNC2.RTET;
             while(true){
                 if (TETA > 2 * Math.PI) break;
-                // TODO SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
+                // SOLVED, SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
                 // The only I have is numbers.calculus.adaptiveSimpson(), http://en.wikipedia.org/wiki/Adaptive_Simpson's_method
                 // seems like that adaptiveSimpson(RTET, 0, TETA, H), what is for 2nd parameter? Is it for number of steps N?
                 // adaptiveSimpson don't have number of steps. Number of steps depends on eps
+                // SIMPLE simpson defined in BBstart, but we can improve it.
 
-                S = S + calculus.adaptiveSimpson(RTET,0,TETA,H);
-                //S = S + SIMPS(RTET,2,0,TETA,H);
-                JC = JC + calculus.adaptiveSimpson(RTET,0,TETA,H);
-                //JC = JC + SIMPS(RTET,4,0,TETA,H);
-                // TODO What type returns SIMPS function float or Complex?
+                // TODO real + complex == real + complex.RE , isn't it?
+                // S=S+SIMPS(RTET,2,0,TETA,H);
+                S = S + SIMPS(RTET, 0, TETA, H);
+                // JC=JC+SIMPS(RTET,4,0,TETA,H);
+                JC = JC + SIMPS(RTET, 0, TETA, H);
+                // What type returns SIMPS function float or Complex?
                 // SOLVED, SIMPS are defined in BBstart, it is complex
-                MOM = MOM.subtract(new Complex(calculus.adaptiveSimpson(RTET,1,TETA,H)/3, 0));      // TODO interval from 1 to 0 (TETA initialized with ZERO)
+                MOM = MOM.subtract(SIMPS(RTET,1,TETA,H)/3);      // TODO interval from 1 to 0 (TETA initialized with ZERO)
                 //MOM = MOM - SIMPS(RTET,3,1,TETA,H)/3;
                 RT = RTET(TETA);
+                // TODO atan or atan2 is same to FORTRAN ATN?
                 //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
-                TETA = TETA+H;
+                recBuffer = new Buffer( (TETA*180/PI).toString() + (RT).toString() + (Math.cos(Math.atan(TETA))).toString() +
+                    (Math.sin(Math.atan(TETA))).toString() + (Math.cos(Math.atan(TETA)-ALFA)).toString() + (Math.sin(Math.atan(TETA)-ALFA)).toString() );
+                fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+                TETA = TETA + H;
             }
 
             S = S / 2;
@@ -441,6 +447,27 @@
 
     function MTRXPROC(){
         console.error('MTRXPROC DO NOTHING!!!');
+    }
+
+    // Complex
+    function SIMPS(F, N, M, T, H){
+        // T, H real
+        // N, M integer
+
+        function F(T) {
+            // TODO interfface F(T), how it works?
+            // may be it is for changing value by special rule (function)
+            return T;
+        }
+
+        function FS(value) {
+            // FS=(F(T)**N)*EXP(IM*M*T);
+            // TODO probably F could return complex value so... there is huge bug place probably
+            return (new Complex(Math.pow(F(value), N), 0)).multiply(new Complex(Math.cos(M * T), Math.sin(M * T)));
+        }
+
+        // TODO returned value isn't complex, but it should be.
+        return H/6 * (FS(T) + 4*FS(T+H/2) + FS(T+H));
     }
 
 })(typeof exports === 'undefined'? this['BBstart']={} : exports);
