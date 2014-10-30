@@ -4,9 +4,8 @@
 
 (function(exports){
 
-    // TODO use FUNC2
     var FUNC2 = require('./Func2.js');
-    // TODO use MATMULT
+    var MatMult = require('./MatMult.js');
 
     // JS dependencies
 
@@ -38,10 +37,9 @@
     var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
     var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
-    // TODO CONTAINS, does it mean something for js? Is it for variables namespace?
+    // SOVED CONTAINS, does it mean something for js? Is it for variables namespace? No it's just place where subroutines take places
 
-
-    // TODO, why don't you convert BBinput.dat to json???
+    // SOVLED, why don't you convert BBinput.dat to json???
     // reading of BBinput.dat file
     function STARTPROC(){
         var RC0,RC1,RC2,B1,B2, M0,C0,C1,RO0,LS,X,RZ,GAMMA,POIS,BET,OMG; // float //FI,
@@ -58,7 +56,7 @@
             pos.ALFA = data.indexOf('=',0)+1;
             ALFA = parseInt( data.substr( pos.ALFA, 10 ) );
             ALFA = ALFA * Math.PI / 180;
-            // TODO DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
+            // SOVLED DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
             //ALIM = Math.exp(IM * ALFA);
             ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
             pos.SPLIT = data.indexOf('=',pos.ALFA)+4;
@@ -122,9 +120,10 @@
                 console.error('unknown EPUR value');
             }
 
-            // TODO write to console? There wasn't opened any file for writing, was it?
-            // WRITE(*,'()');
-            // WRITE(*,'(10X,A,E11.4)') '        S0= ',S0 !*C2*RC2*1E-06
+            // write to console? There wasn't opened any file for writing, was it?
+            // It's just writing to console
+            console.log('\n');
+            console.log('S0 =', S0);
             if (SPLIT) {
                 pos.LS = data.indexOf('=',pos.checkpoint1)+1;
                 LS = parseFloat(data.substr( pos.LS, 10 ));
@@ -137,7 +136,8 @@
                 pos.RO0 = data.indexOf('=',pos.C0)+1;
                 RO0 = parseFloat(data.substr( pos.RO0, 10 ));
                 pos.FILL = data.indexOf('=',pos.RO0)+2;
-                // TODO very weak parse ability
+                // SOLVED very weak parse ability
+                // everytihng will be just fine when I will use json configs
                 FILL = data.substr( pos.FILL, 5 );
 
                 RC0 = RO0 * C0;
@@ -188,7 +188,8 @@
             ITP = new Array(NTP+1);
             //READ(2,*)	(TP(I), I=1,NTP);
             // ТОЧКИ ДЛЯ ПЕЧАТИ ПО УГЛУ(ГРАД)=	 0,15,30,45,60,75,90
-            // TODO what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
+            // SOLVED what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
+            // I probably understand arrays correctly, so it is as it is.
             pos.TP = data.indexOf('=',pos.NTP)+1;
             pos.lastTPcomma = pos.TP;
             for (var itTP = 0; itTP < NTP; itTP++) {
@@ -209,17 +210,13 @@
             STEPFI();
 
             T0 = 1.1 * XDESTR;
-            // TODO, Harry NINT == Round
-            // NINT from what part of code is it? Seems like NINT equal to Math.ceil
-            NT = Math.ceil(TM/DT);
-            NXDST = Math.ceil(XDESTR/STEPX);
-            NBX = NT + Math.ceil(XDESTR/DX) + 10;
-            NTIME = Math.ceil((TM+T0)/STEP) + 3;
-            // TODO STARTOUT do nothing
+            // SOLVED, Harry said that NINT == Round, also MIFI book tells the same.
+            NT = Math.round(TM/DT);
+            NXDST = Math.round(XDESTR/STEPX);
+            NBX = NT + Math.round(XDESTR/DX) + 10;
+            NTIME = Math.round((TM+T0)/STEP) + 3;
             STARTOUT();
-            // TODO WAVEEPURE do nothing
             if (EPUR>0) WAVEEPURE();
-            // TODO MTRXPROC do nothing
             MTRXPROC();
         });
     }
@@ -233,8 +230,11 @@
         var ROOT = new Boolean();
 
         var CavformPath = 'BBdat/Cavform.dat'; // looks like path depends on app.js for server side
-        fs.readFile(CavformPath, {encoding: 'utf8'}, function(err, data){
-            // TODO, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
+        fs.open(CavformPath, 'w', function(err, fd){
+            // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
+            // write to file here
+            var recBuffer = ' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) ';
+            fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             S = 0;
             JC = 0;
             MOM = new Complex(0.0,0.0);
@@ -327,6 +327,11 @@
             // SOLVED coz it is real value
             JC = JC - Math.PI * ((ZC.multiply(ZC.conjugate())).re); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
             RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
+
+            fs.close(fd, function(){
+                // done;
+                console.log(CavformPath, "file written");
+            });
         });
     }
 
@@ -334,7 +339,7 @@
         var I,J,NI,K,K0,K1,M; // integer
         var RO,ROM,TET,LL,TETA; // real
         var ADF, ATAR; // of real
-        NI = Math.ceil(2*Math.PI/H)+10;
+        NI = Math.round(2*Math.PI/H)+10;
         ADF = new Array(NI + 1); // TODO, original ALLOCATE(ADF(0:NI),ATAR(0:NI)); , is it correct JS interpretation
         ATAR = new Array(NI + 1);
         for (var i = 0; i <= NI; i++) {
@@ -365,7 +370,7 @@
         TET = TET0;
         ATAR[0] = TET0;
         ADF[0] = 0;
-        NI = Math.ceil(DFI/H);
+        NI = Math.round(DFI/H);
         NFI = 0;
         K1 = 0;
         while (true) {
@@ -378,7 +383,7 @@
                 if (RO < ROM) ROM = RO;
                 TET = TET + H;
             }
-            K = Math.ceil(Math.min(L/ROM, DFI/H));
+            K = Math.round(Math.min(L/ROM, DFI/H));
             K1 = K0 + K - 1;
             NFI = NFI + K;
             // TODO what is it?
