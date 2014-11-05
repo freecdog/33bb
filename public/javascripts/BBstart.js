@@ -384,7 +384,7 @@
             K0 = K1 + 1;
             ROM = L;
             for (I=1; I <= NI; I++) {
-                RCURB(TET,RO,LL);
+                FUNC2.RCURB(TET,RO,LL);
                 RO=1/RO;
                 if (RO < ROM) ROM = RO;
                 TET = TET + H;
