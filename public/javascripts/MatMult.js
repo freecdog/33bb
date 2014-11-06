@@ -121,65 +121,8 @@
             }
         }
     }
+
     /*
-    FUNCTION Inv( Mat )
-    REAL, DIMENSION(:,:),INTENT(IN) :: Mat
-    REAL, DIMENSION( SIZE(Mat,1), SIZE(Mat,1) ) :: Inv  ! must be
-    ! square
-    REAL(KIND(0.D0)), DIMENSION( SIZE(Mat,1), 2 * SIZE(Mat,1) ) :: A ! augmented
-    REAL(KIND(0.D0)), DIMENSION(:), ALLOCATABLE :: TempRow      ! spare row
-    REAL(KIND(0.D0))  :: PivElt, TarElt
-    INTEGER :: N           ! number of equations
-    INTEGER PivRow, TarRow,I,K
-
-    N = SIZE( Mat, 1 )
-    A = 0               ! initialize
-    A( 1:N, 1:N ) = Mat        ! first N columns
-    DO I = 1, N            ! identity in cols N+1 to 2N
-    A( I, N+I ) = 1
-    END DO
-
-    DO PivRow = 1, N         ! process every row
-    PivElt = A( PivRow, PivRow )  ! choose pivot element
-    K= PivRow
-    DO I = PivRow+1, N
-    IF (ABS(PivElt)<ABS(A(I,PivRow))) THEN      ! check for maximum pivot
-    K = I   ! run down rows to find a maximum pivot
-    PivElt = A( I, PivRow )
-    END IF
-    END DO
-    IF (PivElt == 0) THEN     ! it's still zero
-    PRINT*, "Couldn't find a non-zero pivot: solution rubbish"
-    RETURN
-    ELSE
-    ! maximum pivot in row K, so swop rows PivRow and K:
-        IF (K/=PivRow)	THEN
-    ALLOCATE( TempRow(2*N) )  ! dynamic store
-    TempRow = A( PivRow, 1:2*N )
-    A( PivRow, 1:2*N ) = A( K, 1:2*N )
-    A( K, 1:2*N ) = TempRow
-    DEALLOCATE( TempRow )    ! throw away
-    END IF
-    END IF
-    A( PivRow, 1:2*N ) = A( PivRow, 1:2*N ) / PivElt ! divide
-    ! whole row
-    ! now replace all other rows by target row minus pivot row ...
-    ! ... times element in target row and pivot column:
-
-        DO TarRow = 1, N
-    IF (TarRow /= PivRow) THEN
-    TarElt = A( TarRow, PivRow )
-    A( TarRow, 1:2*N ) = A( TarRow, 1:2*N )  &
-    - A( PivRow, 1:2*N ) * TarElt
-    END IF
-    END DO
-    END DO
-
-    ! finally extract the inverse from columns N+1 to 2N:
-        Inv = A( 1:N, N+1:2*N )
-    END FUNCTION Inv
-    */
-
     // creates array with specific length createArray(2,3) -> [[,,],[,,]]
     function createArray(length){
         var arr = new Array(length || 0), i = length;
@@ -424,7 +367,7 @@
             return new Complex((this.a * other.a + this.b * other.b) / other.mod2(), (this.b * other.a - this.a * other.b) / other.mod2());
         },
         exp: function(){
-            /* e^(x + iy) = e^x * e^(iy) = e^x(cos(y) + isin(y) */
+            // e^(x + iy) = e^x * e^(iy) = e^x(cos(y) + isin(y)
             var scale = Math.exp(this.a);
             var r = scale * Math.cos(this.b);
             var i = scale * Math.sin(this.b);
@@ -433,22 +376,23 @@
         },
         pow: function(pow, k){
             if(arguments.length == 1) k = 0;
-            /*
-             this^(pow) = (|this|exp(i*this.angle()))^pow
-             = |this|^pow * exp(i*this.angle()*pow)
-             */
+
+             //this^(pow) = (|this|exp(i*this.angle()))^pow
+             //= |this|^pow * exp(i*this.angle()*pow)
+
             var r = Math.pow(this.modulus(), pow);
             var th = (this.angle() + 2 * k * Math.PI) * pow;
             return new Complex(r * Math.cos(th), r * Math.sin(th));
         },
         log: function(k){
             if(arguments.length == 0) k = 0;
-            /* log(|this|*exp(this.angle())) = log(|this|) + i*(this.angle() + 2PI*k) */
+            // log(|this|*exp(this.angle())) = log(|this|) + i*(this.angle() + 2PI*k)
             return new Complex(Math.log(this.modulus()), this.angle() + 2 * Math.PI * k);
         }
     };
 
     exports.Complex = Complex;
+    */
 
     //function importLanguage(language){ return -1; }
     //exports.importLanguage = importLanguage;

@@ -19,6 +19,10 @@
     function charToBoolean(char){
         return char[0].toLowerCase() == 't';  // if first letter is T than true else false
     }
+    function compareWithEps(num1, num2, eps){
+        eps = eps || 1e-6;
+        return (Math.abs(num1 - num2) < eps);
+    }
 
 
     var SPLIT = new Boolean();
@@ -37,7 +41,7 @@
     var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
     var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
-    // SOVED CONTAINS, does it mean something for js? Is it for variables namespace? No it's just place where subroutines take places
+    // SOLVED CONTAINS, does it mean something for js? Is it for variables namespace? No it's just place where subroutines take places
 
     // SOVLED, why don't you convert BBinput.dat to json???
     // reading of BBinput.dat file
@@ -46,8 +50,11 @@
         var GAPOIS = new Boolean();
         var I;
 
+        console.log("STARTPROC has start work");
+
         var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
         fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, data){
+            console.log("STARTPROC has sdfgsdfgsdfgsdfg", err);
             if (err) throw err;
             console.log(data);
             console.log("=============================");
@@ -81,7 +88,9 @@
             pos.EPUR = data.indexOf('=',pos.XDESTR)+1;
             EPUR = parseInt( data.substr( pos.EPUR, 10 ) );
 
-            pos.checkpoint1 = data.indexOf('*',pos.EPUR);
+            pos.checkpoint1 = data.indexOf('*',pos.EPUR)+1;
+
+            console.log("STARTPROC has read half of values");
 
             if (GAPOIS) {
                 B = GAMMA * GAMMA;
@@ -136,9 +145,8 @@
                 pos.RO0 = data.indexOf('=',pos.C0)+1;
                 RO0 = parseFloat(data.substr( pos.RO0, 10 ));
                 pos.FILL = data.indexOf('=',pos.RO0)+2;
-                // SOLVED very weak parse ability
-                // everytihng will be just fine when I will use json configs
                 FILL = data.substr( pos.FILL, 5 );
+                // TODO use json configs
 
                 RC0 = RO0 * C0;
                 KAP1 = (RC1 - RC0) / (RC1 + RC0);
@@ -148,7 +156,7 @@
                 DTT = 2 * LS * RZ / C1;
             }
 
-            pos.checkpoint2 = data.indexOf('*',pos.FILL);
+            pos.checkpoint2 = data.indexOf('*',pos.checkpoint1)+1;
             pos.INDEX = data.indexOf('=',pos.checkpoint2)+1;
             INDEX = parseInt( data.substr( pos.INDEX, 10 ) );
             pos.FRIC = data.indexOf('=',pos.INDEX)+1;
@@ -219,126 +227,132 @@
             if (EPUR>0) WAVEEPURE();
             MTRXPROC();
         });
+
+        console.log("STARTPROC has end work");
     }
 
     exports.STARTPROC = STARTPROC;
 
+    // TODO do it asynchronous
     function GEOMPROC(){
         var K; // integer
         var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
         var MOM; // Complex
         var ROOT = new Boolean();
 
-        var CavformPath = 'BBdat/Cavform.dat'; // looks like path depends on app.js for server side
-        fs.open(CavformPath, 'w', function(err, fd){
-            // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
-            // write to file here
-            var recBuffer = new Buffer(' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) ');
+        console.log("GEOMPROC has start work");
+
+        var CavformPath = 'BBdat/_Cavform.dat'; // looks like path depends on app.js for server side
+        // fs.open
+        var fd = fs.openSync(CavformPath, 'w');
+        // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
+        // write to file here
+        var recBuffer = new Buffer(' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) \n');
+        fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+        S = 0;
+        JC = 0;
+        MOM = new Complex(0.0,0.0);
+        H = Math.PI/180;
+        TETA = 0;
+
+        var RTET = FUNC2.RTET;
+        while(true){
+            if (TETA > 2 * Math.PI) break;
+            // SOLVED, SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
+            // The only I have is numbers.calculus.adaptiveSimpson(), http://en.wikipedia.org/wiki/Adaptive_Simpson's_method
+            // seems like that adaptiveSimpson(RTET, 0, TETA, H), what is for 2nd parameter? Is it for number of steps N?
+            // adaptiveSimpson don't have number of steps. Number of steps depends on eps
+            // SIMPLE simpson defined in BBstart, but we can improve it.
+
+            // SOLVED real + complex == real + complex.RE , isn't it?
+            // It is correct.
+            S = S + SIMPS(RTET, 2, 0, TETA, H).re;  // .re because S and JC is float values
+            JC = JC + SIMPS(RTET, 4, 0, TETA, H).re;
+            // SOLVED, What type returns SIMPS function float or Complex?
+            // SIMPS are defined in BBstart, it is complex
+            MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
+            RT = RTET(TETA);
+            //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
+            recBuffer = new Buffer( (TETA*180/Math.PI).toString() + (RT).toString() + (Math.cos(FUNC2.ATN(TETA))).toString() +
+                (Math.sin(FUNC2.ATN(TETA))).toString() + (Math.cos(FUNC2.ATN(TETA)-ALFA)).toString() + (Math.sin(FUNC2.ATN(TETA)-ALFA)).toString() );
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
-            S = 0;
-            JC = 0;
-            MOM = new Complex(0.0,0.0);
-            H = Math.PI/180;
-            TETA = 0;
+            TETA = TETA + H;
+        }
 
-            var RTET = FUNC2.RTET;
-            while(true){
-                if (TETA > 2 * Math.PI) break;
-                // SOLVED, SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
-                // The only I have is numbers.calculus.adaptiveSimpson(), http://en.wikipedia.org/wiki/Adaptive_Simpson's_method
-                // seems like that adaptiveSimpson(RTET, 0, TETA, H), what is for 2nd parameter? Is it for number of steps N?
-                // adaptiveSimpson don't have number of steps. Number of steps depends on eps
-                // SIMPLE simpson defined in BBstart, but we can improve it.
+        S = S / 2;
+        // L - характерный размер
+        L = Math.sqrt(S / Math.PI);
+        //WRITE(*,'()');
+        //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
+        //WRITE(*,'()');
+        console.log("S =", S, "L =", L);
 
-                // TODO real + complex == real + complex.RE , isn't it?
-                // S=S+SIMPS(RTET,2,0,TETA,H);
-                S = S + SIMPS(RTET, 0, TETA, H);
-                // JC=JC+SIMPS(RTET,4,0,TETA,H);
-                JC = JC + SIMPS(RTET, 0, TETA, H);
-                // What type returns SIMPS function float or Complex?
-                // SOLVED, SIMPS are defined in BBstart, it is complex
-                MOM = MOM.subtract(SIMPS(RTET,1,TETA,H)/3);      // TODO interval from 1 to 0 (TETA initialized with ZERO)
-                //MOM = MOM - SIMPS(RTET,3,1,TETA,H)/3;
-                RT = RTET(TETA);
-                // TODO atan or atan2 is same to FORTRAN ATN?
-                //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
-                recBuffer = new Buffer( (TETA*180/PI).toString() + (RT).toString() + (Math.cos(Math.atan(TETA))).toString() +
-                    (Math.sin(Math.atan(TETA))).toString() + (Math.cos(Math.atan(TETA)-ALFA)).toString() + (Math.sin(Math.atan(TETA)-ALFA)).toString() );
-                fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
-                TETA = TETA + H;
+        JC = .25 * JC / (Math.pow(L, 4));
+        ZC = MOM.divide(new Complex(S, 0));
+        H = Math.PI / 6;
+        TK = 0;
+        AK = ALFA;
+
+        for (K = 0; K <= 3; K++) {
+            T = TK - H;
+            B=0;
+            A=1;
+            ROOT = false;
+            while (true) {
+                if ( (A * B < 0) || ROOT) break;
+                A = B;
+                T = T + H;
+                B = FUNC2.ATN(T) - AK;
+                //ROOT = (B==0); // there was float finite issue
+                ROOT = compareWithEps(B, 0);
             }
 
-            S = S / 2;
-            // L - характерный размер
-            L = Math.sqrt(S / Math.PI);
-            //WRITE(*,'()');
-            //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
-            //WRITE(*,'()');
-            JC = .25 * JC / (Math.pow(L, 4));
-            ZC = MOM / S;
-            H = Math.PI / 6;
-            TK = 0;
-            AK = ALFA;
-
-            for (K = 0; K <= 3; K++) {
-                T = TK - H;
-                B=0;
-                A=1;
-                ROOT = false;
+            if (ROOT) {
+                TK = T;
+            } else {
+                T1 = T - H;
+                T2 = T;
                 while (true) {
-                    if ( (A * B < 0) || ROOT) break;
-                    A = B;
-                    T = T + H;
-                    B = Math.atan(T) - AK;  // TODO atan (-Pi/2,Pi/2) vs atan2(-Pi, Pi). Original: B=ATN(T)-AK;
-                    ROOT = (B==0);
+                    if ((Math.abs(T2 - T1) < .0001) || ROOT) break;
+                    T = .5 * (T1 + T2);
+                    B = FUNC2.ATN(T) - AK;
+                    //ROOT = (B==0); // there was float finite issue
+                    ROOT = compareWithEps(B, 0);
+                    if ((A * B) > 0){
+                        T1 = T;
+                    } else {
+                        T2 = T;
+                    }
                 }
-
                 if (ROOT) {
                     TK = T;
                 } else {
-                    T1 = T - H;
-                    T2 = T;
-                    while (true) {
-                        if ((Math.abs(T2 - T1) < .0001) || ROOT) break;
-                        T = .5 * (T1 + T2);
-                        B = Math.atan(T) - AK; // TODO atan (-Pi/2,Pi/2) vs atan2(-Pi, Pi). Original: B=ATN(T)-AK;
-                        ROOT = (B==0);
-                        if ((A * B) > 0){
-                            T1 = T;
-                        } else {
-                            T2 = T;
-                        }
-                    }
-                    if (ROOT) {
-                        TK = T;
-                    } else {
-                        TK = .5 * (T1 + T2);
-                    }
+                    TK = .5 * (T1 + T2);
                 }
-
-                AK = AK + Math.PI / 2;
-                if (K == 0) TET0 = TK;
-                else if (K == 1) TET1 = TK;
-                else if (K == 2) TET2 = TK;
-                else if (K == 3) TET3 = TK;
             }
 
-            if (TET0 >= (2*Math.PI)) TET0 = TET0 - 2 * Math.PI;
-            L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / L;
-            // TODO DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
-            // from upper exapmple, ALIM = Math.exp(IM * ALFA); ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
-            //ZC = ZC / L * Math.exp(-IM*ALFA);
-            ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
-            // TODO JC initialized as float, why there is
-            // SOLVED coz it is real value
-            JC = JC - Math.PI * ((ZC.multiply(ZC.conjugate())).re); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
-            RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
+            AK = AK + Math.PI / 2;
+            if (K == 0) TET0 = TK;
+            else if (K == 1) TET1 = TK;
+            else if (K == 2) TET2 = TK;
+            else if (K == 3) TET3 = TK;
+        }
 
-            fs.close(fd, function(){
-                // done;
-                console.log(CavformPath, "file written");
-            });
-        });
+        if (TET0 >= (2*Math.PI)) TET0 = TET0 - 2 * Math.PI;
+        L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / L;
+        // SOLVED, DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
+        // from upper exapmple, ALIM = Math.exp(IM * ALFA); ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
+        //ZC = ZC / L * Math.exp(-IM*ALFA);
+        ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
+        // SOLVED, JC initialized as float, why there is
+        // because it is real value
+        JC = JC - Math.PI * ((ZC.multiply(ZC.conjugate())).re); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
+        RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
+
+        // fs.close
+        fs.closeSync(fd);
+        console.log(CavformPath, "file written");
+        console.log("GEOMPROC has end work");
     }
 
     function STEPFI(){
@@ -346,7 +360,7 @@
         var RO,ROM,TET,LL,TETA; // real
         var ADF, ATAR; // of real
         NI = Math.round(2*Math.PI/H)+10;
-        ADF = new Array(NI + 1); // TODO, original ALLOCATE(ADF(0:NI),ATAR(0:NI)); , is it correct JS interpretation
+        ADF = new Array(NI + 1);
         ATAR = new Array(NI + 1);
         for (var i = 0; i <= NI; i++) {
             ADF[i] = 0;
@@ -355,7 +369,8 @@
         TET=180*TET0/Math.PI;
         for (J = 1; J <= NTP; J++) {
             if (TP[J] >= TET) {
-                if (TP[J] == TET) {
+                //if (TP[J] == TET) {
+                if ( compareWithEps(TP[J], TET) ) {
                     NTP = NTP - 1;
                 } else {
                     for (I = NTP; I >= J; I--){
@@ -367,9 +382,6 @@
                 for (I = 1; I <= J-1; I++){
                     TP[I] = 360 + TP[I];
                 }
-                // TODO, originally there is EXIT, is it correct? So,
-                // it will breaks for loop and count only for J == 1
-                // SOLVED, just put the break here as in main part
                 break;
             }
         }
@@ -392,14 +404,15 @@
             K = Math.round(Math.min(L/ROM, DFI/H));
             K1 = K0 + K - 1;
             NFI = NFI + K;
-            // TODO what is it?
+            // SOLVED, what is it?
             // ADF(K0:K1)=MAX(DFI/K,H);
-            // SOLVED
+            // small boost, we shouldn't count MAX for every element, should we? =)
+            var recVar = Math.max(DFI / K, H);
             for (var adfi = K0; adfi <= K1; adfi++) {
-                ADF[adfi] = Math.max(DFI / K, H);
+                ADF[adfi] = recVar;
             }
             for (I = K0; I <= K1; I++) {
-                ATAR[I] = ATAR[I-1] + 0.5*(ADF[I-1] +  ADF[i]);
+                ATAR[I] = ATAR[I-1] + 0.5*(ADF[I-1] +  ADF[I]);
             }
         }
         DF = new Array(NFI+1 +1);
@@ -411,8 +424,8 @@
             DF[I] = ADF[I];
             TETA = ATAR[I];
             TAR[I] = TETA;
-            RCURB(TETA, COURB[I], LONG[I]);
-            FAR[I] = ATN(TETA) - ALFA;
+            FUNC2.RCURB(TETA, COURB[I], LONG[I]);
+            FAR[I] = FUNC2.ATN(TETA) - ALFA;
         }
         I = 0;
         J = JTP;
@@ -423,7 +436,7 @@
             }
             TET = Math.PI * TP[J]/180;
             for (M = I; M <= NFI + 1; M++){
-                if (TET <+ TAR[M]){
+                if (TET <= TAR[M]){
                     I = M + 1;
                     ITP[J] = M;
                     break;
@@ -454,20 +467,28 @@
         // T, H real
         // N, M integer
 
-        function F(T) {
+        //function F(T) {
             // TODO interfface F(T), how it works?
             // may be it is for changing value by special rule (function)
-            return T;
-        }
+            // probably SOLVED, but not sure, so TO DO is still here. F is one parametrs, so function is parametr
+        //}
 
         function FS(value) {
             // FS=(F(T)**N)*EXP(IM*M*T);
-            // TODO probably F could return complex value so... there is huge bug place probably
+            // probably SOLVED, probably F could return complex value so... there is huge bug place probably
             return (new Complex(Math.pow(F(value), N), 0)).multiply(new Complex(Math.cos(M * T), Math.sin(M * T)));
         }
 
-        // TODO returned value isn't complex, but it should be.
-        return H/6 * (FS(T) + 4*FS(T+H/2) + FS(T+H));
+        // SOLVED, returned value isn't complex, but it should be. Now it is.
+        var p1 = new Complex(H/6, 0);
+        var p2 = FS(T);
+        var p3 = (new Complex(4,0)).multiply( FS(T + H/2) );
+        var p4 = FS(T + H);
+        var p5 = p2.add(p3).add(p4);
+        var p6 = p1.multiply(p5);
+        return p6;
+
+        //return ( (new Complex(H/6, 0)).multiply( FS(T).add( (new Complex(4, 0)).multiply(FS(T + H/2))).add( FS(T + H) )  ) );
     }
 
 })(typeof exports === 'undefined'? this['BBstart']={} : exports);

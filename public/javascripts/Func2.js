@@ -13,7 +13,7 @@
         // SOLVED, VORTEX could be changed, MANUALLY
         EPS1 = B * Math.cos(T0) / C;
         // SOLVED, если окружность, то return, иначе комментируем эту строчку
-        RTET = 2.2; return; // TODO return ?!?!?!??!?! Looks like in FORTRAN return doesn't breaks function with return.
+        RTET = 2.2; return RTET;
 
         T = TT;
         if (T > 2 * Math.PI) T = T - 2 * Math.PI;
@@ -35,6 +35,7 @@
     }
     exports.RTET = RTET;
 
+    // values A, B would be changed
     function RCURB(T, A, B) {
         var R, DR1, DR2, R0, R1, DT = 0.001;
         R = RTET(T);
