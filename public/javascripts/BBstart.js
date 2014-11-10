@@ -195,8 +195,8 @@
             DX = parseFloat(data.substr( pos.DX, 10 ));
             pos.NTP = data.indexOf('=',pos.DX)+1;
             NTP = parseInt(data.substr( pos.NTP, 10 ));
-            TP = new Array(NTP+1);
-            ITP = new Array(NTP+1);
+            TP = new Array(NTP+2);
+            ITP = new Array(NTP+2);
             //READ(2,*)	(TP(I), I=1,NTP);
             // ТОЧКИ ДЛЯ ПЕЧАТИ ПО УГЛУ(ГРАД)=	 0,15,30,45,60,75,90
             // SOLVED what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
@@ -368,6 +368,7 @@
         var RO,ROM,TET,LL,TETA; // real
         var ADF, ATAR; // of real
         NI = Math.round(2 * Math.PI/H) + 10;
+        // TODO is it really needed [0, NI+1) array size?
         ADF = new Array(NI + 1);
         ATAR = new Array(NI + 1);
         for (var i = 0; i <= NI; i++) {
@@ -465,6 +466,9 @@
         var LBD; // [2,5] of float
         var CG, SG;
 
+        F = MatMult.createArray(5, 5);
+        MatMult.fillArray(F, 0);
+
         SG = Math.sqrt(B);
         CG = 1 - 2*B;
         // It may be changed to matrix.zeros(5,5) (from numbers.js)
@@ -476,23 +480,23 @@
         MatMult.fillArray(LAY, 0);
         M = MatMult.createArray(5, 5);
         MatMult.fillArray(M, 0);
-        M[1][1] = 1;
-        M[2][2] = SG;
-        M[4][4] = -1;
-        M[5][5] = -SG;
+        M[0][0] = 1;
+        M[1][1] = SG;
+        M[3][3] = -1;
+        M[4][4] = -SG;
         // TODO array numerates from 1, but not from 0 !!!!!!!!!!!!!!!!!!!!!!!
         //M[5][5] = -SG;
-        LAX[1][1] = 1;  LAX[2][5] = 1;  LAX[4][1] = 1;  LAX[4][3] = 1;  LAX[5][5] = 1;
-        LAX[1][3] = -1; LAX[3][4] = -1;
-        LAX[5][2] = SG;
-        LAX[2][2] = -SG;
-        LAX[3][3] = CG;
-        LAY[2][5] = -1; LAY[1][4] = -1; LAY[3][3] = -1;
-        LAY[1][2] = 1;  LAY[4][2] = 1;  LAY[4][4] = 1;  LAY[5][5] = 1;
-        LAY[2][1] = SG; LAY[5][1] = SG;
-        LAY[3][4] = CG;
-        Q[1][3] = -1;   Q[4][1] = -1;
-        Q[3][1] = -CG;  Q[2][5] = -2;   Q[5][2] = B;    Q[1][4] = 1;
+        LAX[0][0] = 1;  LAX[1][4] = 1;  LAX[3][0] = 1;  LAX[3][2] = 1;  LAX[4][4] = 1;
+        LAX[0][2] = -1; LAX[2][3] = -1;
+        LAX[4][1] = SG;
+        LAX[1][1] = -SG;
+        LAX[2][2] = CG;
+        LAY[1][4] = -1; LAY[0][3] = -1; LAY[2][2] = -1;
+        LAY[0][1] = 1;  LAY[3][1] = 1;  LAY[3][3] = 1;  LAY[4][4] = 1;
+        LAY[1][0] = SG; LAY[4][0] = SG;
+        LAY[2][3] = CG;
+        Q[0][2] = -1;   Q[3][0] = -1;
+        Q[2][0] = -CG;  Q[1][4] = -2;   Q[4][1] = B;    Q[0][3] = 1;
 
         //FIXP = .5 * (Math.abs(M)+M);
         // TODO ABS(M), it is just ABS for every value in matrix, isn't it?
@@ -524,42 +528,38 @@
         MatMult.fillArray(E, 0);
 
         if (INDEX == 0) {
-            LBD[1][3] = 1;
-            LBD[2][5] = 1;
+            LBD[0][2] = 1;
+            LBD[1][4] = 1;
         } else if (INDEX == 1 || INDEX == 4) {
+            LBD[0][0] = 1;
             LBD[1][1] = 1;
-            LBD[2][2] = 1;
         } else if (INDEX == 2 || INDEX == 3 || INDEX == 5) {
-            LBD[1][1] = 1;
-            LBD[2][3] = -FRIC;
-            LBD[2][5] = 1;
+            LBD[0][0] = 1;
+            LBD[1][2] = -FRIC;
+            LBD[1][4] = 1;
         } else {
             console.log("Unknown INDEX value:", INDEX);
         }
 
-        E[1][3] = 1; E[2][4] = 1; E[3][5] = 1;
+        E[0][2] = 1; E[1][3] = 1; E[2][4] = 1;
         LAX = matrix.inverse(LAX);
         E = matrix.multiply(E, LAX);
 
 
-        // TODO is it correct?
-        //DO J=1,2
-        //M(J,:)=-LBD(J,:);
-        //END DO
-        for (J = 1; J <= 2; J++){
-            for (var k1 = 0; k1 < M[J].length; k1++){
+        for (J = 1 -1; J <= 2 -1; J++){
+            for (var k1 = 0; k1 < LBD[J].length; k1++){
                 M[J][k1] = -LBD[J][k1];
             }
         }
 
-        for (J = 1; J <= 5; J++){
-            // TODO same correctness?
-            // F(J,:)=LBD(J,:)
-            for (var k2 = 0; k2 < F[J].length; k2++) {
-                if (J < 3){
+        for (J = 1 -1; J <= 5 -1; J++){
+            if (J < 2){
+                for (var k2 = 0; k2 < LBD[J].length; k2++) {
                     F[J][k2] = LBD[J][k2];
-                } else {
-                    F[J][k2] = E[J-2][k2];
+                }
+            } else {
+                for (var k3 = 0; k3 < E[J-2].length; k3++) {
+                    F[J][k3] = E[J-2][k3];
                 }
             }
         }
@@ -568,9 +568,9 @@
         FU = matrix.multiply(F, M);
         MatMult.fillArray(M, 0);
 
-        for (J = 3; J <= 5; J++){
-            for (var k3 = 0; k3 < M[J].length; k3++) {
-                M[J][k3] = E[J-2][k3];
+        for (J = 3 -1; J <= 5 -1; J++){
+            for (var k4 = 0; k4 < E[J-2].length; k4++) {
+                M[J][k4] = E[J-2][k4];
             }
         }
 
