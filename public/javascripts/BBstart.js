@@ -577,14 +577,6 @@
         FG = matrix.multiply(F, M);
     }
 
-    function STARTOUT(){
-        console.error('STARTOUT DO NOTHING!!!');
-    }
-
-    function WAVEEPURE(){
-        console.error('WAVEEPURE DO NOTHING!!!');
-    }
-
     // Complex
     function SIMPS(F, N, M, T, H){
         // T, H real
@@ -613,5 +605,150 @@
 
         //return ( (new Complex(H/6, 0)).multiply( FS(T).add( (new Complex(4, 0)).multiply(FS(T + H/2))).add( FS(T + H) )  ) );
     }
+
+    function FF(T){
+        if (EPUR == 0) {
+            if (T < 0) {
+                return 0;
+            } else {
+                return -S0;
+            }
+        } else if (EPUR == 1) {
+            if ((T < 0) || (T > TPLUS)){
+                return 0;
+            } else {
+                return -S0 * Math.exp(-ALEF * (T-TH)) * Math.sin(BETTA * T) / Math.sin(BETTA * TH);
+            }
+        } else if (EPUR == 2) {
+            if (T < 0) {
+                return 0;
+            } else {
+                // !FF=-S0*SIN(BETTA*T)*EXP(-A2*(A1*T-1)**2);
+                return -S0 * T * T * Math.sin(BETTA*T) * Math.exp(-A1 * T);
+            }
+        } else {
+            console.log("Unknown value of EPUR in FF", EPUR);
+            return 0;
+        }
+    }
+
+    function TENS(T){
+        var Q, S, TT; // float
+        if (SPLIT) {
+            S = 0; Q = 1; TT = T - T0;
+            while (true){
+                if (TT <= 0) break;
+                S = S + Q * FF(TT);
+                Q = Q * KAP1;
+                TT = TT - DTT;
+            }
+            return KAP * S;
+        } else {
+            return FF(T);
+        }
+    }
+
+    function WAVEEPURE(){
+        var TMAX = 50;
+        var T = 0;
+
+        var CavformPath = 'BBdat/_Epure.dat'; // looks like path depends on app.js for server side
+        var fd = fs.openSync(CavformPath, 'w');
+        var recBuffer = new Buffer('T, ' + 'F\n');
+        fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+
+        if (EPUR == 1) {
+            while (true){
+                if (T > TPLUS) break;
+                recBuffer = new Buffer(T.toString() + ' ' + (-C2*C2*RO2*TENS(T)*1E-06).toString() + '\n');
+                fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+                T = T + TPLUS/50;
+            }
+        } else if (EPUR == 2) {
+            while (true) {
+                if (T > TMAX) break;
+                recBuffer = new Buffer(T.toString() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toString() + '\n');
+                fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+                T = T + TMAX/1000;
+            }
+        } else {
+            console.log("Unknown value of EPUR:", EPUR);
+        }
+
+        fs.closeSync(fd);
+    }
+
+    function STARTOUT(){
+        var I, J, K, JNT; // integer
+        var X; // float
+        var ARS =   ['V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
+        var ARS1 =  ['V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
+        var STR = [];
+
+        var fds1 = [];
+        var fds2 = [];
+        var recBuffer, recStr;
+        var path;
+
+        for (I = 11; I <= 15; I++) {
+            path = 'BBdat/_' + ARS[I-11]; // looks like path depends on app.js for server side
+            fds1.push( fs.openSync(path, 'w') );
+
+            // TODO H. have clear file loop here, but I don't think it's necessary here.
+
+            X = 0;
+            for (K = 1; K <= NTP + 1; K++) {
+                STR.push(TP[K]);
+            }
+
+            // TODO STR(JTP)=STR(JTP)//'*';  what is this???
+
+            for (J=0; J <= NXDST; J++){
+                JNT = J * NTIME + 1;
+                // TODO moved coursor of file. But general idea is put current value of X and T values in the heads.
+
+                recBuffer = new Buffer('X= ' + X.toString() + '\n');
+                fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
+
+                recStr = '';
+                for (var c1 = 0, lenStr = STR.length; c1 < lenStr; c1++) recStr += STR[c1] + ' ';
+                recBuffer = new Buffer('T ' + recStr + '\n');
+                fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
+
+                X = X + STEPX;
+            }
+
+            fs.closeSync(fds1[I-11]);
+        }
+
+        STR = [];
+        for (I = 16; I <= 20; I++){
+            path = 'BBdat/_' + ARS1[I-16]; // looks like path depends on app.js for server side
+            fds2.push( fs.openSync(path, 'w') );
+
+            // TODO H. have clear file loop here, but I don't think it's necessary here.
+
+            for (K = 0; K <= NXDST; K++) {
+                STR.push(TP[K]);
+            }
+
+            for (J = 1; J <= NTP + 1; J++) {
+                // TODO moved coursor of file. But general idea is put current value of T and Thetta values in the heads.
+
+                JNT = (J-1) * NTIME + 1;
+
+                recBuffer = new Buffer('TETA= ' + TP[J].toString() + '\n');
+                fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
+
+                recStr = '';
+                for (var c2 = 0, lenStr2 = STR.length; c2 < lenStr2; c2++) recStr += STR[c2] + ' ';
+                recBuffer = new Buffer('T ' + recStr + '\n');
+                fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
+            }
+
+            fs.closeSync(fds2[I-16]);
+        }
+    }
+
 
 })(typeof exports === 'undefined'? this['BBstart']={} : exports);
