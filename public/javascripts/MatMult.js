@@ -122,7 +122,6 @@
         }
     }
 
-    /*
     // creates array with specific length createArray(2,3) -> [[,,],[,,]]
     function createArray(length){
         var arr = new Array(length || 0), i = length;
@@ -135,6 +134,51 @@
         return arr;
     }
     exports.createArray = createArray;
+
+    // getting array of dimension sizes from first elements
+    function getArraySize(arr, ans){
+        ans = ans || [];
+
+        var recToStr = Object.prototype.toString.call( arr );
+        if (recToStr === '[object Array]' ) {
+            ans.push(arr.length);
+
+            getArraySize(arr[0], ans);
+        }
+        return ans;
+    }
+    exports.getArraySize = getArraySize;
+
+    // fill array with specified value
+    function fillArray(arr, value){
+        var sizes = getArraySize(arr);
+        var sizesLen = sizes.length;
+
+        function recur(lvl, indexes){
+            indexes = indexes || [];
+
+            if (lvl != sizesLen) {
+                for (var i = 0; i < sizes[lvl]; i++){
+                    indexes.push(i);
+                    recur(lvl + 1, indexes);
+                    indexes.pop();
+                }
+            } else {
+                var indexesLength = indexes.length;
+                var pntr;
+                for (var j = 0; j < indexesLength; j++) {
+                    if (j == 0) pntr = arr[ indexes[j] ];
+                    else if (j+1 != indexesLength) pntr = pntr[ indexes[j] ];
+                    else pntr[ indexes[j] ] = value;
+                }
+            }
+        }
+
+        recur(0);
+    }
+    exports.fillArray = fillArray;
+
+    /*
 
     // creates array with specific length given from createArrayFromSizeArray([2,3]) -> [[,,],[,,]]
     function createArrayFromSizeArray(sizeArr){
@@ -153,20 +197,6 @@
         return arr;
     }
     exports.createArrayFromSizeArray = createArrayFromSizeArray;
-
-    // getting array of dimension sizes from first elements
-    function getArraySize(arr, ans){
-        ans = ans || [];
-
-        var recToStr = Object.prototype.toString.call( arr );
-        if (recToStr === '[object Array]' ) {
-            ans.push(arr.length);
-
-            getArraySize(arr[0], ans);
-        }
-        return ans;
-    }
-    exports.getArraySize = getArraySize;
 
     function TransMatrix(A)       //На входе двумерный массив
     {

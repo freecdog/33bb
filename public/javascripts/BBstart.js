@@ -8,10 +8,10 @@
     var MatMult = require('./MatMult.js');
 
     // JS dependencies
-
     var numbers = require('numbers');
     var Complex = numbers.complex;
     var calculus = numbers.calculus;
+    var matrix = numbers.matrix;
 
     var fs = require('fs');
 
@@ -24,6 +24,9 @@
         return (Math.abs(num1 - num2) < eps);
     }
 
+    Number.prototype.toFixedDef = function(){
+        return this.toFixed(3);
+    }
 
     var SPLIT = new Boolean();
     var FILL = "";
@@ -224,13 +227,12 @@
             NBX = NT + Math.round(XDESTR/DX) + 10;
             NTIME = Math.round((TM+T0)/STEP) + 3;
             STARTOUT();
-            if (EPUR>0) WAVEEPURE();
+            if (EPUR > 0) WAVEEPURE();
             MTRXPROC();
         });
 
         console.log("STARTPROC has end work");
     }
-
     exports.STARTPROC = STARTPROC;
 
     // TODO do it asynchronous
@@ -247,7 +249,7 @@
         var fd = fs.openSync(CavformPath, 'w');
         // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
         // write to file here
-        var recBuffer = new Buffer(' TETA ' + '   R   ' + 'COS(FI)' + 'SIN(FI) ' + 'COS(PSI) ' + 'SIN(PSI) \n');
+        var recBuffer = new Buffer('TETA, ' + 'R, ' + 'COS(FI), ' + 'SIN(FI), ' + 'COS(PSI), ' + 'SIN(PSI)\n');
         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
         S = 0;
         JC = 0;
@@ -273,8 +275,14 @@
             MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
             RT = RTET(TETA);
             //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
-            recBuffer = new Buffer( (TETA*180/Math.PI).toString() + (RT).toString() + (Math.cos(FUNC2.ATN(TETA))).toString() +
-                (Math.sin(FUNC2.ATN(TETA))).toString() + (Math.cos(FUNC2.ATN(TETA)-ALFA)).toString() + (Math.sin(FUNC2.ATN(TETA)-ALFA)).toString() );
+            recBuffer = new Buffer(
+                (TETA*180/Math.PI).toFixedDef().toString() + " " +
+                (RT).toFixedDef().toString() + " " +
+                (Math.cos(FUNC2.ATN(TETA))).toFixedDef().toString() + " " +
+                (Math.sin(FUNC2.ATN(TETA))).toFixedDef().toString() + " " +
+                (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef().toString() + " " +
+                (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef().toString() +
+                "\n" );
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             TETA = TETA + H;
         }
@@ -359,14 +367,14 @@
         var I,J,NI,K,K0,K1,M; // integer
         var RO,ROM,TET,LL,TETA; // real
         var ADF, ATAR; // of real
-        NI = Math.round(2*Math.PI/H)+10;
+        NI = Math.round(2 * Math.PI/H) + 10;
         ADF = new Array(NI + 1);
         ATAR = new Array(NI + 1);
         for (var i = 0; i <= NI; i++) {
             ADF[i] = 0;
             ATAR[i] = 0;
         }
-        TET=180*TET0/Math.PI;
+        TET = 180 * TET0 / Math.PI;
         for (J = 1; J <= NTP; J++) {
             if (TP[J] >= TET) {
                 //if (TP[J] == TET) {
@@ -450,16 +458,131 @@
         }
     }
 
+    function MTRXPROC(){
+        var J;
+        var M, F, LAY, LAX // [5,5] of float
+        var E; // [3,5] of float
+        var LBD; // [2,5] of float
+        var CG, SG;
+
+        SG = Math.sqrt(B);
+        CG = 1 - 2*B;
+        // It may be changed to matrix.zeros(5,5) (from numbers.js)
+        Q = MatMult.createArray(5, 5);
+        MatMult.fillArray(Q, 0);
+        LAX = MatMult.createArray(5, 5);
+        MatMult.fillArray(LAX, 0);
+        LAY = MatMult.createArray(5, 5);
+        MatMult.fillArray(LAY, 0);
+        M = MatMult.createArray(5, 5);
+        MatMult.fillArray(M, 0);
+        M[1][1] = 1;
+        M[2][2] = SG;
+        M[4][4] = -1;
+        M[5][5] = -SG;
+        // TODO array numerates from 1, but not from 0 !!!!!!!!!!!!!!!!!!!!!!!
+        //M[5][5] = -SG;
+        LAX[1][1] = 1;  LAX[2][5] = 1;  LAX[4][1] = 1;  LAX[4][3] = 1;  LAX[5][5] = 1;
+        LAX[1][3] = -1; LAX[3][4] = -1;
+        LAX[5][2] = SG;
+        LAX[2][2] = -SG;
+        LAX[3][3] = CG;
+        LAY[2][5] = -1; LAY[1][4] = -1; LAY[3][3] = -1;
+        LAY[1][2] = 1;  LAY[4][2] = 1;  LAY[4][4] = 1;  LAY[5][5] = 1;
+        LAY[2][1] = SG; LAY[5][1] = SG;
+        LAY[3][4] = CG;
+        Q[1][3] = -1;   Q[4][1] = -1;
+        Q[3][1] = -CG;  Q[2][5] = -2;   Q[5][2] = B;    Q[1][4] = 1;
+
+        //FIXP = .5 * (Math.abs(M)+M);
+        // TODO ABS(M), it is just ABS for every value in matrix, isn't it?
+        FIXP = matrix.scalarSafe(( matrix.addition(matrix.abs(M), M) ), 0.5);
+        //FIYP=FIXP;
+        // TODO Is it copy of values from FIXP to FIYP, but not links exchange?
+        FIYP = matrix.deepCopy(FIXP);
+        FIXM = matrix.scalarSafe(( matrix.addition( matrix.abs(M), matrix.negative(M) ) ), 0.5);
+        FIYM = matrix.deepCopy(FIXM);
+        FIXP = matrix.multiply(FIXP, LAX);
+        FIXM = matrix.multiply(FIXM, LAX);
+        FIYP = matrix.multiply(FIYP, LAY);
+        FIYM = matrix.multiply(FIYM, LAY);
+        // TODO Is it correct interpritation? Inverse matrix?
+        //LAX=.Inv.LAX;
+        LAX = matrix.inverse(LAX);
+        LAY = matrix.inverse(LAY);
+        FIXP = matrix.multiply(LAX, FIXP);
+        FIXM = matrix.multiply(LAX, FIXM);
+        FIYP = matrix.multiply(LAY, FIYP);
+        FIYM = matrix.multiply(LAY, FIYM);
+        FIX = matrix.addition(FIXP, FIXM);
+        FIY = matrix.addition(FIYP, FIYM);
+
+        LBD = MatMult.createArray(2, 5);
+        MatMult.fillArray(LBD, 0);
+        MatMult.fillArray(M, 0);
+        E = MatMult.createArray(3, 5);
+        MatMult.fillArray(E, 0);
+
+        if (INDEX == 0) {
+            LBD[1][3] = 1;
+            LBD[2][5] = 1;
+        } else if (INDEX == 1 || INDEX == 4) {
+            LBD[1][1] = 1;
+            LBD[2][2] = 1;
+        } else if (INDEX == 2 || INDEX == 3 || INDEX == 5) {
+            LBD[1][1] = 1;
+            LBD[2][3] = -FRIC;
+            LBD[2][5] = 1;
+        } else {
+            console.log("Unknown INDEX value:", INDEX);
+        }
+
+        E[1][3] = 1; E[2][4] = 1; E[3][5] = 1;
+        LAX = matrix.inverse(LAX);
+        E = matrix.multiply(E, LAX);
+
+
+        // TODO is it correct?
+        //DO J=1,2
+        //M(J,:)=-LBD(J,:);
+        //END DO
+        for (J = 1; J <= 2; J++){
+            for (var k1 = 0; k1 < M[J].length; k1++){
+                M[J][k1] = -LBD[J][k1];
+            }
+        }
+
+        for (J = 1; J <= 5; J++){
+            // TODO same correctness?
+            // F(J,:)=LBD(J,:)
+            for (var k2 = 0; k2 < F[J].length; k2++) {
+                if (J < 3){
+                    F[J][k2] = LBD[J][k2];
+                } else {
+                    F[J][k2] = E[J-2][k2];
+                }
+            }
+        }
+
+        F = matrix.inverse(F);
+        FU = matrix.multiply(F, M);
+        MatMult.fillArray(M, 0);
+
+        for (J = 3; J <= 5; J++){
+            for (var k3 = 0; k3 < M[J].length; k3++) {
+                M[J][k3] = E[J-2][k3];
+            }
+        }
+
+        FG = matrix.multiply(F, M);
+    }
+
     function STARTOUT(){
         console.error('STARTOUT DO NOTHING!!!');
     }
 
     function WAVEEPURE(){
         console.error('WAVEEPURE DO NOTHING!!!');
-    }
-
-    function MTRXPROC(){
-        console.error('MTRXPROC DO NOTHING!!!');
     }
 
     // Complex
