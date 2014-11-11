@@ -34,8 +34,8 @@ console.log(numbers.matrix.multiply([[2],[3]], [[4,5]]));
 var Complex = numbers.complex;
 console.log(new Complex(-5, -6));
 
-var BBstart = require(path.join(__dirname, 'public', 'javascripts', 'BBstart.js'));
-BBstart.STARTPROC();
+var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
+BBup.run();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

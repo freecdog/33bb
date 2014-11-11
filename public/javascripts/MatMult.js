@@ -178,6 +178,35 @@
     }
     exports.fillArray = fillArray;
 
+    // created for arrays that was spliced, or that which numeration starts from [1], but not from [0]. Sad :/
+    function fillArraySafe(arr, value){
+        var sizes = getArraySize(arr);
+        var sizesLen = sizes.length;
+
+        function recur(lvl, indexes){
+            indexes = indexes || [];
+
+            if (lvl != sizesLen) {
+                for (var i = 0; i < sizes[lvl]; i++){
+                    indexes.push(i);
+                    recur(lvl + 1, indexes);
+                    indexes.pop();
+                }
+            } else {
+                var indexesLength = indexes.length;
+                var pntr;
+                for (var j = 0; j < indexesLength; j++) {
+                    if (j == 0) pntr = arr[ indexes[j] ];
+                    else if (j+1 != indexesLength) pntr = pntr[ indexes[j] ];
+                    else pntr[ indexes[j] ] = value;
+                }
+            }
+        }
+
+        recur(0);
+    }
+    exports.fillArraySafe = fillArraySafe;
+
     /*
 
     // creates array with specific length given from createArrayFromSizeArray([2,3]) -> [[,,],[,,]]

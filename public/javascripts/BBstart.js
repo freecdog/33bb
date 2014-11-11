@@ -10,8 +10,8 @@
     // JS dependencies
     var numbers = require('numbers');
     var Complex = numbers.complex;
-    var calculus = numbers.calculus;
     var matrix = numbers.matrix;
+    // var calculus = numbers.calculus;    // calculus contains adaptiveSimpson, but doesn't need now
 
     var fs = require('fs');
 
@@ -26,10 +26,10 @@
 
     Number.prototype.toFixedDef = function(){
         return this.toFixed(3);
-    }
+    };
 
-    var SPLIT = new Boolean();
-    var FILL = "";
+    var SPLIT; // boolean
+    var FILL = "";  // string
     var ALFA,B,FRIC,RO2,C2,S0,A1,A2,TH,
         T0,TPLUS,STEP,STEPX,
         KAP,KAP1,DTT,ALEF,BETTA,
@@ -40,7 +40,7 @@
     var ITP = []; // of integer
     var Q,FIX,FIXP,FIXM,
         FIY,FIYM,FIYP,
-        FU,FG,FR,FL; // (5,5) of float [ [[],[],[],[],[]],[[],[],[],[],[]],[[],[],[],[],[]],[[],[],[],[],[]],[[],[],[],[],[]] ]
+        FU,FG,FR,FL; // [5, 5] of float
     var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
     var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
@@ -56,180 +56,179 @@
         console.log("STARTPROC has start work");
 
         var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
-        fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, data){
-            console.log("STARTPROC has sdfgsdfgsdfgsdfg", err);
-            if (err) throw err;
-            console.log(data);
-            console.log("=============================");
-            // pos is list of used positions
-            var pos = {};
-            pos.ALFA = data.indexOf('=',0)+1;
-            ALFA = parseInt( data.substr( pos.ALFA, 10 ) );
-            ALFA = ALFA * Math.PI / 180;
-            // SOVLED DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
-            //ALIM = Math.exp(IM * ALFA);
-            ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
-            pos.SPLIT = data.indexOf('=',pos.ALFA)+4;
-            SPLIT = charToBoolean(data.substr( pos.SPLIT, 1)); //Boolean(data.substr( pos.SPLIT, 1 ));
-            pos.RZ = data.indexOf('=',pos.SPLIT)+1;
-            RZ = parseFloat(data.substr( pos.RZ, 10 ));
-            pos.X = data.indexOf('=',pos.RZ)+1;
-            X = parseFloat(data.substr( pos.X, 10 ));
-            pos.RO2 = data.indexOf('=',pos.X)+1;
-            RO2 = parseFloat(data.substr( pos.RO2, 10 ));
-            pos.C2 = data.indexOf('=',pos.RO2)+1;
-            C2 = parseFloat(data.substr( pos.C2, 10 ));
-            pos.GAPOIS = data.indexOf('=',pos.C2)+3;
-            GAPOIS = charToBoolean(data.substr( pos.GAPOIS, 1));
-            pos.POIS = data.indexOf('=',pos.GAPOIS)+1;
-            POIS = parseFloat(data.substr( pos.POIS, 10 ));
-            pos.GAMMA = data.indexOf('=',pos.POIS)+1;
-            GAMMA = parseFloat(data.substr( pos.GAMMA, 10 ));
-            pos.XDESTR = data.indexOf('=',pos.GAMMA)+1;
-            XDESTR = parseFloat(data.substr( pos.XDESTR, 10 ));
+        var data = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
+        //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, data){
+        //if (err) throw err;
+        console.log(data);
+        console.log("=============================");
+        // pos is list of used positions
+        var pos = {};
+        pos.ALFA = data.indexOf('=',0)+1;
+        ALFA = parseInt( data.substr( pos.ALFA, 10 ) );
+        ALFA = ALFA * Math.PI / 180;
+        // SOVLED DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
+        //ALIM = Math.exp(IM * ALFA);
+        ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
+        pos.SPLIT = data.indexOf('=',pos.ALFA)+4;
+        SPLIT = charToBoolean(data.substr( pos.SPLIT, 1)); //Boolean(data.substr( pos.SPLIT, 1 ));
+        pos.RZ = data.indexOf('=',pos.SPLIT)+1;
+        RZ = parseFloat(data.substr( pos.RZ, 10 ));
+        pos.X = data.indexOf('=',pos.RZ)+1;
+        X = parseFloat(data.substr( pos.X, 10 ));
+        pos.RO2 = data.indexOf('=',pos.X)+1;
+        RO2 = parseFloat(data.substr( pos.RO2, 10 ));
+        pos.C2 = data.indexOf('=',pos.RO2)+1;
+        C2 = parseFloat(data.substr( pos.C2, 10 ));
+        pos.GAPOIS = data.indexOf('=',pos.C2)+3;
+        GAPOIS = charToBoolean(data.substr( pos.GAPOIS, 1));
+        pos.POIS = data.indexOf('=',pos.GAPOIS)+1;
+        POIS = parseFloat(data.substr( pos.POIS, 10 ));
+        pos.GAMMA = data.indexOf('=',pos.POIS)+1;
+        GAMMA = parseFloat(data.substr( pos.GAMMA, 10 ));
+        pos.XDESTR = data.indexOf('=',pos.GAMMA)+1;
+        XDESTR = parseFloat(data.substr( pos.XDESTR, 10 ));
 
-            pos.EPUR = data.indexOf('=',pos.XDESTR)+1;
-            EPUR = parseInt( data.substr( pos.EPUR, 10 ) );
+        pos.EPUR = data.indexOf('=',pos.XDESTR)+1;
+        EPUR = parseInt( data.substr( pos.EPUR, 10 ) );
 
-            pos.checkpoint1 = data.indexOf('*',pos.EPUR)+1;
+        pos.checkpoint1 = data.indexOf('*',pos.EPUR)+1;
 
-            console.log("STARTPROC has read half of values");
+        console.log("STARTPROC has read half of values");
 
-            if (GAPOIS) {
-                B = GAMMA * GAMMA;
-                POIS = 0.5 * (1 - 2*B) / (1 - B);
-            } else {
-                B = 0.5 * (1 - 2*POIS) / (1 - POIS);
-                GAMMA = Math.sqrt(B);
+        if (GAPOIS) {
+            B = GAMMA * GAMMA;
+            POIS = 0.5 * (1 - 2*B) / (1 - B);
+        } else {
+            B = 0.5 * (1 - 2*POIS) / (1 - POIS);
+            GAMMA = Math.sqrt(B);
+        }
+
+        RC2 = C2 * RO2;
+
+        if (EPUR == 0) {
+            S0 = 1;
+        } else if (EPUR == 1) {
+            X = X / RZ;
+            S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
+            A1 = (0.325 + 0.16E-06 * RC2) * 1E-03;
+            A2 = (0.47 - 0.113E-07 * RC2) * 1E-04;
+            B1 = 178 + 3.49E-06 * RC2;
+            B2 = -0.125 - 0.218E-07 * RC2;
+            TH = RZ * (A1 + A2 * X);
+            BETTA = (B1 + B2*X) / RZ;
+            ALEF = BETTA / Math.tan(BETTA * TH);
+            TPLUS = Math.PI / BETTA;
+        } else if (EPUR == 2) {
+            // S0=9.6*1E06/(C2*RC2);
+            // BETTA=900;
+            // A1=7.917;
+            // A2=48.611;
+            // A2=A1*A1/A2;
+            // A1=1E03/A1;
+            S0 = 0.19836 * 1E12 / (C2 * RC2);
+            BETTA = 875;
+            A1 = 325;
+        } else {
+            console.error('unknown EPUR value');
+        }
+
+        // write to console? There wasn't opened any file for writing, was it?
+        // It's just writing to console
+        console.log('\n');
+        console.log('S0 =', S0);
+        if (SPLIT) {
+            pos.LS = data.indexOf('=',pos.checkpoint1)+1;
+            LS = parseFloat(data.substr( pos.LS, 10 ));
+            pos.RC1 = data.indexOf('=',pos.LS)+1;
+            RC1 = parseFloat(data.substr( pos.RC1, 10 ));
+            pos.C1 = data.indexOf('=',pos.RC1)+1;
+            C1 = parseFloat(data.substr( pos.C1, 10 ));
+            pos.C0 = data.indexOf('=',pos.C1)+1;
+            C0 = parseFloat(data.substr( pos.C0, 10 ));
+            pos.RO0 = data.indexOf('=',pos.C0)+1;
+            RO0 = parseFloat(data.substr( pos.RO0, 10 ));
+            pos.FILL = data.indexOf('=',pos.RO0)+2;
+            FILL = data.substr( pos.FILL, 5 );
+            // TODO use json configs
+
+            RC0 = RO0 * C0;
+            KAP1 = (RC1 - RC0) / (RC1 + RC0);
+            KAP1 = KAP1 * KAP1;
+            KAP = 1 - KAP1;
+            T0 = RZ * (LS/C1 + (X-LS)/C2);
+            DTT = 2 * LS * RZ / C1;
+        }
+
+        pos.checkpoint2 = data.indexOf('*',pos.checkpoint1)+1;
+        pos.INDEX = data.indexOf('=',pos.checkpoint2)+1;
+        INDEX = parseInt( data.substr( pos.INDEX, 10 ) );
+        pos.FRIC = data.indexOf('=',pos.INDEX)+1;
+        FRIC = parseFloat(data.substr( pos.FRIC, 10 ));
+        pos.M0 = data.indexOf('=',pos.FRIC)+1;
+        M0 = parseFloat(data.substr( pos.M0, 10 ));
+
+        pos.checkpoint3 = data.indexOf('*',pos.M0);
+
+        M0 = 1 / M0;
+
+        GEOMPROC();
+
+        LC = L / C2;
+        if (INDEX > 0) {
+            KPFI = 1 / Math.PI;
+            KPA = 1 / Math.PI;
+            if (INDEX > 3) {
+                KP = M0 / JC;
+                KPA = M0 * KPA;
+                KPFI = M0 / JC;
             }
+        }
 
-            RC2 = C2 * RO2;
+        pos.TM = data.indexOf('=', pos.checkpoint3) + 1;
+        TM = parseFloat(data.substr(pos.TM, 10));
+        pos.DT = data.indexOf('=', pos.TM) + 1;
+        DT = parseFloat(data.substr(pos.DT, 10));
+        pos.DFI = data.indexOf('=', pos.DT) + 1;
+        DFI = parseFloat(data.substr(pos.DFI, 10));
+        DFI = DFI * Math.PI / 180;
+        pos.DX = data.indexOf('=', pos.DFI) + 1;
+        DX = parseFloat(data.substr(pos.DX, 10));
+        pos.NTP = data.indexOf('=', pos.DX) + 1;
+        NTP = parseInt(data.substr(pos.NTP, 10));
+        TP = new Array(NTP+2);
+        ITP = new Array(NTP+2);
+        // READ(2,*) (TP(I), I=1,NTP);
+        // SOLVED what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
+        // I probably understand arrays correctly, so it is as it is.
+        pos.TP = data.indexOf('=', pos.NTP) + 1;
+        pos.lastTPcomma = pos.TP;
+        for (var itTP = 0; itTP < NTP; itTP++) {
+            if (itTP != 0) pos.lastTPcomma = data.indexOf(',', pos.lastTPcomma) + 1;
+            TP[itTP+1] = parseFloat(data.substr(pos.lastTPcomma, 10));
+        }
+        pos.OMG = data.indexOf('=', pos.TP) + 1;
+        OMG = parseFloat(data.substr(pos.OMG, 10));
+        pos.BET = data.indexOf('=', pos.OMG) + 1;
+        BET = parseFloat(data.substr(pos.BET, 10));
+        pos.STEP = data.indexOf('=', pos.BET) + 1;
+        STEP = parseFloat(data.substr(pos.STEP, 10));
+        pos.STEPX = data.indexOf('=', pos.STEP) + 1;
+        STEPX = parseFloat(data.substr(pos.STEPX, 10));
+        pos.DELTA = data.indexOf('=', pos.STEP) + 1;
+        DELTA = parseInt(data.substr(pos.DELTA, 10));
 
-            if (EPUR == 0) {
-                S0 = 1;
-            } else if (EPUR == 1) {
-                X = X / RZ;
-                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
-                A1 = (0.325 + 0.16E-06 * RC2) * 1E-03;
-                A2 = (0.47 - 0.113E-07 * RC2) * 1E-04;
-                B1 = 178 + 3.49E-06 * RC2;
-                B2 = -0.125 - 0.218E-07 * RC2;
-                TH = RZ * (A1 + A2 * X);
-                BETTA = (B1 + B2*X) / RZ;
-                ALEF = BETTA / Math.tan(BETTA * TH);
-                TPLUS = Math.PI / BETTA;
-            } else if (EPUR == 2) {
-                // S0=9.6*1E06/(C2*RC2);
-                // BETTA=900;
-                // A1=7.917;
-                // A2=48.611;
-                // A2=A1*A1/A2;
-                // A1=1E03/A1;
-                S0 = 0.19836 * 1E12 / (C2 * RC2);
-                BETTA = 875;
-                A1 = 325;
-            } else {
-                console.error('unknown EPUR value');
-            }
+        STEPFI();
 
-            // write to console? There wasn't opened any file for writing, was it?
-            // It's just writing to console
-            console.log('\n');
-            console.log('S0 =', S0);
-            if (SPLIT) {
-                pos.LS = data.indexOf('=',pos.checkpoint1)+1;
-                LS = parseFloat(data.substr( pos.LS, 10 ));
-                pos.RC1 = data.indexOf('=',pos.LS)+1;
-                RC1 = parseFloat(data.substr( pos.RC1, 10 ));
-                pos.C1 = data.indexOf('=',pos.RC1)+1;
-                C1 = parseFloat(data.substr( pos.C1, 10 ));
-                pos.C0 = data.indexOf('=',pos.C1)+1;
-                C0 = parseFloat(data.substr( pos.C0, 10 ));
-                pos.RO0 = data.indexOf('=',pos.C0)+1;
-                RO0 = parseFloat(data.substr( pos.RO0, 10 ));
-                pos.FILL = data.indexOf('=',pos.RO0)+2;
-                FILL = data.substr( pos.FILL, 5 );
-                // TODO use json configs
-
-                RC0 = RO0 * C0;
-                KAP1 = (RC1 - RC0) / (RC1 + RC0);
-                KAP1 = KAP1 * KAP1;
-                KAP = 1 - KAP1;
-                T0 = RZ * (LS/C1 + (X-LS)/C2);
-                DTT = 2 * LS * RZ / C1;
-            }
-
-            pos.checkpoint2 = data.indexOf('*',pos.checkpoint1)+1;
-            pos.INDEX = data.indexOf('=',pos.checkpoint2)+1;
-            INDEX = parseInt( data.substr( pos.INDEX, 10 ) );
-            pos.FRIC = data.indexOf('=',pos.INDEX)+1;
-            FRIC = parseFloat(data.substr( pos.FRIC, 10 ));
-            pos.M0 = data.indexOf('=',pos.FRIC)+1;
-            M0 = parseFloat(data.substr( pos.M0, 10 ));
-
-            pos.checkpoint3 = data.indexOf('*',pos.M0);
-
-            M0 = 1 / M0;
-
-            GEOMPROC();
-
-            LC = L / C2;
-            if (INDEX > 0) {
-                KPFI = 1 / Math.PI;
-                KPA = 1 / Math.PI;
-                if (INDEX > 3) {
-                    KP = M0 / JC;
-                    KPA = M0 * KPA;
-                    KPFI = M0 / JC;
-                }
-            }
-
-            pos.TM = data.indexOf('=',pos.checkpoint3)+1;
-            TM = parseFloat(data.substr( pos.TM, 10 ));
-            pos.DT = data.indexOf('=',pos.TM)+1;
-            DT = parseFloat(data.substr( pos.DT, 10 ));
-            pos.DFI = data.indexOf('=',pos.DT)+1;
-            DFI = parseFloat(data.substr( pos.DFI, 10 ));
-            DFI = DFI * Math.PI / 180;
-            pos.DX = data.indexOf('=',pos.DFI)+1;
-            DX = parseFloat(data.substr( pos.DX, 10 ));
-            pos.NTP = data.indexOf('=',pos.DX)+1;
-            NTP = parseInt(data.substr( pos.NTP, 10 ));
-            TP = new Array(NTP+2);
-            ITP = new Array(NTP+2);
-            //READ(2,*)	(TP(I), I=1,NTP);
-            // ТОЧКИ ДЛЯ ПЕЧАТИ ПО УГЛУ(ГРАД)=	 0,15,30,45,60,75,90
-            // SOLVED what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
-            // I probably understand arrays correctly, so it is as it is.
-            pos.TP = data.indexOf('=',pos.NTP)+1;
-            pos.lastTPcomma = pos.TP;
-            for (var itTP = 0; itTP < NTP; itTP++) {
-                if (itTP != 0) pos.lastTPcomma = data.indexOf(',', pos.lastTPcomma)+1;
-                TP[itTP+1] = parseFloat(data.substr( pos.lastTPcomma, 10 ));
-            }
-            pos.OMG = data.indexOf('=',pos.TP)+1;
-            OMG = parseFloat(data.substr( pos.OMG, 10 ));
-            pos.BET = data.indexOf('=',pos.OMG)+1;
-            BET = parseFloat(data.substr( pos.BET, 10 ));
-            pos.STEP = data.indexOf('=',pos.BET)+1;
-            STEP = parseFloat(data.substr( pos.STEP, 10 ));
-            pos.STEPX = data.indexOf('=',pos.STEP)+1;
-            STEPX = parseFloat(data.substr( pos.STEPX, 10 ));
-            pos.DELTA = data.indexOf('=',pos.STEP)+1;
-            DELTA = parseInt(data.substr( pos.DELTA, 10 ));
-
-            STEPFI();
-
-            T0 = 1.1 * XDESTR;
-            // SOLVED, Harry said that NINT == Round, also MIFI book tells the same.
-            NT = Math.round(TM/DT);
-            NXDST = Math.round(XDESTR/STEPX);
-            NBX = NT + Math.round(XDESTR/DX) + 10;
-            NTIME = Math.round((TM+T0)/STEP) + 3;
-            STARTOUT();
-            if (EPUR > 0) WAVEEPURE();
-            MTRXPROC();
-        });
+        T0 = 1.1 * XDESTR;
+        // SOLVED, Harry said that NINT == Round, also MIFI book tells the same.
+        NT = Math.round(TM/DT);
+        NXDST = Math.round(XDESTR/STEPX);
+        NBX = NT + Math.round(XDESTR/DX) + 10;
+        NTIME = Math.round((TM+T0)/STEP) + 3;
+        STARTOUT();
+        if (EPUR > 0) WAVEEPURE();
+        MTRXPROC();
+        //});
 
         console.log("STARTPROC has end work");
     }
