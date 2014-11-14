@@ -72,7 +72,14 @@
             RISQ = data.RISQ,
             IM = data.IM,
             FU = data.FU,
-            FG = data.FG;
+            FG = data.FG,
+            TET0 = data.TET0,
+            ITP = data.ITP,
+            B = data.B,
+            XDESTR = data.XDESTR,
+            LC = data.LC,
+            STEPX = data.STEPX,
+            NTIME = data.NTIME;
 
         var I, J, K, N, NX, SN, IK, IS, IA, ICOUNT = 1; // integer
         var FIM, KSI, KSIN, P, PP, PSI, COM, T, FIC, X, T1, TETA, TOUT, LOM, CF, SF, MC, IMC, IMC0, MC0; // float
@@ -83,6 +90,9 @@
         var GA; // [5, -1:1] of float
         var W, U, UFI; // [5] of float
         var G, AUX, QP; // [,,] of float
+
+        W = new Array(5);
+        UFI = new Array(5); MatMult.fillArray(UFI, 0);
 
         var genSize = 5;
         Z = new Complex(0, 0);
@@ -96,7 +106,15 @@
         IMC = 0;
 
         QP = MatMult.createArray(genSize +1, NXDST+5 +1, NTP+5 +1);    // QP(5,0:NXDST+5,1:NTP+5)
-        QP.splice(0, 1);
+        delete QP[0];
+        //MatMult.fillArray(QP, 0);
+        //delete QP[0];
+        //for (var c02 in QP) {
+        //    for (var c03 in QP[c02]){
+        //        delete QP[c02][c03][0];
+        //    }
+        //}
+        //QP.splice(0, 1);
 
         // ALLOCATE (G(5,0:NBX,0:NFI),AUX(5,0:NBX,-1:1));
         AUX = MatMult.createArray(genSize +1, NBX +1, 2); //new Array(5 +1);
@@ -210,10 +228,9 @@
                 if (T >= 0){
 
                     if (INDEX >= 1){
-                        W = [];
-                        for (var c7 = 1; c7 <= 5; c7++) {W[c7] = G[c7][0][I]; }
+                        for (var c7 = 1; c7 <= 5; c7++) {W[c7 -1] = G[c7][0][I]; }
                         D1Z = ZET(TETA + DFI/2).subtract(ZET(TETA - DFI/2));
-                        SIG = new Complex(W[5], -W[3]);
+                        SIG = new Complex(W[5 -1], -W[3 -1]);
                         MV = MV.add( (new Complex(0.5,0)).multiply( ( SIG.add(SIG0[K]) )).multiply(D1Z) );
                         MSIG = SIG.multiply( (Z.subtract(ZC)).conjugate() );
                         MC = MC + ( (new Complex(0.5, 0)).multiply( MSIG.add(MSIG0[K]) ).multiply(D1Z) ).im;
@@ -318,21 +335,144 @@
             // TODO unfinished code; from "IF (T<0) GOTO 200;"
             //if (T < 0) goto200();
             if (T >= 0) {
-
+                for (var c21 in G){
+                    for (var c22 in G[c21]){
+                        G[c21][c22][I+SN] = AUX[c21][c22][IS];
+                    }
+                }
+                for (var c23 in G){
+                    for (var c24 in G[c23]){
+                        G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
+                    }
+                }
+                for (var c25 in G){
+                    for (var c26 in G[c25]){
+                        G[c25][c26][0] = G[c25][c26][NFI-1];
+                    }
+                }
+                if (INDEX > 0 && INDEX < 3) {
+                    // TODO WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
+                } else {
+                    if (INDEX > 3) {
+                        IMV = IMV0.add( (new Complex(0.5, 0)).multiply( MV.add(MV0) ).multiply( new Complex(DT, 0)) ) ;
+                        MV0 = MV;
+                        IMC = IMC0 + 0.5 * (MC + MC0) * DT;
+                        MC0 = MC;
+                        FIC = FIC + 0.5 * DT * (IMC + IMC0);
+                        IMC0 = IMC;
+                        DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
+                        IMV0 = IMV;
+                        // TODO WRITE(4,'(F10.3,7(2X,E10.3))') &
+                    }
+                }
             }
 
+            // 200, goto order to this place
+            if (WT) COUNTOUT(T);
+            T = T1;
         }
 
         fs.closeSync(fd);
-
+        //DO I=11,20
+            //CLOSE(I)
+        //END DO
 
         // TODO do nothing
         function COUNTOUT(T){
-            console.log("COUNTOUT do nothing!!!!");
+            var I, M, J, JNT, K, N, COUNT=3;
+            var X, TETA;
+            // QP = 0;
+            //MatMult.fillArray(QP, 0);
+            for (var c1 in QP){
+                for (var c2 in QP[c1]){
+                    var QPlen = QP[c1][c2].length;
+                    for (var c3 = 0; c3 < QPlen; c3++){
+                        QP[c1][c2][c3] = 0;
+                    }
+                }
+            }
+
+            JNT = COUNT;
+            TETA = TET0;
+            I = 0;
+            for (J = 1; J <= NTP + 1; J++) {
+                I = ITP[J];
+                if (T < 0) {
+                    FIM = FAR[I];
+                    Z = ZET(TAR[I]);
+                    KSIN = (Z.subtract(DZ0)).re;
+                    CF = Math.cos(FIM);
+                    SF = Math.sin(FIM);
+                    UFI[0] = CF;
+                    UFI[1] = -SF;
+                    UFI[2] = 1 - 2*B * SF*SF;
+                    UFI[3] = 1 - 2*B * CF*CF;
+                    UFI[4] = -2*B * CF*SF;
+                }
+                X = 0;
+                N = 0;
+
+                while (true){
+                    if (X > 1.01 * XDESTR) break;
+                    K = Math.round(X / DX);
+                    if (T < 0){
+                        KSI = KSIN - K*DX*CF;
+                        PSI = BBstart.TENS(LC * (T - KSI));
+                        for (var c3 in QP){
+                            // TODO, hmm, why not UFI(:) ???? original: QP(:,N,J)=PSI*UFI
+                            QP[c3][N][J] = PSI * UFI[c3-1];
+                        }
+                    } else {
+                        for (var c3 in QP){
+                            QP[c3][N][J] = G[c3][K][I];
+                        }
+                    }
+                    X = X + STEPX;
+                    N = N + 1;
+                }
+            }
+            // TODO what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-06;
+            for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
+                if ( i <= NXDST) {
+                    for (M = 1; M <= 5; M++){
+                        // TODO WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
+                    }
+                }
+                if (I <= NTP) {
+                    for (M = 1; M <= 5; M++){
+                        // TODO WRITE(M+15,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,N,I+1),N=0,NXDST);
+                    }
+                }
+                JNT = JNT + NTIME;
+            }
+            COUNT = COUNT + 1;
         }
 
         function INITLOAD(T){
-            console.log("INITLOAD do nothing!!!!");
+            var I, K;
+            for (I = 0; I <= NFI; I++){
+                TETA = TAR[I];
+                FIM = FAR[I];
+                Z = ZET(TETA);
+                KSIN = (Z.subtract(DZ0)).re;
+                CF = Math.cos(FIM);
+                SF = Math.sin(FIM);
+                UFI[0] = CF;
+                UFI[1] = -SF;
+                UFI[2] = 1 - 2*B * SF*SF;
+                UFI[3] = 1 - 2*B * CF*CF;
+                UFI[4] = -2*B * CF*SF;
+
+                for (K = 0; K <= NBX; K++) {
+                    KSI = KSIN - K*DX*CF;
+                    PSI = BBstart.TENS(LC * (T-KSI));
+                    if (T >= KSI) {
+                        for (var c1 in G) {
+                            G[c1][K][I] = PSI * UFI[c1-1];
+                        }
+                    }
+                }
+            }
         }
     }
     exports.COUNTPROC = COUNTPROC;

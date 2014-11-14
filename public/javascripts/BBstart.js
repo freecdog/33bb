@@ -285,6 +285,13 @@
         data.IM = IM;
         data.FU = FU;
         data.FG = FG;
+        data.TET0 = TET0;
+        data.ITP = ITP;
+        data.B = B;
+        data.XDESTR = XDESTR;
+        data.LC = LC;
+        data.STEPX = STEPX;
+        data.NTIME = NTIME;
 
         console.log("STARTPROC has end work");
     }
@@ -702,6 +709,7 @@
             return FF(T);
         }
     }
+    exports.TENS = TENS;
 
     function WAVEEPURE(){
         var TMAX = 50;
