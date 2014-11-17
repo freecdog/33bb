@@ -37,6 +37,7 @@
 
     // values A, B would be changed
     function RCURB(T, A, B) {
+        var ans = { A: null, B: null};
         var R, DR1, DR2, R0, R1, DT = 0.001;
         R = RTET(T);
         R1 = RTET(T + DT);
@@ -46,6 +47,9 @@
         DR2 = Math.abs((-DR2 + R)*R + 2*DR1*DR1);
         B = Math.sqrt(R*R + DR1*DR1);
         A = DR2 / (Math.pow(B,3));
+        ans.A = A;
+        ans.B = B;
+        return ans;
         // return A, B;
         // DERIV(RTET,1,T,0.02,0.5); DERIV(RTET,2,T,0.02,0.5);
     }

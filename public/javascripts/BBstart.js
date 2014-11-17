@@ -237,7 +237,7 @@
         STEP = parseFloat(filedata.substr(pos.STEP, 10));
         pos.STEPX = filedata.indexOf('=', pos.STEP) + 1;
         STEPX = parseFloat(filedata.substr(pos.STEPX, 10));
-        pos.DELTA = filedata.indexOf('=', pos.STEP) + 1;
+        pos.DELTA = filedata.indexOf('=', pos.STEPX) + 1;
         DELTA = parseInt(filedata.substr(pos.DELTA, 10));
 
         STEPFI();
@@ -292,6 +292,10 @@
         data.LC = LC;
         data.STEPX = STEPX;
         data.NTIME = NTIME;
+        data.KPFI = KPFI;
+        data.KPA = KPA;
+        data.ALIM = ALIM;
+        data.C2 = C2;
 
         console.log("STARTPROC has end work");
     }
@@ -467,7 +471,10 @@
             K0 = K1 + 1;
             ROM = L;
             for (I=1; I <= NI; I++) {
-                FUNC2.RCURB(TET,RO,LL);
+                var courbTet, longTet, rcurbTetAns;
+                rcurbTetAns = FUNC2.RCURB(TET,RO,LL);
+                RO = rcurbTetAns.A;
+                LL = rcurbTetAns.B;
                 RO=1/RO;
                 if (RO < ROM) ROM = RO;
                 TET = TET + H;
@@ -495,7 +502,10 @@
             DF[I] = ADF[I];
             TETA = ATAR[I];
             TAR[I] = TETA;
-            FUNC2.RCURB(TETA, COURB[I], LONG[I]);
+            var courbTeta, longTeta, rcurbTetaAns;
+            rcurbTetaAns = FUNC2.RCURB(TETA, courbTeta, longTeta);
+            COURB[I] = rcurbTetaAns.A;
+            LONG[I] = rcurbTetaAns.B;
             FAR[I] = FUNC2.ATN(TETA) - ALFA;
         }
         I = 0;
@@ -606,7 +616,6 @@
         E[0][2] = 1; E[1][3] = 1; E[2][4] = 1;
         LAX = matrix.inverse(LAX);
         E = matrix.multiply(E, LAX);
-
 
         for (J = 1 -1; J <= 2 -1; J++){
             for (var k1 = 0; k1 < LBD[J].length; k1++){
@@ -744,8 +753,8 @@
     function STARTOUT(){
         var I, J, K, JNT; // integer
         var X; // float
-        var ARS =   ['V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
-        var ARS1 =  ['V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
+        var ARS1 = ['V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
+        var ARS2 = ['V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
         var STR = [];
 
         var fds1 = [];
@@ -754,7 +763,7 @@
         var path;
 
         for (I = 11; I <= 15; I++) {
-            path = 'BBdat/_' + ARS[I-11]; // looks like path depends on app.js for server side
+            path = 'BBdat/_' + ARS1[I-11]; // looks like path depends on app.js for server side
             fds1.push( fs.openSync(path, 'w') );
 
             // TODO H. have clear file loop here, but I don't think it's necessary here.
@@ -781,12 +790,12 @@
                 X = X + STEPX;
             }
 
-            fs.closeSync(fds1[I-11]);
+            //fs.closeSync(fds1[I-11]);
         }
 
         STR = [];
         for (I = 16; I <= 20; I++){
-            path = 'BBdat/_' + ARS1[I-16]; // looks like path depends on app.js for server side
+            path = 'BBdat/_' + ARS2[I-16]; // looks like path depends on app.js for server side
             fds2.push( fs.openSync(path, 'w') );
 
             // TODO H. have clear file loop here, but I don't think it's necessary here.
@@ -809,8 +818,12 @@
                 fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
             }
 
-            fs.closeSync(fds2[I-16]);
+            //fs.closeSync(fds2[I-16]);
         }
+
+        data = new Datatone();
+        data.fds1 = fds1;
+        data.fds2 = fds2;
     }
 
 

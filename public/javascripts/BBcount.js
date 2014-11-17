@@ -14,6 +14,8 @@
     var Complex = numbers.complex;
     var matrix = numbers.matrix;
 
+    var fs = require('fs');
+
     // helpful methods
     function compareWithEps(num1, num2, eps){
         eps = eps || 1e-6;
@@ -79,7 +81,14 @@
             XDESTR = data.XDESTR,
             LC = data.LC,
             STEPX = data.STEPX,
-            NTIME = data.NTIME;
+            NTIME = data.NTIME,
+            KPFI = data.KPFI,
+            KPA = data.KPA,
+            ALIM = data.ALIM,
+            C2 = data.C2,
+            fds1 = data.fds1,
+            fds2 = data.fds2;
+
 
         var I, J, K, N, NX, SN, IK, IS, IA, ICOUNT = 1; // integer
         var FIM, KSI, KSIN, P, PP, PSI, COM, T, FIC, X, T1, TETA, TOUT, LOM, CF, SF, MC, IMC, IMC0, MC0; // float
@@ -255,6 +264,13 @@
                         for (var c12 in G) GA[c12 -1][1] = G[c12][J+1][I];
                         P = 1 / ((1 + COM * (X - DX/2)) * LOM);
                         PP = COM / (1 + COM * (X - DX/2));
+                        var rFIX = matrix.scalarSafe(FIX, DT / DX);
+                        var rFIY = matrix.scalarSafe(FIY, DT * P / DFI);
+                        var s1 = matrix.addition(
+                                matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
+                            );
+                        var rQ = matrix.scalarSafe(Q, DT * PP);
+                        var s2 = matrix.addition(s1, rQ);
                         LAX = matrix.addition(
                             matrix.addition(
                                 matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
@@ -262,28 +278,36 @@
                             matrix.scalarSafe(Q, DT * PP)
                         );
                         LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
-                        W = matrix.multiply(LX, matrix.getColUnSafe(GA, 0));
-                        U = matrix.multiply(FIXP, matrix.getColUnSafe(GA, -1));
+                        var ga0 = matrix.getColUnSafe(GA, 0);
+                        ga0 = matrix.vectorTranspose(ga0);
+                        W = matrix.multiply(LX, ga0); //matrix.getColUnSafe(GA, 0));
+                        var ga1 = matrix.getColUnSafe(GA, -1);
+                        ga1 = matrix.vectorTranspose(ga1);
+                        U = matrix.multiply(FIXP, ga1); //matrix.getColUnSafe(GA, -1));
 
                         W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
-                        U = matrix.multiply(FIXM, matrix.getColUnSafe(GA, 1));
+                        var ga2 = matrix.getColUnSafe(GA, 1);
+                        ga2 = matrix.vectorTranspose(ga2);
+                        U = matrix.multiply(FIXM, ga2); //matrix.getColUnSafe(GA, 1));
                         W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
 
                         var recG = new Array(genSize);
                         for (var c13 in G) recG[c13-1] = G[c13][J][I-1];
-                        U = matrix.multiply(FIYP, recG);
+                        var recGtrFIYP = matrix.vectorTranspose(recG);
+                        U = matrix.multiply(FIYP, recGtrFIYP); //recG);
 
                         W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
 
                         for (var c14 in G) recG[c14-1] = G[c14][J][I+1];
-                        U = matrix.multiply(FIYM, recG);
+                        var recGtrFIYM = matrix.vectorTranspose(recG);
+                        U = matrix.multiply(FIYM, recGtrFIYM); // recG);
 
                         W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
 
                         LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
                         LX = matrix.inverse(LX);
                         W = matrix.multiply(LX, W);
-                        for (var c15 in AUX) AUX[c15][J][IK] = W[c15-1];
+                        for (var c15 in AUX) AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
                         for (var c16 in GA) {
                             GA[c16][-1] = GA[c16][0];
                             GA[c16][0] = GA[c16][1];
@@ -312,7 +336,7 @@
                     U = matrix.multiply(FU, U);
                     var recAUX = new Array(genSize);
                     for (var c17 in AUX) recAUX[c17-1] = AUX[c17][1][IK];
-                    W = matrix.multiply(FG, recAUX);
+                    W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                     var recWpU = matrix.addition(W, U);
                     for (var c18 in AUX) AUX[c18][0][IK] = recWpU[c18 -1];
                     if ((I > 1) && (I < NFI-1)) {
@@ -350,8 +374,12 @@
                         G[c25][c26][0] = G[c25][c26][NFI-1];
                     }
                 }
+
+                var recCmplxMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
                 if (INDEX > 0 && INDEX < 3) {
                     // TODO WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
+                    recBuffer = new Buffer(T, recCmplxMV.re, recCmplxMV.im, KPFI * MC);
+                    fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 } else {
                     if (INDEX > 3) {
                         IMV = IMV0.add( (new Complex(0.5, 0)).multiply( MV.add(MV0) ).multiply( new Complex(DT, 0)) ) ;
@@ -363,6 +391,13 @@
                         DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
                         IMV0 = IMV;
                         // TODO WRITE(4,'(F10.3,7(2X,E10.3))') &
+                        var recCmplxIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
+                        var recCmplxDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
+                        recBuffer = new Buffer(T, C2/LC * recCmplxMV.re, C2/LC * recCmplxMV.im,
+                                C2 * recCmplxIMV.re, C2 * recCmplxIMV.im,
+                                L * recCmplxDZC.re, L * recCmplxDZC.im,
+                                KPFI * MC / (LC*LC) );
+                        fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                     }
                 }
             }
@@ -376,6 +411,8 @@
         //DO I=11,20
             //CLOSE(I)
         //END DO
+        for (I = 0; I < fds1.length; I++) fs.closeSync(fds1[I]);
+        for (I = 0; I < fds2.length; I++) fs.closeSync(fds2[I]);
 
         // TODO do nothing
         function COUNTOUT(T){
@@ -433,7 +470,7 @@
             }
             // TODO what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-06;
             for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
-                if ( i <= NXDST) {
+                if ( I <= NXDST) {
                     for (M = 1; M <= 5; M++){
                         // TODO WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
                     }
@@ -474,13 +511,12 @@
                 }
             }
         }
+
+        function ZET(T){
+            // ZET=-RTET(T)*EXP(IM*(T-ALFA))/L;
+            return (new Complex(-FUNC2.RTET(T), 0)).multiply(new Complex(Math.cos(T-ALFA), Math.sin(T-ALFA))).divide(new Complex(L, 0));
+        }
     }
     exports.COUNTPROC = COUNTPROC;
-
-    function ZET(T){
-        // ZET=-RTET(T)*EXP(IM*(T-ALFA))/L;
-        return (new Complex(-FUNC2.RTET(T), 0)).multiply(new Complex(Math.cos(T-ALFA), Math.sin(T-ALFA))).divide(new Complex(L, 0));
-    }
-
 
 })(typeof exports === 'undefined'? this['BBcount']={} : exports);

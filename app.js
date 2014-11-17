@@ -28,11 +28,13 @@ app.use('/users', users);
 var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 
 var numbers = require('numbers');
-console.log(numbers.basic.sum([1,2,3]));
-console.log(numbers.matrix.multiply([[2,3]], [[4],[5]]));
-console.log(numbers.matrix.multiply([[2],[3]], [[4,5]]));
+console.log(1, numbers.basic.sum([1,2,3]));
+console.log(2, numbers.matrix.multiply([[2,3]], [[4],[5]]));
+console.log(3, numbers.matrix.multiply([[2],[3]], [[4,5]]));
 var Complex = numbers.complex;
-console.log(new Complex(-5, -6));
+console.log(4, new Complex(-5, -6));
+
+console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
 
 var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
 BBup.run();
