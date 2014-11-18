@@ -342,12 +342,12 @@
             RT = RTET(TETA);
             //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
             recBuffer = new Buffer(
-                (TETA*180/Math.PI).toFixedDef().toString() + " " +
-                (RT).toFixedDef().toString() + " " +
-                (Math.cos(FUNC2.ATN(TETA))).toFixedDef().toString() + " " +
-                (Math.sin(FUNC2.ATN(TETA))).toFixedDef().toString() + " " +
-                (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef().toString() + " " +
-                (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef().toString() +
+                (TETA*180/Math.PI).toFixedDef() + " " +
+                (RT).toFixedDef() + " " +
+                (Math.cos(FUNC2.ATN(TETA))).toFixedDef() + " " +
+                (Math.sin(FUNC2.ATN(TETA))).toFixedDef() + " " +
+                (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef() + " " +
+                (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef() +
                 "\n" );
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             TETA = TETA + H;
@@ -732,14 +732,14 @@
         if (EPUR == 1) {
             while (true){
                 if (T > TPLUS) break;
-                recBuffer = new Buffer(T.toString() + ' ' + (-C2*C2*RO2*TENS(T)*1E-06).toString() + '\n');
+                recBuffer = new Buffer(T.toFixedDef() + ' ' + (-C2*C2*RO2*TENS(T)*1E-06).toFixedDef() + '\n');
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 T = T + TPLUS/50;
             }
         } else if (EPUR == 2) {
             while (true) {
                 if (T > TMAX) break;
-                recBuffer = new Buffer(T.toString() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toString() + '\n');
+                recBuffer = new Buffer(T.toFixedDef() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toFixedDef() + '\n');
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 T = T + TMAX/1000;
             }
@@ -779,7 +779,7 @@
                 JNT = J * NTIME + 1;
                 // TODO moved coursor of file. But general idea is put current value of X and T values in the heads.
 
-                recBuffer = new Buffer('X= ' + X.toString() + '\n');
+                recBuffer = new Buffer('X= ' + X.toFixedDef() + '\n');
                 fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
 
                 recStr = '';
@@ -801,7 +801,8 @@
             // TODO H. have clear file loop here, but I don't think it's necessary here.
 
             for (K = 0; K <= NXDST; K++) {
-                STR.push(TP[K]);
+                //STR.push(TP[K]);
+                STR.push((K * STEPX).toFixedDef());
             }
 
             for (J = 1; J <= NTP + 1; J++) {
@@ -809,7 +810,7 @@
 
                 JNT = (J-1) * NTIME + 1;
 
-                recBuffer = new Buffer('TETA= ' + TP[J].toString() + '\n');
+                recBuffer = new Buffer('TETA= ' + TP[J].toFixedDef() + '\n');
                 fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
 
                 recStr = '';

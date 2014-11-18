@@ -22,6 +22,53 @@
         return (Math.abs(num1 - num2) < eps);
     }
 
+    function writeToFile(descr){
+        var buffer, str = "";
+        str = arrToString(arguments, 1, arguments.length - 1);
+        buffer = new Buffer(str);
+        fs.writeSync(descr, buffer, 0, buffer.length, null);
+    }
+    function arrToString(arr, start, len){
+        start = start || 0;
+        len = len || arr.length;
+        var str = "";
+        for (var i = start ; i < len; i++){
+            var tp = typeof arr[i];
+            if (tp == 'string') {
+                str += arr[i];
+            } else if (tp == 'number') {
+                str += arr[i].toFixedDef();
+            } else {
+                console.log("something wrong happened with current argument:", arr[i]);
+            }
+            if (i+1 != len) str += ' ';
+        }
+        return str;
+    }
+    function arrToStringR(arr) {
+        var str = "";
+        for (var i in arr){
+            if (arr.hasOwnProperty(i)){
+                var tp = typeof arr[i];
+                if (tp == 'string') {
+                    str += arr[i];
+                } else if (tp == 'number') {
+                    str += arr[i].toFixedDef();
+                } else if (tp == 'object') {
+                    str += arrToStringR(arr[i]);
+                } else {
+                    console.log("something wrong happened with current argument:", arr[i]);
+                }
+                str += ' ';
+            }
+        }
+        return str;
+    }
+
+    Number.prototype.toFixedDef = function(){
+        return this.toFixed(3);
+    };
+
     // TODO how to send variables through modules
     // Do them public ofc.
     /*var NXDST = data.NXDST,
@@ -108,7 +155,7 @@
         GA = MatMult.createArray(genSize , 2);
         //delete GA[0];
         for (var c0 in GA) {
-            for (var c01 = -1; c01 <= -1; c01++) GA[c0][c01] = 0;
+            for (var c01 = -1; c01 <= 1; c01++) GA[c0][c01] = 0;
         }
 
         IMV = new Complex(0, 0);
@@ -251,7 +298,7 @@
                       //  AUX[c1] = new Array(NBX +1);
                         //for (var c2 = 0; c2 < NBX +1; c2++) {
                           //  AUX[c1][c2] = [];
-                    // TODO indexes ??? or for..in loop has solved all problems
+                    // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
                     for (var c8 in AUX){
                         for (var c9 in AUX[c1]){
                             AUX[c8][c9][IK] = 0;
@@ -356,7 +403,6 @@
                 if ((NFI == 2 * I) || (2 * I - 1)) break;
             }
 
-            // TODO unfinished code; from "IF (T<0) GOTO 200;"
             //if (T < 0) goto200();
             if (T >= 0) {
                 for (var c21 in G){
@@ -377,8 +423,13 @@
 
                 var recCmplxMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
                 if (INDEX > 0 && INDEX < 3) {
-                    // TODO WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
-                    recBuffer = new Buffer(T, recCmplxMV.re, recCmplxMV.im, KPFI * MC);
+                    // probably SOLVED WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
+                    recBuffer = new Buffer(
+                        (T).toFixedDef() + " " +
+                        (recCmplxMV.re).toFixedDef() + " " +
+                        (recCmplxMV.im).toFixedDef() + " " +
+                        (KPFI * MC).toFixedDef()
+                    );
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 } else {
                     if (INDEX > 3) {
@@ -390,13 +441,19 @@
                         IMC0 = IMC;
                         DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
                         IMV0 = IMV;
-                        // TODO WRITE(4,'(F10.3,7(2X,E10.3))') &
+                        // probably SOLVED WRITE(4,'(F10.3,7(2X,E10.3))') &
                         var recCmplxIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
                         var recCmplxDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
-                        recBuffer = new Buffer(T, C2/LC * recCmplxMV.re, C2/LC * recCmplxMV.im,
-                                C2 * recCmplxIMV.re, C2 * recCmplxIMV.im,
-                                L * recCmplxDZC.re, L * recCmplxDZC.im,
-                                KPFI * MC / (LC*LC) );
+                        recBuffer = new Buffer(
+                            (T).toFixedDef() + " " +
+                            (C2/LC * recCmplxMV.re).toFixedDef() + " " +
+                            (C2/LC * recCmplxMV.im).toFixedDef() + " " +
+                            (C2 * recCmplxIMV.re).toFixedDef() + " " +
+                            (C2 * recCmplxIMV.im).toFixedDef() + " " +
+                            (L * recCmplxDZC.re).toFixedDef() + " " +
+                            (L * recCmplxDZC.im).toFixedDef() + " " +
+                            (KPFI * MC / (LC*LC)).toFixedDef() + "!!!\n;;;"
+                        );
                         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                     }
                 }
@@ -414,10 +471,10 @@
         for (I = 0; I < fds1.length; I++) fs.closeSync(fds1[I]);
         for (I = 0; I < fds2.length; I++) fs.closeSync(fds2[I]);
 
-        // TODO do nothing
         function COUNTOUT(T){
             var I, M, J, JNT, K, N, COUNT=3;
             var X, TETA;
+            var rBuffer;
             // QP = 0;
             //MatMult.fillArray(QP, 0);
             for (var c1 in QP){
@@ -470,18 +527,40 @@
             }
             // TODO what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-06;
             for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
-                if ( I <= NXDST) {
+                var st;
+                if (I <= NXDST) {
                     for (M = 1; M <= 5; M++){
-                        // TODO WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
+                        // probably SOLVED WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
+                        st = "";
+                        st += T.toFixedDef() + " ";
+                        for (var qpj = 1; qpj <= NTP + 1; qpj++){
+                            st += QP[M][I][qpj]; //.toFixedDef();
+                            st += " ";
+                        }
+                        st += "\n";
+                        rBuffer = new Buffer(st);
+                        fs.writeSync(fds1[M-1], rBuffer, 0, rBuffer.length, null);
                     }
                 }
                 if (I <= NTP) {
                     for (M = 1; M <= 5; M++){
-                        // TODO WRITE(M+15,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,N,I+1),N=0,NXDST);
+                        // probably SOLVED WRITE(M+15,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,N,I+1),N=0,NXDST);
+                        st = "";
+                        st += T.toFixedDef() + " ";
+                        for (var qpn = 0; qpn <= NXDST; qpn++){
+                            st += QP[M][qpn][I+1]; //.toFixedDef();
+                            st += " ";
+                        }
+                        st += "\n";
+                        rBuffer = new Buffer(st);
+                        fs.writeSync(fds2[M-1], rBuffer, 0, rBuffer.length, null);
                     }
                 }
                 JNT = JNT + NTIME;
             }
+            // block end, so add endOfLine in every doc
+            for (var fdsi in fds1) { if (fds1.hasOwnProperty(fdsi)) writeToFile(fds1[fdsi], "\n");}
+            for (var fdsj in fds2) { if (fds2.hasOwnProperty(fdsj)) writeToFile(fds2[fdsj], "\n");}
             COUNT = COUNT + 1;
         }
 
