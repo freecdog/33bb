@@ -114,7 +114,7 @@
         POIS = jParse('float');
             //pos.POIS = filedata.indexOf('=',pos.GAPOIS)+1;
             //POIS = parseFloat(filedata.substr( pos.POIS, 10 ));
-        C2 = jParse('float');
+        GAMMA = jParse('float');
             //pos.GAMMA = filedata.indexOf('=',pos.POIS)+1;
             //GAMMA = parseFloat(filedata.substr( pos.GAMMA, 10 ));
         XDESTR = jParse('float');
@@ -347,10 +347,10 @@
 
             var pnt = src.indexOf(symb, lastIndex) + shift;
             var ans;
-            if (varType == 'int')
-                ans = parseInt(src.substr(pnt, len));
-            else if (varType == 'float')
+            if (varType == 'float')
                 ans = parseFloat(src.substr(pnt, len));
+            else if (varType == 'int')
+                ans = parseInt(src.substr(pnt, len));
             else if (varType == 'bool')
                 ans = charToBoolean(src.substr(pnt, len));
             else
