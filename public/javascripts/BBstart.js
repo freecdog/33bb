@@ -84,39 +84,49 @@
         //if (err) throw err;
         console.log(filedata);
         console.log("=============================");
-        // pos is list of used positions
-        var pos = {};
-        pos.ALFA = filedata.indexOf('=',0)+1;
-        ALFA = parseInt( filedata.substr( pos.ALFA, 10 ) );
+            // pos is list of used positions
+            //var pos = {};
+        ALFA = jParse('int');
+            //pos.ALFA = filedata.indexOf('=',0)+1;
+            //ALFA = parseInt( filedata.substr( pos.ALFA, 10 ) );
         ALFA = ALFA * Math.PI / 180;
         // SOVLED DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
         //ALIM = Math.exp(IM * ALFA);
         ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
-        pos.SPLIT = filedata.indexOf('=',pos.ALFA)+4;
-        SPLIT = charToBoolean(filedata.substr( pos.SPLIT, 1)); //Boolean(data.substr( pos.SPLIT, 1 ));
-        pos.RZ = filedata.indexOf('=',pos.SPLIT)+1;
-        RZ = parseFloat(filedata.substr( pos.RZ, 10 ));
-        pos.X = filedata.indexOf('=',pos.RZ)+1;
-        X = parseFloat(filedata.substr( pos.X, 10 ));
-        pos.RO2 = filedata.indexOf('=',pos.X)+1;
-        RO2 = parseFloat(filedata.substr( pos.RO2, 10 ));
-        pos.C2 = filedata.indexOf('=',pos.RO2)+1;
-        C2 = parseFloat(filedata.substr( pos.C2, 10 ));
-        pos.GAPOIS = filedata.indexOf('=',pos.C2)+3;
-        GAPOIS = charToBoolean(filedata.substr( pos.GAPOIS, 1));
-        pos.POIS = filedata.indexOf('=',pos.GAPOIS)+1;
-        POIS = parseFloat(filedata.substr( pos.POIS, 10 ));
-        pos.GAMMA = filedata.indexOf('=',pos.POIS)+1;
-        GAMMA = parseFloat(filedata.substr( pos.GAMMA, 10 ));
-        pos.XDESTR = filedata.indexOf('=',pos.GAMMA)+1;
-        XDESTR = parseFloat(filedata.substr( pos.XDESTR, 10 ));
+        SPLIT = jParse('bool', 4, '=', 1);
+            //pos.SPLIT = filedata.indexOf('=',pos.ALFA)+4;
+            //SPLIT = charToBoolean(filedata.substr( pos.SPLIT, 1)); //Boolean(data.substr( pos.SPLIT, 1 ));
+        RZ = jParse('float');
+            //pos.RZ = filedata.indexOf('=',pos.SPLIT)+1;
+            //RZ = parseFloat(filedata.substr( pos.RZ, 10 ));
+        X = jParse('float');
+            //pos.X = filedata.indexOf('=',pos.RZ)+1;
+            //X = parseFloat(filedata.substr( pos.X, 10 ));
+        RO2 = jParse('float');
+            //pos.RO2 = filedata.indexOf('=',pos.X)+1;
+            //RO2 = parseFloat(filedata.substr( pos.RO2, 10 ));
+        C2 = jParse('float');
+            //pos.C2 = filedata.indexOf('=',pos.RO2)+1;
+            //C2 = parseFloat(filedata.substr( pos.C2, 10 ));
+        GAPOIS = jParse('bool', 3, '=', 1);
+            //pos.GAPOIS = filedata.indexOf('=',pos.C2)+3;
+            //GAPOIS = charToBoolean(filedata.substr( pos.GAPOIS, 1));
+        POIS = jParse('float');
+            //pos.POIS = filedata.indexOf('=',pos.GAPOIS)+1;
+            //POIS = parseFloat(filedata.substr( pos.POIS, 10 ));
+        C2 = jParse('float');
+            //pos.GAMMA = filedata.indexOf('=',pos.POIS)+1;
+            //GAMMA = parseFloat(filedata.substr( pos.GAMMA, 10 ));
+        XDESTR = jParse('float');
+            //pos.XDESTR = filedata.indexOf('=',pos.GAMMA)+1;
+            //XDESTR = parseFloat(filedata.substr( pos.XDESTR, 10 ));
 
-        pos.EPUR = filedata.indexOf('=',pos.XDESTR)+1;
-        EPUR = parseInt( filedata.substr( pos.EPUR, 10 ) );
+        EPUR  = jParse('int');
+            //pos.EPUR = filedata.indexOf('=',pos.XDESTR)+1;
+            //EPUR = parseInt( filedata.substr( pos.EPUR, 10 ) );
 
-        pos.checkpoint1 = filedata.indexOf('*',pos.EPUR)+1;
-
-        console.log("STARTPROC has read half of values");
+        jParse('float', 1, '*', 1);
+            //pos.checkpoint1 = filedata.indexOf('*',pos.EPUR)+1;
 
         if (GAPOIS) {
             B = GAMMA * GAMMA;
@@ -160,18 +170,24 @@
         console.log('\n');
         console.log('S0 =', S0);
         if (SPLIT) {
-            pos.LS = filedata.indexOf('=',pos.checkpoint1)+1;
-            LS = parseFloat(filedata.substr( pos.LS, 10 ));
-            pos.RC1 = filedata.indexOf('=',pos.LS)+1;
-            RC1 = parseFloat(filedata.substr( pos.RC1, 10 ));
-            pos.C1 = filedata.indexOf('=',pos.RC1)+1;
-            C1 = parseFloat(filedata.substr( pos.C1, 10 ));
-            pos.C0 = filedata.indexOf('=',pos.C1)+1;
-            C0 = parseFloat(filedata.substr( pos.C0, 10 ));
-            pos.RO0 = filedata.indexOf('=',pos.C0)+1;
-            RO0 = parseFloat(filedata.substr( pos.RO0, 10 ));
-            pos.FILL = filedata.indexOf('=',pos.RO0)+2;
-            FILL = filedata.substr( pos.FILL, 5 );
+            LS = jParse('float');
+                //pos.LS = filedata.indexOf('=',pos.checkpoint1)+1;
+                //LS = parseFloat(filedata.substr( pos.LS, 10 ));
+            RC1 = jParse('float');
+                //pos.RC1 = filedata.indexOf('=',pos.LS)+1;
+                //RC1 = parseFloat(filedata.substr( pos.RC1, 10 ));
+            C1 = jParse('float');
+                //pos.C1 = filedata.indexOf('=',pos.RC1)+1;
+                //C1 = parseFloat(filedata.substr( pos.C1, 10 ));
+            C0 = jParse('float');
+                //pos.C0 = filedata.indexOf('=',pos.C1)+1;
+                //C0 = parseFloat(filedata.substr( pos.C0, 10 ));
+            RO0 = jParse('float');
+                //pos.RO0 = filedata.indexOf('=',pos.C0)+1;
+                //RO0 = parseFloat(filedata.substr( pos.RO0, 10 ));
+            FILL = jParse('str', 2, '=', 5);
+                //pos.FILL = filedata.indexOf('=',pos.RO0)+2;
+                //FILL = filedata.substr( pos.FILL, 5 );
             // TODO use json configs
 
             RC0 = RO0 * C0;
@@ -182,15 +198,20 @@
             DTT = 2 * LS * RZ / C1;
         }
 
-        pos.checkpoint2 = filedata.indexOf('*',pos.checkpoint1)+1;
-        pos.INDEX = filedata.indexOf('=',pos.checkpoint2)+1;
-        INDEX = parseInt( filedata.substr( pos.INDEX, 10 ) );
-        pos.FRIC = filedata.indexOf('=',pos.INDEX)+1;
-        FRIC = parseFloat(filedata.substr( pos.FRIC, 10 ));
-        pos.M0 = filedata.indexOf('=',pos.FRIC)+1;
-        M0 = parseFloat(filedata.substr( pos.M0, 10 ));
+        jParse('float', 1, '*', 1);
+            //pos.checkpoint2 = filedata.indexOf('*',pos.checkpoint1)+1;
+        INDEX = jParse('int');
+            //pos.INDEX = filedata.indexOf('=',pos.checkpoint2)+1;
+            //INDEX = parseInt( filedata.substr( pos.INDEX, 10 ) );
+        FRIC = jParse('float');
+            //pos.FRIC = filedata.indexOf('=',pos.INDEX)+1;
+            //FRIC = parseFloat(filedata.substr( pos.FRIC, 10 ));
+        M0 = jParse('float');
+            //pos.M0 = filedata.indexOf('=',pos.FRIC)+1;
+            //M0 = parseFloat(filedata.substr( pos.M0, 10 ));
 
-        pos.checkpoint3 = filedata.indexOf('*',pos.M0);
+        jParse('float', 1, '*', 1);
+            //pos.checkpoint3 = filedata.indexOf('*',pos.M0);
 
         M0 = 1 / M0;
 
@@ -207,38 +228,55 @@
             }
         }
 
-        pos.TM = filedata.indexOf('=', pos.checkpoint3) + 1;
-        TM = parseFloat(filedata.substr(pos.TM, 10));
-        pos.DT = filedata.indexOf('=', pos.TM) + 1;
-        DT = parseFloat(filedata.substr(pos.DT, 10));
-        pos.DFI = filedata.indexOf('=', pos.DT) + 1;
-        DFI = parseFloat(filedata.substr(pos.DFI, 10));
+        TM = jParse('float');
+            //pos.TM = filedata.indexOf('=', pos.checkpoint3) + 1;
+            //TM = parseFloat(filedata.substr(pos.TM, 10));
+        DT = jParse('float');
+            //pos.DT = filedata.indexOf('=', pos.TM) + 1;
+            //DT = parseFloat(filedata.substr(pos.DT, 10));
+        DFI = jParse('float');
+            //pos.DFI = filedata.indexOf('=', pos.DT) + 1;
+            //DFI = parseFloat(filedata.substr(pos.DFI, 10));
         DFI = DFI * Math.PI / 180;
-        pos.DX = filedata.indexOf('=', pos.DFI) + 1;
-        DX = parseFloat(filedata.substr(pos.DX, 10));
-        pos.NTP = filedata.indexOf('=', pos.DX) + 1;
-        NTP = parseInt(filedata.substr(pos.NTP, 10));
+        DX = jParse('float');
+            //pos.DX = filedata.indexOf('=', pos.DFI) + 1;
+            //DX = parseFloat(filedata.substr(pos.DX, 10));
+        NTP = jParse('float');
+            //pos.NTP = filedata.indexOf('=', pos.DX) + 1;
+            //NTP = parseInt(filedata.substr(pos.NTP, 10));
+
         TP = new Array(NTP+2);
         ITP = new Array(NTP+2);
         // READ(2,*) (TP(I), I=1,NTP);
         // SOLVED what is final values of [0, 15, 30 ...] or [0, 0, 15, 30 ...] ? It seems that [0, 0, 15, 30 ...]
         // I probably understand arrays correctly, so it is as it is.
-        pos.TP = filedata.indexOf('=', pos.NTP) + 1;
-        pos.lastTPcomma = pos.TP;
         for (var itTP = 0; itTP < NTP; itTP++) {
-            if (itTP != 0) pos.lastTPcomma = filedata.indexOf(',', pos.lastTPcomma) + 1;
-            TP[itTP+1] = parseFloat(filedata.substr(pos.lastTPcomma, 10));
+            if (itTP == 0)
+                TP[itTP + 1] = jParse('float');
+            else
+                TP[itTP + 1] = jParse('float', 1, ',', 10);
         }
-        pos.OMG = filedata.indexOf('=', pos.TP) + 1;
-        OMG = parseFloat(filedata.substr(pos.OMG, 10));
-        pos.BET = filedata.indexOf('=', pos.OMG) + 1;
-        BET = parseFloat(filedata.substr(pos.BET, 10));
-        pos.STEP = filedata.indexOf('=', pos.BET) + 1;
-        STEP = parseFloat(filedata.substr(pos.STEP, 10));
-        pos.STEPX = filedata.indexOf('=', pos.STEP) + 1;
-        STEPX = parseFloat(filedata.substr(pos.STEPX, 10));
-        pos.DELTA = filedata.indexOf('=', pos.STEPX) + 1;
-        DELTA = parseInt(filedata.substr(pos.DELTA, 10));
+            //pos.TP = filedata.indexOf('=', pos.NTP) + 1;
+            //pos.lastTPcomma = pos.TP;
+            //for (var itTP = 0; itTP < NTP; itTP++) {
+            //    if (itTP != 0) pos.lastTPcomma = filedata.indexOf(',', pos.lastTPcomma) + 1;
+            //    TP[itTP+1] = parseFloat(filedata.substr(pos.lastTPcomma, 10));
+            //}
+        OMG = jParse('float');
+            //pos.OMG = filedata.indexOf('=', pos.TP) + 1;
+            //OMG = parseFloat(filedata.substr(pos.OMG, 10));
+        BET = jParse('float');
+            //pos.BET = filedata.indexOf('=', pos.OMG) + 1;
+            //BET = parseFloat(filedata.substr(pos.BET, 10));
+        STEP = jParse('float');
+            //pos.STEP = filedata.indexOf('=', pos.BET) + 1;
+            //STEP = parseFloat(filedata.substr(pos.STEP, 10));
+        STEPX = jParse('float');
+            //pos.STEPX = filedata.indexOf('=', pos.STEP) + 1;
+            //STEPX = parseFloat(filedata.substr(pos.STEPX, 10));
+        DELTA = jParse('int');
+            //pos.DELTA = filedata.indexOf('=', pos.STEPX) + 1;
+            //DELTA = parseInt(filedata.substr(pos.DELTA, 10));
 
         STEPFI();
 
@@ -298,6 +336,31 @@
         data.C2 = C2;
 
         console.log("STARTPROC has end work");
+
+        // helpfull method for reading
+        var lastIndex = 0;
+        function jParse(varType, shift, symb, len, src){
+            shift = shift || 1;
+            symb = symb || '=';
+            len = len || 10;
+            src = src || filedata;
+
+            var pnt = src.indexOf(symb, lastIndex) + shift;
+            var ans;
+            if (varType == 'int')
+                ans = parseInt(src.substr(pnt, len));
+            else if (varType == 'float')
+                ans = parseFloat(src.substr(pnt, len));
+            else if (varType == 'bool')
+                ans = charToBoolean(src.substr(pnt, len));
+            else
+                ans = src.substr(pnt, len);
+            //lastIndex = pnt + shift + len;
+            lastIndex = pnt + ans.toString().length;
+
+            return ans;
+        }
+
     }
     exports.STARTPROC = STARTPROC;
 
