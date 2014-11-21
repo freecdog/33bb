@@ -405,7 +405,7 @@
                     for (var c17 in AUX) recAUX[c17-1] = AUX[c17][1][IK];
                     W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                     var recWpU = matrix.addition(W, U);
-                    for (var c18 in AUX) AUX[c18][0][IK] = recWpU[c18 -1];
+                    for (var c18 in AUX) AUX[c18][0][IK] = recWpU[c18 -1][0]; // recWpU[c18 -1]
                     if ((I > 1) && (I < NFI-1)) {
                         for (var c19 in G){
                             for (var c20 in G[c19]){
@@ -555,7 +555,7 @@
                         st = "";
                         st += T.toFixedDef() + " ";
                         for (var qpj = 1; qpj <= NTP + 1; qpj++){
-                            st += (QP[M][I][qpj] * 1000).toExponential(3); //.toFixedDef();
+                            st += (QP[M][I][qpj]).toExponential(3); //.toFixedDef();
                             st += " ";
                         }
                         st += "\n";
@@ -569,8 +569,7 @@
                         st = "";
                         st += T.toFixedDef() + " ";
                         for (var qpn = 0; qpn <= NXDST; qpn++){
-                            // TODO there is a value that fires exception while converting toExponential, now all values multiplied by 1000, but it's not correct
-                            st += (QP[M][qpn][I+1] * 1000).toExponential(3); //.toFixedDef();
+                            st += (QP[M][qpn][I+1]).toExponential(3); //.toFixedDef();
                             st += " ";
                         }
                         st += "\n";
