@@ -36,8 +36,11 @@ console.log(4, new Complex(-5, -6));
 
 console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
 
+var startTime = Date.now();
 var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
 BBup.run();
+console.log((Date.now() - startTime) + " ms to load");
+console.log('!!! All results multiplied by 1000 !!!');
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

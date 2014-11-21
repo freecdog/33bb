@@ -233,6 +233,7 @@
 
         for (I = 0; I < E.length; I++) E[I][I] = 1;
         T = -T0;
+        data.currentT = T;
         TOUT = T;
         NX = NBX - 1; // !NINT(XDESTR/DX)+2;
         MV0 = new Complex(0.0,0.0);
@@ -247,10 +248,29 @@
         while (true){
             N++;
             if (T > TM) break;
-            if (Math.abs(T) < DT / 2) T = 0;
+            if (Math.abs(T) < DT / 2)
+            {
+                T = 0;
+                data.currentT = T;
+            }
             console.log(" T = ", T);
             if (ICOUNT % 7 == 0) console.log("\n");
             ICOUNT++;
+            if (compareWithEps(T, 1)) {
+                var stopHere = 0;
+            }
+            if (compareWithEps(T, 2)) {
+                var stopHere = 0;
+            }
+            if (compareWithEps(T, 3)) {
+                var stopHere = 0;
+            }
+            if (compareWithEps(T, 4)) {
+                var stopHere = 0;
+            }
+            if (compareWithEps(T, 5)) {
+                var stopHere = 0;
+            }
             T1 = T + DT;
             WT = (T > TOUT - DT/4);
             if (WT) TOUT = TOUT + STEP;
@@ -400,7 +420,7 @@
                 IA = -(IK + IS);
                 IK = IS;
                 IS = IA;
-                if ((NFI == 2 * I) || (2 * I - 1)) break;
+                if ((NFI == 2 * I) || (NFI == 2 * I - 1)) break;
             }
 
             //if (T < 0) goto200();
@@ -462,6 +482,7 @@
             // 200, goto order to this place
             if (WT) COUNTOUT(T);
             T = T1;
+            data.currentT = T;
         }
 
         fs.closeSync(fd);
@@ -534,7 +555,7 @@
                         st = "";
                         st += T.toFixedDef() + " ";
                         for (var qpj = 1; qpj <= NTP + 1; qpj++){
-                            st += QP[M][I][qpj]; //.toFixedDef();
+                            st += (QP[M][I][qpj] * 1000).toExponential(3); //.toFixedDef();
                             st += " ";
                         }
                         st += "\n";
@@ -548,7 +569,8 @@
                         st = "";
                         st += T.toFixedDef() + " ";
                         for (var qpn = 0; qpn <= NXDST; qpn++){
-                            st += QP[M][qpn][I+1]; //.toFixedDef();
+                            // TODO there is a value that fires exception while converting toExponential, now all values multiplied by 1000, but it's not correct
+                            st += (QP[M][qpn][I+1] * 1000).toExponential(3); //.toFixedDef();
                             st += " ";
                         }
                         st += "\n";
