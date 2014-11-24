@@ -26,8 +26,10 @@
         var buffer, str = "";
         str = arrToString(arguments, 1, arguments.length - 1);
         buffer = new Buffer(str);
+        //noinspection JSUnresolvedFunction
         fs.writeSync(descr, buffer, 0, buffer.length, null);
     }
+
     function arrToString(arr, start, len){
         start = start || 0;
         len = len || arr.length;
@@ -67,6 +69,23 @@
 
     Number.prototype.toFixedDef = function(){
         return this.toFixed(3);
+    };
+
+    String.prototype.toFixedLen = function(len, align){
+        align = align || 0;
+        var s = this.toString();
+        for (var i = s.length, flag = true; i < len; i++) {
+            if (align == 0) {           // left align
+                s += " ";
+            } else if (align == 1) {    // center align
+                if (flag) s += " ";
+                else s = " " + s;
+                flag = !flag;
+            } else {                    // right align
+                s = " " + s;
+            }
+        }
+        return s;
     };
 
     // TODO how to send variables through modules
@@ -136,8 +155,19 @@
             fds1 = data.fds1,
             fds2 = data.fds2;
 
+        // jOutputBlock, init
+        var outBuf = MatMult.createArray(10, Math.max(NTP+1, NXDST) +1, 1);
+        for (var oi in outBuf){
+            if (!outBuf.hasOwnProperty(oi)) continue;
 
-        var I, J, K, N, NX, SN, IK, IS, IA, ICOUNT = 1; // integer
+            for (var oj in outBuf[oi]){
+                if (!outBuf[oi].hasOwnProperty(oj)) continue;
+
+                outBuf[oi][oj] = [];
+            }
+        }
+
+        var I, J, K, N, NX, SN, IK, IS, IA; // integer
         var FIM, KSI, KSIN, P, PP, PSI, COM, T, FIC, X, T1, TETA, TOUT, LOM, CF, SF, MC, IMC, IMC0, MC0; // float
         var WT; // boolean
         var D1Z, DZ0, DZC, Z, SIG, MSIG, IMV0, MV0, IMV, MV; // Complex
@@ -155,6 +185,8 @@
         GA = MatMult.createArray(genSize , 2);
         //delete GA[0];
         for (var c0 in GA) {
+            if (!GA.hasOwnProperty(c0)) continue;
+
             for (var c01 = -1; c01 <= 1; c01++) GA[c0][c01] = 0;
         }
 
@@ -176,7 +208,11 @@
         AUX = MatMult.createArray(genSize +1, NBX +1, 2); //new Array(5 +1);
         delete AUX[0];
         for (var c1 in AUX){
+            if (!AUX.hasOwnProperty(c1)) continue;
+
             for (var c2 in AUX[c1]){
+                if (!AUX[c1].hasOwnProperty(c2)) continue;
+
                 // special case where for..in can't recognize [-1, 1] array, so sad =/
                 //for (var c3 in AUX[c1][c2]){
                 for (var c3 = -1; c3 <=1; c3++){
@@ -204,7 +240,11 @@
         //        for (var c6 = 0; c6 < NFI +1; c6++)
         //            G[c4][c5][c6] = 0;
         for (var c4 in G){
+            if (!G.hasOwnProperty(c4)) continue;
+
             for (var c5 in G[c4]){
+                if (!G[c4].hasOwnProperty(c5)) continue;
+
                 // TODO don't know why for..in doesn't work in this case
                 //for (var c6 in G[c4][c5]){
                 var c6len = G[c4][c5].length;
@@ -215,14 +255,17 @@
         }
 
         var cntPath = 'BBdat/_Cnt.dat'; // looks like path depends on app.js for server side
+        //noinspection JSUnresolvedFunction
         var fd = fs.openSync(cntPath, 'w');
         var recBuffer;
 
         if (INDEX > 0 && INDEX < 3) {
             recBuffer = new Buffer('T, ' + 'FX, ' + 'FY, ' + 'MOM\n');
+            //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
         } else if (INDEX > 3) {
             recBuffer = new Buffer('T, ' + 'WX, ' + 'WY, ' + 'VX, ' + 'VY, ' + 'X, ' + 'Y, ' + 'EPS\n');
+            //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
         } else {
             console.log("Unknown value of INDEX", INDEX);
@@ -245,7 +288,10 @@
         FIC=0;
         N=0;
 
+        var jStepsCnt = 0;
         while (true){
+            var timeAtBegin = new Date();
+
             N++;
             if (T > TM) break;
             if (Math.abs(T) < DT / 2)
@@ -253,24 +299,7 @@
                 T = 0;
                 data.currentT = T;
             }
-            console.log(" T = ", T);
-            if (ICOUNT % 7 == 0) console.log("\n");
-            ICOUNT++;
-            if (compareWithEps(T, 1)) {
-                var stopHere = 0;
-            }
-            if (compareWithEps(T, 2)) {
-                var stopHere = 0;
-            }
-            if (compareWithEps(T, 3)) {
-                var stopHere = 0;
-            }
-            if (compareWithEps(T, 4)) {
-                var stopHere = 0;
-            }
-            if (compareWithEps(T, 5)) {
-                var stopHere = 0;
-            }
+            console.log(" T = ", T.toFixedDef());
             T1 = T + DT;
             WT = (T > TOUT - DT/4);
             if (WT) TOUT = TOUT + STEP;
@@ -320,24 +349,33 @@
                           //  AUX[c1][c2] = [];
                     // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
                     for (var c8 in AUX){
-                        for (var c9 in AUX[c1]){
+                        if (!AUX.hasOwnProperty(c8)) continue;
+
+                        for (var c9 in AUX[c8]){
+                            if (!AUX[c8].hasOwnProperty(c9)) continue;
+
                             AUX[c8][c9][IK] = 0;
                         }
                     }
-                    for (var c10 in G) GA[c10 -1][-1] = G[c10][0][I];
-                    for (var c11 in G) GA[c11 -1][0] = G[c11][1][I];
+                    for (var c10 in G) {
+                        if (!G.hasOwnProperty(c10)) continue;
+
+                        GA[c10 -1][-1] = G[c10][0][I];
+                    }
+                    for (var c11 in G) {
+                        if (!G.hasOwnProperty(c11)) continue;
+
+                        GA[c11 -1][0] = G[c11][1][I];
+                    }
                     for (J = 1; J <= NX; J++){
                         X = X + DX;
-                        for (var c12 in G) GA[c12 -1][1] = G[c12][J+1][I];
+                        for (var c12 in G) {
+                            if (!G.hasOwnProperty(c12)) continue;
+
+                            GA[c12 -1][1] = G[c12][J+1][I];
+                        }
                         P = 1 / ((1 + COM * (X - DX/2)) * LOM);
                         PP = COM / (1 + COM * (X - DX/2));
-                        var rFIX = matrix.scalarSafe(FIX, DT / DX);
-                        var rFIY = matrix.scalarSafe(FIY, DT * P / DFI);
-                        var s1 = matrix.addition(
-                                matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
-                            );
-                        var rQ = matrix.scalarSafe(Q, DT * PP);
-                        var s2 = matrix.addition(s1, rQ);
                         LAX = matrix.addition(
                             matrix.addition(
                                 matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
@@ -359,13 +397,21 @@
                         W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
 
                         var recG = new Array(genSize);
-                        for (var c13 in G) recG[c13-1] = G[c13][J][I-1];
+                        for (var c13 in G) {
+                            if (!G.hasOwnProperty(c13)) continue;
+
+                            recG[c13-1] = G[c13][J][I-1];
+                        }
                         var recGtrFIYP = matrix.vectorTranspose(recG);
                         U = matrix.multiply(FIYP, recGtrFIYP); //recG);
 
                         W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
 
-                        for (var c14 in G) recG[c14-1] = G[c14][J][I+1];
+                        for (var c14 in G) {
+                            if (!G.hasOwnProperty(c14)) continue;
+
+                            recG[c14-1] = G[c14][J][I+1];
+                        }
                         var recGtrFIYM = matrix.vectorTranspose(recG);
                         U = matrix.multiply(FIYM, recGtrFIYM); // recG);
 
@@ -374,8 +420,14 @@
                         LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
                         LX = matrix.inverse(LX);
                         W = matrix.multiply(LX, W);
-                        for (var c15 in AUX) AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
+                        for (var c15 in AUX) {
+                            if (!AUX.hasOwnProperty(c15)) continue;
+
+                            AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
+                        }
                         for (var c16 in GA) {
+                            if (!GA.hasOwnProperty(c16)) continue;
+
                             GA[c16][-1] = GA[c16][0];
                             GA[c16][0] = GA[c16][1];
                         }
@@ -402,13 +454,25 @@
                     }
                     U = matrix.multiply(FU, U);
                     var recAUX = new Array(genSize);
-                    for (var c17 in AUX) recAUX[c17-1] = AUX[c17][1][IK];
+                    for (var c17 in AUX) {
+                        if (!AUX.hasOwnProperty(c17)) continue;
+
+                        recAUX[c17-1] = AUX[c17][1][IK];
+                    }
                     W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                     var recWpU = matrix.addition(W, U);
-                    for (var c18 in AUX) AUX[c18][0][IK] = recWpU[c18 -1][0]; // recWpU[c18 -1]
+                    for (var c18 in AUX) {
+                        if (!AUX.hasOwnProperty(c18)) continue;
+
+                        AUX[c18][0][IK] = recWpU[c18 -1][0];
+                    } // recWpU[c18 -1]
                     if ((I > 1) && (I < NFI-1)) {
                         for (var c19 in G){
+                            if (!G.hasOwnProperty(c19)) continue;
+
                             for (var c20 in G[c19]){
+                                if (!G[c19].hasOwnProperty(c20)) continue;
+
                                 G[c19][c20][I-SN] = AUX[c19][c20][IS];
                             }
                         }
@@ -426,17 +490,29 @@
             //if (T < 0) goto200();
             if (T >= 0) {
                 for (var c21 in G){
+                    if (!G.hasOwnProperty(c21)) continue;
+
                     for (var c22 in G[c21]){
+                        if (!G[c21].hasOwnProperty(c22)) continue;
+
                         G[c21][c22][I+SN] = AUX[c21][c22][IS];
                     }
                 }
                 for (var c23 in G){
+                    if (!G.hasOwnProperty(c23)) continue;
+
                     for (var c24 in G[c23]){
+                        if (!G[c23].hasOwnProperty(c24)) continue;
+
                         G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
                     }
                 }
                 for (var c25 in G){
+                    if (!G.hasOwnProperty(c25)) continue;
+
                     for (var c26 in G[c25]){
+                        if (!G[c25].hasOwnProperty(c26)) continue;
+
                         G[c25][c26][0] = G[c25][c26][NFI-1];
                     }
                 }
@@ -450,6 +526,7 @@
                         (recCmplxMV.im).toFixedDef() + " " +
                         (KPFI * MC).toFixedDef()
                     );
+                    //noinspection JSUnresolvedFunction
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 } else {
                     if (INDEX > 3) {
@@ -474,6 +551,7 @@
                             (L * recCmplxDZC.im).toFixedDef() + " " +
                             (KPFI * MC / (LC*LC)).toFixedDef() + "!!!\n;;;"
                         );
+                        //noinspection JSUnresolvedFunction
                         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                     }
                 }
@@ -483,23 +561,73 @@
             if (WT) COUNTOUT(T);
             T = T1;
             data.currentT = T;
+
+            jStepsCnt++;
+            console.log(jStepsCnt, ')',  (new Date())-timeAtBegin, 'ms to count');
         }
 
+        //noinspection JSUnresolvedFunction
         fs.closeSync(fd);
         //DO I=11,20
             //CLOSE(I)
         //END DO
-        for (I = 0; I < fds1.length; I++) fs.closeSync(fds1[I]);
-        for (I = 0; I < fds2.length; I++) fs.closeSync(fds2[I]);
+        for (I = 0; I < fds1.length; I++) {
+            //noinspection JSUnresolvedFunction
+            fs.closeSync(fds1[I]);
+        }
+        for (I = 0; I < fds2.length; I++) {
+            //noinspection JSUnresolvedFunction
+            fs.closeSync(fds2[I]);
+        }
+
+        jOutput();
+
+        function jOutput(){
+            // jOutputBlock, output
+            var jOutputProfiler = new Date();
+            var joNames = ['V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat', 'V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
+            var bufEL = new Buffer('\n');
+            var bufELlen = bufEL.length;
+            for (var ji in outBuf){
+                if (!outBuf.hasOwnProperty(ji)) continue;
+
+                var jpath = 'BBdat/!' + joNames[ji];
+                //noinspection JSUnresolvedFunction
+                var jfd = fs.openSync(jpath, 'w');
+
+                for (var jj in outBuf[ji]){
+                    if (!outBuf[ji].hasOwnProperty(jj)) continue;
+
+                    if (outBuf[ji][jj].length > 0){
+                        for (var jk in outBuf[ji][jj]){
+                            if (!outBuf[ji][jj].hasOwnProperty(jk)) continue;
+
+                            //noinspection JSUnresolvedFunction
+                            fs.writeSync(jfd, outBuf[ji][jj][jk], 0, outBuf[ji][jj][jk].length, null);
+                        }
+                    }
+                    //noinspection JSUnresolvedFunction
+                    fs.writeSync(jfd, bufEL, 0, bufELlen, null);
+                }
+
+                //noinspection JSUnresolvedFunction
+                fs.closeSync(jfd);
+            }
+            console.log((new Date())-jOutputProfiler, 'ms to write all data to files');
+        }
 
         function COUNTOUT(T){
-            var I, M, J, JNT, K, N, COUNT=3;
-            var X, TETA;
+            var I, M, J, K, N; //, JNT, COUNT=3; // integer
+            var X;  // float
             var rBuffer;
             // QP = 0;
             //MatMult.fillArray(QP, 0);
             for (var c1 in QP){
+                if (!QP.hasOwnProperty(c1)) continue;
+
                 for (var c2 in QP[c1]){
+                    if (!QP[c1].hasOwnProperty(c2)) continue;
+
                     var QPlen = QP[c1][c2].length;
                     for (var c3 = 0; c3 < QPlen; c3++){
                         QP[c1][c2][c3] = 0;
@@ -507,8 +635,8 @@
                 }
             }
 
-            JNT = COUNT;
-            TETA = TET0;
+            // JNT = COUNT; // not used
+            // TETA = TET0; // not used
             I = 0;
             for (J = 1; J <= NTP + 1; J++) {
                 I = ITP[J];
@@ -533,13 +661,17 @@
                     if (T < 0){
                         KSI = KSIN - K*DX*CF;
                         PSI = BBstart.TENS(LC * (T - KSI));
-                        for (var c3 in QP){
+                        for (var c4 in QP){
+                            if (!QP.hasOwnProperty(c4)) continue;
+
                             // TODO, hmm, why not UFI(:) ???? original: QP(:,N,J)=PSI*UFI
-                            QP[c3][N][J] = PSI * UFI[c3-1];
+                            QP[c4][N][J] = PSI * UFI[c4 -1];
                         }
                     } else {
-                        for (var c3 in QP){
-                            QP[c3][N][J] = G[c3][K][I];
+                        for (var c5 in QP){
+                            if (!QP.hasOwnProperty(c5)) continue;
+
+                            QP[c5][N][J] = G[c5][K][I];
                         }
                     }
                     X = X + STEPX;
@@ -553,36 +685,44 @@
                     for (M = 1; M <= 5; M++){
                         // probably SOLVED WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
                         st = "";
-                        st += T.toFixedDef() + " ";
+                        st += T.toFixedDef().toFixedLen(6) + "   ";
                         for (var qpj = 1; qpj <= NTP + 1; qpj++){
-                            st += (QP[M][I][qpj]).toExponential(3); //.toFixedDef();
-                            st += " ";
+                            st += (QP[M][I][qpj]).toExponential(5).toFixedLen(12); //.toFixedDef();
+                            st += "   ";
                         }
                         st += "\n";
                         rBuffer = new Buffer(st);
+                        //noinspection JSUnresolvedFunction
                         fs.writeSync(fds1[M-1], rBuffer, 0, rBuffer.length, null);
+
+                        // jOutputBlock, recording
+                        outBuf[M-1][I].push(rBuffer);
                     }
                 }
                 if (I <= NTP) {
                     for (M = 1; M <= 5; M++){
                         // probably SOLVED WRITE(M+15,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,N,I+1),N=0,NXDST);
                         st = "";
-                        st += T.toFixedDef() + " ";
+                        st += T.toFixedDef().toFixedLen(6) + "   ";
                         for (var qpn = 0; qpn <= NXDST; qpn++){
-                            st += (QP[M][qpn][I+1]).toExponential(3); //.toFixedDef();
-                            st += " ";
+                            st += (QP[M][qpn][I+1]).toExponential(5).toFixedLen(12); //.toFixedDef();
+                            st += "   ";
                         }
                         st += "\n";
                         rBuffer = new Buffer(st);
+                        //noinspection JSUnresolvedFunction
                         fs.writeSync(fds2[M-1], rBuffer, 0, rBuffer.length, null);
+
+                        // jOutputBlock, recording
+                        outBuf[M-1+5][I].push(rBuffer);
                     }
                 }
-                JNT = JNT + NTIME;
+                //JNT = JNT + NTIME;
             }
-            // block end, so add endOfLine in every doc
-            for (var fdsi in fds1) { if (fds1.hasOwnProperty(fdsi)) writeToFile(fds1[fdsi], "\n");}
-            for (var fdsj in fds2) { if (fds2.hasOwnProperty(fdsj)) writeToFile(fds2[fdsj], "\n");}
-            COUNT = COUNT + 1;
+
+            //COUNT = COUNT + 1;
+
+            jOutput();
         }
 
         function INITLOAD(T){
@@ -605,6 +745,8 @@
                     PSI = BBstart.TENS(LC * (T-KSI));
                     if (T >= KSI) {
                         for (var c1 in G) {
+                            if (!G.hasOwnProperty(c1)) continue;
+
                             G[c1][K][I] = PSI * UFI[c1-1];
                         }
                     }

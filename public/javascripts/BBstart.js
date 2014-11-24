@@ -79,6 +79,7 @@
         console.log("STARTPROC has start work");
 
         var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
+        //noinspection JSUnresolvedFunction
         var filedata = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
         //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, filedata){
         //if (err) throw err;
@@ -375,10 +376,12 @@
 
         var CavformPath = 'BBdat/_Cavform.dat'; // looks like path depends on app.js for server side
         // fs.open
+        //noinspection JSUnresolvedFunction
         var fd = fs.openSync(CavformPath, 'w');
         // SOLVED, writing to console? WRITE(30,'(6(5X,A))')  ' TETA ', '   R   ','COS(FI)','SIN(FI) ','COS(PSI) ','SIN(PSI) '
         // write to file here
         var recBuffer = new Buffer('TETA, ' + 'R, ' + 'COS(FI), ' + 'SIN(FI), ' + 'COS(PSI), ' + 'SIN(PSI)\n');
+        //noinspection JSUnresolvedFunction
         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
         S = 0;
         JC = 0;
@@ -412,6 +415,7 @@
                 (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef() + " " +
                 (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef() +
                 "\n" );
+            //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             TETA = TETA + H;
         }
@@ -487,6 +491,7 @@
         RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
 
         // fs.close
+        //noinspection JSUnresolvedFunction
         fs.closeSync(fd);
         console.log(CavformPath, "file written");
         console.log("GEOMPROC has end work");
@@ -596,7 +601,7 @@
 
     function MTRXPROC(){
         var J;
-        var M, F, LAY, LAX // [5,5] of float
+        var M, F, LAY, LAX; // [5,5] of float
         var E; // [3,5] of float
         var LBD; // [2,5] of float
         var CG, SG;
@@ -788,14 +793,17 @@
         var T = 0;
 
         var CavformPath = 'BBdat/_Epure.dat'; // looks like path depends on app.js for server side
+        //noinspection JSUnresolvedFunction
         var fd = fs.openSync(CavformPath, 'w');
         var recBuffer = new Buffer('T, ' + 'F\n');
+        //noinspection JSUnresolvedFunction
         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
 
         if (EPUR == 1) {
             while (true){
                 if (T > TPLUS) break;
                 recBuffer = new Buffer(T.toFixedDef() + ' ' + (-C2*C2*RO2*TENS(T)*1E-06).toFixedDef() + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 T = T + TPLUS/50;
             }
@@ -803,6 +811,7 @@
             while (true) {
                 if (T > TMAX) break;
                 recBuffer = new Buffer(T.toFixedDef() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toFixedDef() + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                 T = T + TMAX/1000;
             }
@@ -810,6 +819,7 @@
             console.log("Unknown value of EPUR:", EPUR);
         }
 
+        //noinspection JSUnresolvedFunction
         fs.closeSync(fd);
     }
 
@@ -827,6 +837,7 @@
 
         for (I = 11; I <= 15; I++) {
             path = 'BBdat/_' + ARS1[I-11]; // looks like path depends on app.js for server side
+            //noinspection JSUnresolvedFunction
             fds1.push( fs.openSync(path, 'w') );
 
             // TODO H. have clear file loop here, but I don't think it's necessary here.
@@ -840,14 +851,16 @@
 
             for (J=0; J <= NXDST; J++){
                 JNT = J * NTIME + 1;
-                // TODO moved coursor of file. But general idea is put current value of X and T values in the heads.
+                // TODO moved cursor of file. But general idea is put current value of X and T values in the heads.
 
                 recBuffer = new Buffer('X= ' + X.toFixedDef() + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
 
                 recStr = '';
                 for (var c1 = 0, lenStr = STR.length; c1 < lenStr; c1++) recStr += STR[c1] + ' ';
                 recBuffer = new Buffer('T ' + recStr + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
 
                 X = X + STEPX;
@@ -859,6 +872,7 @@
         STR = [];
         for (I = 16; I <= 20; I++){
             path = 'BBdat/_' + ARS2[I-16]; // looks like path depends on app.js for server side
+            //noinspection JSUnresolvedFunction
             fds2.push( fs.openSync(path, 'w') );
 
             // TODO H. have clear file loop here, but I don't think it's necessary here.
@@ -874,11 +888,13 @@
                 JNT = (J-1) * NTIME + 1;
 
                 recBuffer = new Buffer('TETA= ' + TP[J].toFixedDef() + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
 
                 recStr = '';
                 for (var c2 = 0, lenStr2 = STR.length; c2 < lenStr2; c2++) recStr += STR[c2] + ' ';
                 recBuffer = new Buffer('T ' + recStr + '\n');
+                //noinspection JSUnresolvedFunction
                 fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
             }
 
