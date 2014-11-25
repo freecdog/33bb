@@ -46,10 +46,6 @@
     var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
     var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
-    // SOLVED CONTAINS, does it mean something for js? Is it for variables namespace? No it's just place where subroutines take places
-
-    // SOVLED, why don't you convert BBinput.dat to json???
-    // reading of BBinput.dat file
     function STARTPROC(){
         data = new Datatone();
 
@@ -57,29 +53,11 @@
         var GAPOIS = new Boolean();
         var I;
 
-        // Test
-        //Singletone.prototype.asd = { f: 123};
-        //Singletone.prototype.gasdg = 52351;
-        //var data = new Singletone();
-        //Singletone.prototype.dfijh = "-458293";
-        //Singletone.prototype.igjdfoijdfg = 333;
-
-        //var data = new Datatone();
-        //Datatone.prototype.asd = { f: 123};
-        //Datatone.prototype.gasdg = 52351;
-        //Datatone.prototype.dfijh = "-458293";
-        //Datatone.prototype.igjdfoijdfg = 333;
-
-        //var data2 = new Datatone();
-        //Datatone.prototype.g3g = { zxc: 632};
-        //Datatone.prototype.gasdg = 999;
-        //data2.qwe = { ewq: 97979797};
-        //data.asd.f = 321;
-
         console.log("STARTPROC has start work");
 
         function loadData(source){
-            source = source || 'json';
+            var inputData = {};
+
             if (source == 'json'){
                 // TODO, move method to module, and make it
                 function loadFromJSONFile(extendedObject, filePath){
@@ -113,89 +91,199 @@
                     }
                 }
 
-                var inputData = {};
                 loadFromJSONFile(inputData, 'public/dat/BBinput.json');
-                inputData.NTP = inputData.printPoints.length;
 
-                ALFA = inputData.ALFA;
-
-                SPLIT = inputData.SPLIT;
-                RZ = inputData.RZ;
-                X = inputData.X;
-                RO2 = inputData.RO2;
-                C2 = inputData.C2;
-                GAPOIS = inputData.GAPOIS;
-                POIS = inputData.POIS;
-                GAMMA = inputData.GAMMA;
-                XDESTR = inputData.XDESTR;
-
-                EPUR = inputData.EPUR;
-
-                if (SPLIT){
-                    LS = inputData.waveShapes[0].LS;
-                    RC1 = inputData.waveShapes[0].RC1;
-                    C1 = inputData.waveShapes[0].C1;
-                    C0 = inputData.waveShapes[0].C0;
-                    RO0 = inputData.waveShapes[0].RO0;
-                    FILL = inputData.waveShapes[0].FILL;
-                }
-
-                INDEX = inputData.INDEX;
-                FRIC = inputData.FRIC;
-                M0 = inputData.M0;
-
-                TM = inputData.TM;
-                DT = inputData.DT;
-                DFI = inputData.DFI;
-
-                DX = inputData.DX;
-                NTP = inputData.NTP;
-
-                TP = new Array(NTP+2);
-                for (var ppIt in inputData.printPoints){
-                    if (!inputData.printPoints.hasOwnProperty(ppIt)) continue;
-
-                    TP[parseInt(ppIt) +1] = inputData.printPoints[ppIt];
-                }
-
-                OMG = inputData.OMG;
-                BET = inputData.BET;
-                STEP = inputData.STEP;
-                STEPX = inputData.STEPX;
-                DELTA = inputData.DELTA;
             } else if (source == 'dat'){
-                ;
-            }
-        }
-        loadData();
 
-        var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
-        //noinspection JSUnresolvedFunction
-        var filedata = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
-        //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, filedata){
-        //if (err) throw err;
-        console.log(filedata);
-        console.log("=============================");
-            // pos is list of used positions
-            //var pos = {};
-        ALFA = jParse('int');
+                // helpful method for reading
+                var lastIndex = 0;
+                function jParse(varType, shift, symb, len, src){
+                    shift = shift || 1;
+                    symb = symb || '=';
+                    len = len || 10;
+                    src = src || filedata;
+
+                    var pnt = src.indexOf(symb, lastIndex) + shift;
+                    var ans;
+                    if (varType == 'float')
+                        ans = parseFloat(src.substr(pnt, len));
+                    else if (varType == 'int')
+                        ans = parseInt(src.substr(pnt, len));
+                    else if (varType == 'bool')
+                        ans = charToBoolean(src.substr(pnt, len));
+                    else
+                        ans = src.substr(pnt, len);
+                    //lastIndex = pnt + shift + len;
+                    lastIndex = pnt + ans.toString().length;
+
+                    return ans;
+                }
+
+                var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
+                //noinspection JSUnresolvedFunction
+                var filedata = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
+                //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, filedata){
+                //if (err) throw err;
+                console.log(filedata);
+                console.log("=============================");
+                inputData.ALFA = jParse('int');
+
+                inputData.SPLIT = jParse('bool', 4, '=', 1);
+                inputData.RZ = jParse('float');
+                inputData.X = jParse('float');
+                inputData.RO2 = jParse('float');
+                inputData.C2 = jParse('float');
+                inputData.GAPOIS = jParse('bool', 3, '=', 1);
+                inputData.POIS = jParse('float');
+                inputData.GAMMA = jParse('float');
+                inputData.XDESTR = jParse('float');
+
+                inputData.EPUR  = jParse('int');
+
+                jParse('float', 1, '*', 1);
+
+                if (inputData.SPLIT) {
+                    inputData.waveShapes = [];
+                    inputData.waveShapes[0].LS = jParse('float');
+                    inputData.waveShapes[0].RC1 = jParse('float');
+                    inputData.waveShapes[0].C1 = jParse('float');
+                    inputData.waveShapes[0].C0 = jParse('float');
+                    inputData.waveShapes[0].RO0 = jParse('float');
+                    inputData.waveShapes[0].FILL = jParse('str', 2, '=', 5);
+                }
+
+                jParse('float', 1, '*', 1);
+
+                inputData.INDEX = jParse('int');
+                inputData.FRIC = jParse('float');
+                inputData.M0 = jParse('float');
+
+                jParse('float', 1, '*', 1);
+
+                inputData.TM = jParse('float');
+                inputData.DT = jParse('float');
+                inputData.DFI = jParse('float');
+
+                inputData.DX = jParse('float');
+                inputData.NTP = jParse('float');    // probably it would be redefined by length of printPoints array
+
+                //inputData.TP = new Array(inputData.NTP+2);
+                inputData.printPoints = [];
+                for (var itTP = 0; itTP < inputData.NTP; itTP++) {
+                    if (itTP == 0)
+                        inputData.printPoints.push(jParse('float'));
+                        //inputData.TP[itTP + 1] = jParse('float');
+                    else
+                        inputData.printPoints.push(jParse('float', 1, ',', 10));
+                        //inputData.TP[itTP + 1] = jParse('float', 1, ',', 10);
+                }
+                inputData.OMG = jParse('float');
+                inputData.BET = jParse('float');
+                inputData.STEP = jParse('float');
+                inputData.STEPX = jParse('float');
+                inputData.DELTA = jParse('int');
+
+            } else {
+                // default config
+                inputData = {
+                    ALFA: 0,
+                    SPLIT: false,
+                    RZ: 2.55E-02,
+                    X: 10,
+                    RO2: 2.8E03,
+                    C2: 4.5E03,
+                    GAPOIS: false,
+                    POIS: 0.25,
+                    GAMMA: 0.6,
+                    XDESTR: 1.0,
+
+                    EPUR: 2,
+
+                    waveShapes: [
+                        {
+                            LS:0.67, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+                        },
+                        {
+                            LS: 2.0, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
+                        },
+                        {
+                            LS: 0.67, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
+                        },
+                        {
+                            LS: 2.0, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+                        }
+                    ],
+
+                    INDEX: 0,
+                    FRIC: 0,
+                    M0: 1.5,
+
+                    TM: 5,
+                    DT: 0.02,
+                    DFI: 3.0,
+                    DX: 0.02,
+                    NTP: 7,
+                    printPoints: [ 0,15,30,45,60,75,90 ],
+                    OMG: 0.98,
+                    BET: 0.7,
+                    STEP: 0.1,
+                    STEPX: 0.1,
+                    DELTA: 1
+                };
+
+            }
+
+            ALFA = inputData.ALFA;
+
+            SPLIT = inputData.SPLIT;
+            RZ = inputData.RZ;
+            X = inputData.X;
+            RO2 = inputData.RO2;
+            C2 = inputData.C2;
+            GAPOIS = inputData.GAPOIS;
+            POIS = inputData.POIS;
+            GAMMA = inputData.GAMMA;
+            XDESTR = inputData.XDESTR;
+
+            EPUR = inputData.EPUR;
+
+            if (SPLIT){
+                LS = inputData.waveShapes[0].LS;
+                RC1 = inputData.waveShapes[0].RC1;
+                C1 = inputData.waveShapes[0].C1;
+                C0 = inputData.waveShapes[0].C0;
+                RO0 = inputData.waveShapes[0].RO0;
+                FILL = inputData.waveShapes[0].FILL;
+            }
+
+            INDEX = inputData.INDEX;
+            FRIC = inputData.FRIC;
+            M0 = inputData.M0;
+
+            TM = inputData.TM;
+            DT = inputData.DT;
+            DFI = inputData.DFI;
+
+            DX = inputData.DX;
+            NTP = inputData.printPoints.length;
+
+            TP = new Array(NTP+2);
+            for (var ppIt in inputData.printPoints){
+                if (!inputData.printPoints.hasOwnProperty(ppIt)) continue;
+
+                TP[parseInt(ppIt) +1] = inputData.printPoints[ppIt];
+            }
+
+            OMG = inputData.OMG;
+            BET = inputData.BET;
+            STEP = inputData.STEP;
+            STEPX = inputData.STEPX;
+            DELTA = inputData.DELTA;
+        }
+        loadData('json');    // json, dat, null (default config)
 
         ALFA = ALFA * Math.PI / 180;
         ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
-
-        SPLIT = jParse('bool', 4, '=', 1);
-        RZ = jParse('float');
-        X = jParse('float');
-        RO2 = jParse('float');
-        C2 = jParse('float');
-        GAPOIS = jParse('bool', 3, '=', 1);
-        POIS = jParse('float');
-        GAMMA = jParse('float');
-        XDESTR = jParse('float');
-
-        EPUR  = jParse('int');
-
-        jParse('float', 1, '*', 1);
 
         if (GAPOIS) {
             B = GAMMA * GAMMA;
@@ -239,13 +327,6 @@
         console.log('\n');
         console.log('S0 =', S0);
         if (SPLIT) {
-            LS = jParse('float');
-            RC1 = jParse('float');
-            C1 = jParse('float');
-            C0 = jParse('float');
-            RO0 = jParse('float');
-            FILL = jParse('str', 2, '=', 5);
-
             RC0 = RO0 * C0;
             KAP1 = (RC1 - RC0) / (RC1 + RC0);
             KAP1 = KAP1 * KAP1;
@@ -253,14 +334,6 @@
             T0 = RZ * (LS/C1 + (X-LS)/C2);
             DTT = 2 * LS * RZ / C1;
         }
-
-        jParse('float', 1, '*', 1);
-
-        INDEX = jParse('int');
-        FRIC = jParse('float');
-        M0 = jParse('float');
-
-        jParse('float', 1, '*', 1);
 
         M0 = 1 / M0;
 
@@ -277,29 +350,9 @@
             }
         }
 
-        TM = jParse('float');
-        DT = jParse('float');
-        DFI = jParse('float');
-
         DFI = DFI * Math.PI / 180;
 
         ITP = new Array(NTP+2);
-
-        DX = jParse('float');
-        NTP = jParse('float');
-
-        TP = new Array(NTP+2);
-        for (var itTP = 0; itTP < NTP; itTP++) {
-            if (itTP == 0)
-                TP[itTP + 1] = jParse('float');
-            else
-                TP[itTP + 1] = jParse('float', 1, ',', 10);
-        }
-        OMG = jParse('float');
-        BET = jParse('float');
-        STEP = jParse('float');
-        STEPX = jParse('float');
-        DELTA = jParse('int');
 
         STEPFI();
 
@@ -358,30 +411,6 @@
         data.C2 = C2;
 
         console.log("STARTPROC has end work");
-
-        // helpfull method for reading
-        var lastIndex = 0;
-        function jParse(varType, shift, symb, len, src){
-            shift = shift || 1;
-            symb = symb || '=';
-            len = len || 10;
-            src = src || filedata;
-
-            var pnt = src.indexOf(symb, lastIndex) + shift;
-            var ans;
-            if (varType == 'float')
-                ans = parseFloat(src.substr(pnt, len));
-            else if (varType == 'int')
-                ans = parseInt(src.substr(pnt, len));
-            else if (varType == 'bool')
-                ans = charToBoolean(src.substr(pnt, len));
-            else
-                ans = src.substr(pnt, len);
-            //lastIndex = pnt + shift + len;
-            lastIndex = pnt + ans.toString().length;
-
-            return ans;
-        }
 
     }
     exports.STARTPROC = STARTPROC;
