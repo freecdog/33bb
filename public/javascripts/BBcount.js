@@ -8,7 +8,7 @@ var clientSide = typeof exports === 'undefined' ? true : false;
 
     var async = require('./async/lib/async.js');
 
-    var FUNC2 = require('./Func2.js');
+    var FUNC2 = require('./FUNC2.js');
     var MatMult = require('./MatMult.js');
     var BBstart = require('./BBstart.js');
     var Datatone = require('./Datatone.js').Datatone;

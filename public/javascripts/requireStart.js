@@ -11,11 +11,19 @@ requirejs.config({
 });
 
 requirejs([
+    //'BBup'
+    'numbers'
+], function(numbers){
+    console.log(numbers);
+});
+
+/*
+requirejs([
     'numbers',
+    'FUNC2',
     'async',
     'MatMult',
-    'Func2',
     'BBstart',
     'BBcount',
     'BBup'
-]);
+]);*/

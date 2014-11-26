@@ -6,7 +6,7 @@ var clientSide = typeof exports === 'undefined' ? true : false;
 
 (function(exports){
 
-    var FUNC2 = require('./Func2.js');
+    var FUNC2 = require('./FUNC2.js');
     var MatMult = require('./MatMult.js');
     var Datatone = require('./Datatone.js').Datatone;
     var data;
