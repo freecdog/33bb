@@ -9,7 +9,7 @@ var clientSide = typeof exports === 'undefined';
 
     var BBstart = {};
 
-    var FUNCtt2 = require('./FUNCtt2.js');
+    var FUNC2 = require('./FUNC2.js');
     var MatMult = require('./MatMult.js');
     var Datatone = require('./Datatone.js').Datatone;
     var data;
@@ -448,7 +448,7 @@ var clientSide = typeof exports === 'undefined';
         H = Math.PI/180;
         TETA = 0;
 
-        var RTET = FUNCtt2.RTET;
+        var RTET = FUNC2.RTET;
         while(true){
             if (TETA > 2 * Math.PI) break;
             // SOLVED, SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
@@ -465,10 +465,10 @@ var clientSide = typeof exports === 'undefined';
             recBuffer = new Buffer(
                 (TETA*180/Math.PI).toFixedDef() + " " +
                 (RT).toFixedDef() + " " +
-                (Math.cos(FUNCtt2.ATN(TETA))).toFixedDef() + " " +
-                (Math.sin(FUNCtt2.ATN(TETA))).toFixedDef() + " " +
-                (Math.cos(FUNCtt2.ATN(TETA)-ALFA)).toFixedDef() + " " +
-                (Math.sin(FUNCtt2.ATN(TETA)-ALFA)).toFixedDef() +
+                (Math.cos(FUNC2.ATN(TETA))).toFixedDef() + " " +
+                (Math.sin(FUNC2.ATN(TETA))).toFixedDef() + " " +
+                (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef() + " " +
+                (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef() +
                 "\n" );
             //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
@@ -498,7 +498,7 @@ var clientSide = typeof exports === 'undefined';
                 if ( (A * B < 0) || ROOT) break;
                 A = B;
                 T = T + H;
-                B = FUNCtt2.ATN(T) - AK;
+                B = FUNC2.ATN(T) - AK;
                 //ROOT = (B==0); // there was float finite issue
                 ROOT = compareWithEps(B, 0);
             }
@@ -511,7 +511,7 @@ var clientSide = typeof exports === 'undefined';
                 while (true) {
                     if ((Math.abs(T2 - T1) < 0.0001) || ROOT) break;
                     T = 0.5 * (T1 + T2);
-                    B = FUNCtt2.ATN(T) - AK;
+                    B = FUNC2.ATN(T) - AK;
                     //ROOT = (B==0); // there was float finite issue
                     ROOT = compareWithEps(B, 0);
                     if ((A * B) > 0){
@@ -591,7 +591,7 @@ var clientSide = typeof exports === 'undefined';
             ROM = L;
             for (I=1; I <= NI; I++) {
                 var courbTet, longTet, rcurbTetAns;
-                rcurbTetAns = FUNCtt2.RCURB(TET,RO,LL);
+                rcurbTetAns = FUNC2.RCURB(TET,RO,LL);
                 RO = rcurbTetAns.A;
                 LL = rcurbTetAns.B;
                 RO=1/RO;
@@ -622,10 +622,10 @@ var clientSide = typeof exports === 'undefined';
             TETA = ATAR[I];
             TAR[I] = TETA;
             var courbTeta, longTeta, rcurbTetaAns;
-            rcurbTetaAns = FUNCtt2.RCURB(TETA, courbTeta, longTeta);
+            rcurbTetaAns = FUNC2.RCURB(TETA, courbTeta, longTeta);
             COURB[I] = rcurbTetaAns.A;
             LONG[I] = rcurbTetaAns.B;
-            FAR[I] = FUNCtt2.ATN(TETA) - ALFA;
+            FAR[I] = FUNC2.ATN(TETA) - ALFA;
         }
         I = 0;
         J = JTP;
