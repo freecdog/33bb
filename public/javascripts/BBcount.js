@@ -11,7 +11,7 @@ var clientSide = typeof exports === 'undefined';
 
     var async = require('./async/lib/async.js');
 
-    var FUNC2 = require('./FUNC2.js');
+    var FUNCtt2 = require('./FUNCtt2.js');
     var MatMult = require('./MatMult.js');
     var BBstart = require('./BBstart.js');
     var Datatone = require('./Datatone.js').Datatone;
@@ -767,7 +767,7 @@ var clientSide = typeof exports === 'undefined';
 
         function ZET(T){
             // ZET=-RTET(T)*EXP(IM*(T-ALFA))/L;
-            return (new Complex(-FUNC2.RTET(T), 0)).multiply(new Complex(Math.cos(T-ALFA), Math.sin(T-ALFA))).divide(new Complex(L, 0));
+            return (new Complex(-FUNCtt2.RTET(T), 0)).multiply(new Complex(Math.cos(T-ALFA), Math.sin(T-ALFA))).divide(new Complex(L, 0));
         }
     }
     //exports.COUNTPROC = COUNTPROC;

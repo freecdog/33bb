@@ -2,7 +2,10 @@
  * Created by jaric on 13.11.2014.
  */
 
-(function(exports){
+(function () {
+//(function(exports){
+
+    var Datatone = {};
 
     // https://github.com/podgorniy/javascript-toolbox/blob/master/singletone.js
     var Singletone = (function () {
@@ -20,5 +23,23 @@
         };
     }());
 
-    exports.Datatone = Singletone;
-})(typeof exports === 'undefined'? this['Datatone']={} : exports);
+    Datatone.Datatone = Singletone;
+    //exports.Datatone = Singletone;
+
+    // Node.js
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = Datatone;
+    }
+    // AMD / RequireJS
+    else if (typeof define !== 'undefined' && define.amd) {
+        define([], function () {
+            return Datatone;
+        });
+    }
+    // included directly via <script> tag
+    else {
+        root.Datatone = Datatone;
+    }
+
+}());
+//})(typeof exports === 'undefined'? this['Datatone']={} : exports);
