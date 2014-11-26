@@ -2,9 +2,12 @@
  * Created by jaric on 22.10.2014.
  */
 
-var clientSide = typeof exports === 'undefined' ? true : false;
+var clientSide = typeof exports === 'undefined';
 
-(function(exports){
+(function () {
+//(function(exports){
+
+    var BBstart = {};
 
     var FUNC2 = require('./FUNC2.js');
     var MatMult = require('./MatMult.js');
@@ -418,7 +421,8 @@ var clientSide = typeof exports === 'undefined' ? true : false;
         console.log("STARTPROC has end work", (new Date()) - startProcProfiler, "ms to complete STARTPROC");
 
     }
-    exports.STARTPROC = STARTPROC;
+    //exports.STARTPROC = STARTPROC;
+    BBstart.STARTPROC = STARTPROC;
 
     // TODO do it asynchronous
     function GEOMPROC(){
@@ -833,7 +837,8 @@ var clientSide = typeof exports === 'undefined' ? true : false;
             return FF(T);
         }
     }
-    exports.TENS = TENS;
+    //exports.TENS = TENS;
+    BBstart.TENS = TENS;
 
     function WAVEEPURE(){
         var TMAX = 50;
@@ -953,5 +958,20 @@ var clientSide = typeof exports === 'undefined' ? true : false;
         data.fds2 = fds2;
     }
 
+    // Node.js
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = BBstart;
+    }
+    // AMD / RequireJS
+    else if (typeof define !== 'undefined' && define.amd) {
+        define([], function () {
+            return BBstart;
+        });
+    }
+    // included directly via <script> tag
+    else {
+        root.BBstart = BBstart;
+    }
 
-})(typeof exports === 'undefined'? this['BBstart']={} : exports);
+}());
+//})(typeof exports === 'undefined'? this['BBstart']={} : exports);

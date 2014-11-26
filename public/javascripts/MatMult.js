@@ -22,7 +22,10 @@
 // // разница между :: и пробелом?
 // INTEGER :: N           ! number of equations
 // INTEGER PivRow, TarRow,I,K
-(function(exports){
+(function () {
+//(function(exports){
+
+    var MatMult = {};
 
     //!
     function oINV() {
@@ -133,7 +136,8 @@
 
         return arr;
     }
-    exports.createArray = createArray;
+    MatMult.createArray = createArray;
+    //exports.createArray = createArray;
 
     // getting array of dimension sizes from first elements
     function getArraySize(arr, ans){
@@ -147,7 +151,8 @@
         }
         return ans;
     }
-    exports.getArraySize = getArraySize;
+    MatMult.getArraySize = getArraySize;
+    //exports.getArraySize = getArraySize;
 
     // fill array with specified value
     function fillArray(arr, value){
@@ -176,7 +181,8 @@
 
         recur(0);
     }
-    exports.fillArray = fillArray;
+    MatMult.fillArray = fillArray;
+    //exports.fillArray = fillArray;
 
     // created for arrays that was spliced, or that which numeration starts from [1], but not from [0]. Sad :/
     function fillArraySafe(arr, value){
@@ -205,7 +211,8 @@
 
         recur(0);
     }
-    exports.fillArraySafe = fillArraySafe;
+    MatMult.fillArraySafe = fillArraySafe;
+    //exports.fillArraySafe = fillArraySafe;
 
     /*
 
@@ -456,7 +463,23 @@
     //function importLanguage(language){ return -1; }
     //exports.importLanguage = importLanguage;
 
-})(typeof exports === 'undefined'? this['MatMult']={} : exports);
+    // Node.js
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = MatMult;
+    }
+    // AMD / RequireJS
+    else if (typeof define !== 'undefined' && define.amd) {
+        define([], function () {
+            return MatMult;
+        });
+    }
+    // included directly via <script> tag
+    else {
+        root.MatMult = MatMult;
+    }
+
+}());
+//})(typeof exports === 'undefined'? this['MatMult']={} : exports);
 
 /* links
 

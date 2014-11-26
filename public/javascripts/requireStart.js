@@ -11,10 +11,12 @@ requirejs.config({
 });
 
 requirejs([
-    //'BBup'
-    'numbers'
-], function(numbers){
-    console.log(numbers);
+    'numbers',
+    'async'
+    //'FUNC2',
+    //'MatMult'
+], function(asd,dsa){
+    console.log(asd, dsa);
 });
 
 /*

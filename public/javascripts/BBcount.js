@@ -2,9 +2,12 @@
  * Created by jaric on 11.11.2014.
  */
 
-var clientSide = typeof exports === 'undefined' ? true : false;
+var clientSide = typeof exports === 'undefined';
 
-(function(exports){
+(function () {
+//(function(exports){
+
+    var BBcount = {};
 
     var async = require('./async/lib/async.js');
 
@@ -767,6 +770,23 @@ var clientSide = typeof exports === 'undefined' ? true : false;
             return (new Complex(-FUNC2.RTET(T), 0)).multiply(new Complex(Math.cos(T-ALFA), Math.sin(T-ALFA))).divide(new Complex(L, 0));
         }
     }
-    exports.COUNTPROC = COUNTPROC;
+    //exports.COUNTPROC = COUNTPROC;
+    BBcount.COUNTPROC = COUNTPROC;
 
-})(typeof exports === 'undefined'? this['BBcount']={} : exports);
+    // Node.js
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = BBcount;
+    }
+    // AMD / RequireJS
+    else if (typeof define !== 'undefined' && define.amd) {
+        define([], function () {
+            return BBcount;
+        });
+    }
+    // included directly via <script> tag
+    else {
+        root.BBcount = BBcount;
+    }
+
+}());
+//})(typeof exports === 'undefined'? this['BBcount']={} : exports);
