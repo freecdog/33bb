@@ -2,7 +2,11 @@
  * Created by jaric on 11.11.2014.
  */
 
+var clientSide = typeof exports === 'undefined' ? true : false;
+
 (function(exports){
+
+    var async = require('./async/lib/async.js');
 
     var FUNC2 = require('./Func2.js');
     var MatMult = require('./MatMult.js');
@@ -87,25 +91,6 @@
         }
         return s;
     };
-
-    // TODO how to send variables through modules
-    // Do them public ofc.
-    /*var NXDST = data.NXDST,
-        NTP = data.NTP,
-        NFI = data.NFI,
-        NBX = 310,
-        INDEX = 0,
-        T0 = 1.1,
-        L = 2.2030534365839607,
-        ALFA = 0,
-        TM = 5,
-        DT = 0.02,
-        STEP = 0.1,
-        DFI = 0.05235987755982988;
-    var DF = [];
-    DF.push(0);
-    for (var DFi = 1; DFi < 123; DFi++) { DF.push(DFI); }
-    DF[122] = 0;*/
 
     function COUNTPROC(){
         var data = new Datatone();
@@ -289,298 +274,321 @@
         N=0;
 
         var jStepsCnt = 0;
-        while (true){
-            var timeAtBegin = new Date();
 
-            N++;
-            if (T > TM) break;
-            if (Math.abs(T) < DT / 2)
-            {
-                T = 0;
-                data.currentT = T;
-            }
-            console.log(" T = ", T.toFixedDef());
-            T1 = T + DT;
-            WT = (T > TOUT - DT/4);
-            if (WT) TOUT = TOUT + STEP;
-            // НАЧАЛЬНАЯ ЗАГРУЗКА
-            if (compareWithEps(T, 0)) INITLOAD(T);
-            // РАСЧЕТ ВО ВНУТЕННИХ ТОЧКАХ
-            if (T >= 0) NX--;
+        ////while (true){
 
-            // AUX = 0; it's done a little higher
-            MV = new Complex(0, 0);
-            MC = 0;
-            SIG0 = [new Complex(0,0), new Complex(0, 0)];
-            MSIG0 = [new Complex(0,0), new Complex(0, 0)];
-            I = NFI;
-            K = 1;
-            IK = -1;
-            IS = 0;
-            SN = -1;
+        async.whilst(
+            function(){
+                var calcNext = (T <= TM);
+                if (data.breakCalculation === true){
+                    data.breakCalculation = false;
 
-            while (true){
-                I = NFI - I + K;
-                K = 1 - K;
-                SN = -SN;
-                DFI = DF[I];
-                TETA = TAR[I];
-                COM = COURB[I] * L;
-                LOM = LONG[I] / L;
-                FIM = FAR[I];
+                    calcNext = false;
+                }
 
-                //if (T < 0) goto100();
-                if (T >= 0){
+                return calcNext;
+            },
+            function(callback){
+                var timeAtBegin = new Date();
 
-                    if (INDEX >= 1){
-                        for (var c7 = 1; c7 <= 5; c7++) {W[c7 -1] = G[c7][0][I]; }
-                        D1Z = ZET(TETA + DFI/2).subtract(ZET(TETA - DFI/2));
-                        SIG = new Complex(W[5 -1], -W[3 -1]);
-                        MV = MV.add( (new Complex(0.5,0)).multiply( ( SIG.add(SIG0[K]) )).multiply(D1Z) );
-                        MSIG = SIG.multiply( (Z.subtract(ZC)).conjugate() );
-                        MC = MC + ( (new Complex(0.5, 0)).multiply( MSIG.add(MSIG0[K]) ).multiply(D1Z) ).im;
-                        SIG0[K] = SIG;
-                        MSIG0[K] = MSIG;
-                    }
-                    X = 0;
-                    //for (var c1 = 0; c1 < AUX.length; c1++) {
-                      //  AUX[c1] = new Array(NBX +1);
-                        //for (var c2 = 0; c2 < NBX +1; c2++) {
-                          //  AUX[c1][c2] = [];
-                    // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
-                    for (var c8 in AUX){
-                        if (!AUX.hasOwnProperty(c8)) continue;
+                N++;
+                ////if (T > TM) break;
+                if (Math.abs(T) < DT / 2){
+                    T = 0;
+                    data.currentT = T;
+                }
+                console.log(" T = ", T.toFixedDef());
+                T1 = T + DT;
+                WT = (T > TOUT - DT/4);
+                if (WT) TOUT = TOUT + STEP;
+                // НАЧАЛЬНАЯ ЗАГРУЗКА
+                if (compareWithEps(T, 0)) INITLOAD(T);
+                // РАСЧЕТ ВО ВНУТЕННИХ ТОЧКАХ
+                if (T >= 0) NX--;
 
-                        for (var c9 in AUX[c8]){
-                            if (!AUX[c8].hasOwnProperty(c9)) continue;
+                // AUX = 0; it's done a little higher
+                MV = new Complex(0, 0);
+                MC = 0;
+                SIG0 = [new Complex(0,0), new Complex(0, 0)];
+                MSIG0 = [new Complex(0,0), new Complex(0, 0)];
+                I = NFI;
+                K = 1;
+                IK = -1;
+                IS = 0;
+                SN = -1;
 
-                            AUX[c8][c9][IK] = 0;
+                while (true){
+                    I = NFI - I + K;
+                    K = 1 - K;
+                    SN = -SN;
+                    DFI = DF[I];
+                    TETA = TAR[I];
+                    COM = COURB[I] * L;
+                    LOM = LONG[I] / L;
+                    FIM = FAR[I];
+
+                    //if (T < 0) goto100();
+                    if (T >= 0){
+
+                        if (INDEX >= 1){
+                            for (var c7 = 1; c7 <= 5; c7++) {W[c7 -1] = G[c7][0][I]; }
+                            D1Z = ZET(TETA + DFI/2).subtract(ZET(TETA - DFI/2));
+                            SIG = new Complex(W[5 -1], -W[3 -1]);
+                            MV = MV.add( (new Complex(0.5,0)).multiply( ( SIG.add(SIG0[K]) )).multiply(D1Z) );
+                            MSIG = SIG.multiply( (Z.subtract(ZC)).conjugate() );
+                            MC = MC + ( (new Complex(0.5, 0)).multiply( MSIG.add(MSIG0[K]) ).multiply(D1Z) ).im;
+                            SIG0[K] = SIG;
+                            MSIG0[K] = MSIG;
                         }
-                    }
-                    for (var c10 in G) {
-                        if (!G.hasOwnProperty(c10)) continue;
+                        X = 0;
+                        //for (var c1 = 0; c1 < AUX.length; c1++) {
+                          //  AUX[c1] = new Array(NBX +1);
+                            //for (var c2 = 0; c2 < NBX +1; c2++) {
+                              //  AUX[c1][c2] = [];
+                        // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
+                        for (var c8 in AUX){
+                            if (!AUX.hasOwnProperty(c8)) continue;
 
-                        GA[c10 -1][-1] = G[c10][0][I];
-                    }
-                    for (var c11 in G) {
-                        if (!G.hasOwnProperty(c11)) continue;
+                            for (var c9 in AUX[c8]){
+                                if (!AUX[c8].hasOwnProperty(c9)) continue;
 
-                        GA[c11 -1][0] = G[c11][1][I];
-                    }
-                    for (J = 1; J <= NX; J++){
-                        X = X + DX;
-                        for (var c12 in G) {
-                            if (!G.hasOwnProperty(c12)) continue;
-
-                            GA[c12 -1][1] = G[c12][J+1][I];
-                        }
-                        P = 1 / ((1 + COM * (X - DX/2)) * LOM);
-                        PP = COM / (1 + COM * (X - DX/2));
-                        LAX = matrix.addition(
-                            matrix.addition(
-                                matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
-                            ),
-                            matrix.scalarSafe(Q, DT * PP)
-                        );
-                        LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
-                        var ga0 = matrix.getColUnSafe(GA, 0);
-                        ga0 = matrix.vectorTranspose(ga0);
-                        W = matrix.multiply(LX, ga0); //matrix.getColUnSafe(GA, 0));
-                        var ga1 = matrix.getColUnSafe(GA, -1);
-                        ga1 = matrix.vectorTranspose(ga1);
-                        U = matrix.multiply(FIXP, ga1); //matrix.getColUnSafe(GA, -1));
-
-                        W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
-                        var ga2 = matrix.getColUnSafe(GA, 1);
-                        ga2 = matrix.vectorTranspose(ga2);
-                        U = matrix.multiply(FIXM, ga2); //matrix.getColUnSafe(GA, 1));
-                        W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
-
-                        var recG = new Array(genSize);
-                        for (var c13 in G) {
-                            if (!G.hasOwnProperty(c13)) continue;
-
-                            recG[c13-1] = G[c13][J][I-1];
-                        }
-                        var recGtrFIYP = matrix.vectorTranspose(recG);
-                        U = matrix.multiply(FIYP, recGtrFIYP); //recG);
-
-                        W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
-
-                        for (var c14 in G) {
-                            if (!G.hasOwnProperty(c14)) continue;
-
-                            recG[c14-1] = G[c14][J][I+1];
-                        }
-                        var recGtrFIYM = matrix.vectorTranspose(recG);
-                        U = matrix.multiply(FIYM, recGtrFIYM); // recG);
-
-                        W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
-
-                        LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
-                        LX = matrix.inverse(LX);
-                        W = matrix.multiply(LX, W);
-                        for (var c15 in AUX) {
-                            if (!AUX.hasOwnProperty(c15)) continue;
-
-                            AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
-                        }
-                        for (var c16 in GA) {
-                            if (!GA.hasOwnProperty(c16)) continue;
-
-                            GA[c16][-1] = GA[c16][0];
-                            GA[c16][0] = GA[c16][1];
-                        }
-                    }
-                    // ДООПРЕДЕЛЕНИЕ ВЕКТОРА G(:,0,I)
-
-                    MatMult.fillArray(U, 0);
-                    if (INDEX >=4) {
-                        var Uexpr = (
-                                (
-                                    new Complex(Math.cos(-FIM), Math.sin(-FIM))
-                                ).multiply(
-                                        new Complex(KP, 0).multiply(
-                                            (
-                                                (new Complex(RISQ, 0)).multiply(IMV)
-                                            ).add(
-                                                IM.multiply(Z.multiply(ZC)).multiply(IMC)
-                                            )
-                                        )
-                                )
-                        );
-                        U[0] = Uexpr.re;
-                        U[1] = Uexpr.im;
-                    }
-                    U = matrix.multiply(FU, U);
-                    var recAUX = new Array(genSize);
-                    for (var c17 in AUX) {
-                        if (!AUX.hasOwnProperty(c17)) continue;
-
-                        recAUX[c17-1] = AUX[c17][1][IK];
-                    }
-                    W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
-                    var recWpU = matrix.addition(W, U);
-                    for (var c18 in AUX) {
-                        if (!AUX.hasOwnProperty(c18)) continue;
-
-                        AUX[c18][0][IK] = recWpU[c18 -1][0];
-                    } // recWpU[c18 -1]
-                    if ((I > 1) && (I < NFI-1)) {
-                        for (var c19 in G){
-                            if (!G.hasOwnProperty(c19)) continue;
-
-                            for (var c20 in G[c19]){
-                                if (!G[c19].hasOwnProperty(c20)) continue;
-
-                                G[c19][c20][I-SN] = AUX[c19][c20][IS];
+                                AUX[c8][c9][IK] = 0;
                             }
                         }
+                        for (var c10 in G) {
+                            if (!G.hasOwnProperty(c10)) continue;
+
+                            GA[c10 -1][-1] = G[c10][0][I];
+                        }
+                        for (var c11 in G) {
+                            if (!G.hasOwnProperty(c11)) continue;
+
+                            GA[c11 -1][0] = G[c11][1][I];
+                        }
+                        for (J = 1; J <= NX; J++){
+                            X = X + DX;
+                            for (var c12 in G) {
+                                if (!G.hasOwnProperty(c12)) continue;
+
+                                GA[c12 -1][1] = G[c12][J+1][I];
+                            }
+                            P = 1 / ((1 + COM * (X - DX/2)) * LOM);
+                            PP = COM / (1 + COM * (X - DX/2));
+                            LAX = matrix.addition(
+                                matrix.addition(
+                                    matrix.scalarSafe(FIX, DT / DX), matrix.scalarSafe(FIY, DT * P / DFI)
+                                ),
+                                matrix.scalarSafe(Q, DT * PP)
+                            );
+                            LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
+                            var ga0 = matrix.getColUnSafe(GA, 0);
+                            ga0 = matrix.vectorTranspose(ga0);
+                            W = matrix.multiply(LX, ga0); //matrix.getColUnSafe(GA, 0));
+                            var ga1 = matrix.getColUnSafe(GA, -1);
+                            ga1 = matrix.vectorTranspose(ga1);
+                            U = matrix.multiply(FIXP, ga1); //matrix.getColUnSafe(GA, -1));
+
+                            W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
+                            var ga2 = matrix.getColUnSafe(GA, 1);
+                            ga2 = matrix.vectorTranspose(ga2);
+                            U = matrix.multiply(FIXM, ga2); //matrix.getColUnSafe(GA, 1));
+                            W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
+
+                            var recG = new Array(genSize);
+                            for (var c13 in G) {
+                                if (!G.hasOwnProperty(c13)) continue;
+
+                                recG[c13-1] = G[c13][J][I-1];
+                            }
+                            var recGtrFIYP = matrix.vectorTranspose(recG);
+                            U = matrix.multiply(FIYP, recGtrFIYP); //recG);
+
+                            W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
+
+                            for (var c14 in G) {
+                                if (!G.hasOwnProperty(c14)) continue;
+
+                                recG[c14-1] = G[c14][J][I+1];
+                            }
+                            var recGtrFIYM = matrix.vectorTranspose(recG);
+                            U = matrix.multiply(FIYM, recGtrFIYM); // recG);
+
+                            W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
+
+                            LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
+                            LX = matrix.inverse(LX);
+                            W = matrix.multiply(LX, W);
+                            for (var c15 in AUX) {
+                                if (!AUX.hasOwnProperty(c15)) continue;
+
+                                AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
+                            }
+                            for (var c16 in GA) {
+                                if (!GA.hasOwnProperty(c16)) continue;
+
+                                GA[c16][-1] = GA[c16][0];
+                                GA[c16][0] = GA[c16][1];
+                            }
+                        }
+                        // ДООПРЕДЕЛЕНИЕ ВЕКТОРА G(:,0,I)
+
+                        MatMult.fillArray(U, 0);
+                        if (INDEX >=4) {
+                            var Uexpr = (
+                                    (
+                                        new Complex(Math.cos(-FIM), Math.sin(-FIM))
+                                    ).multiply(
+                                            new Complex(KP, 0).multiply(
+                                                (
+                                                    (new Complex(RISQ, 0)).multiply(IMV)
+                                                ).add(
+                                                    IM.multiply(Z.multiply(ZC)).multiply(IMC)
+                                                )
+                                            )
+                                    )
+                            );
+                            U[0] = Uexpr.re;
+                            U[1] = Uexpr.im;
+                        }
+                        U = matrix.multiply(FU, U);
+                        var recAUX = new Array(genSize);
+                        for (var c17 in AUX) {
+                            if (!AUX.hasOwnProperty(c17)) continue;
+
+                            recAUX[c17-1] = AUX[c17][1][IK];
+                        }
+                        W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
+                        var recWpU = matrix.addition(W, U);
+                        for (var c18 in AUX) {
+                            if (!AUX.hasOwnProperty(c18)) continue;
+
+                            AUX[c18][0][IK] = recWpU[c18 -1][0];
+                        } // recWpU[c18 -1]
+                        if ((I > 1) && (I < NFI-1)) {
+                            for (var c19 in G){
+                                if (!G.hasOwnProperty(c19)) continue;
+
+                                for (var c20 in G[c19]){
+                                    if (!G[c19].hasOwnProperty(c20)) continue;
+
+                                    G[c19][c20][I-SN] = AUX[c19][c20][IS];
+                                }
+                            }
+                        }
+
                     }
 
+                    // 100, goto order to this place
+                    IA = -(IK + IS);
+                    IK = IS;
+                    IS = IA;
+                    if ((NFI == 2 * I) || (NFI == 2 * I - 1)) break;
                 }
 
-                // 100, goto order to this place
-                IA = -(IK + IS);
-                IK = IS;
-                IS = IA;
-                if ((NFI == 2 * I) || (NFI == 2 * I - 1)) break;
-            }
+                //if (T < 0) goto200();
+                if (T >= 0) {
+                    for (var c21 in G){
+                        if (!G.hasOwnProperty(c21)) continue;
 
-            //if (T < 0) goto200();
-            if (T >= 0) {
-                for (var c21 in G){
-                    if (!G.hasOwnProperty(c21)) continue;
+                        for (var c22 in G[c21]){
+                            if (!G[c21].hasOwnProperty(c22)) continue;
 
-                    for (var c22 in G[c21]){
-                        if (!G[c21].hasOwnProperty(c22)) continue;
-
-                        G[c21][c22][I+SN] = AUX[c21][c22][IS];
+                            G[c21][c22][I+SN] = AUX[c21][c22][IS];
+                        }
                     }
-                }
-                for (var c23 in G){
-                    if (!G.hasOwnProperty(c23)) continue;
+                    for (var c23 in G){
+                        if (!G.hasOwnProperty(c23)) continue;
 
-                    for (var c24 in G[c23]){
-                        if (!G[c23].hasOwnProperty(c24)) continue;
+                        for (var c24 in G[c23]){
+                            if (!G[c23].hasOwnProperty(c24)) continue;
 
-                        G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
+                            G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
+                        }
                     }
-                }
-                for (var c25 in G){
-                    if (!G.hasOwnProperty(c25)) continue;
+                    for (var c25 in G){
+                        if (!G.hasOwnProperty(c25)) continue;
 
-                    for (var c26 in G[c25]){
-                        if (!G[c25].hasOwnProperty(c26)) continue;
+                        for (var c26 in G[c25]){
+                            if (!G[c25].hasOwnProperty(c26)) continue;
 
-                        G[c25][c26][0] = G[c25][c26][NFI-1];
+                            G[c25][c26][0] = G[c25][c26][NFI-1];
+                        }
                     }
-                }
 
-                var recCmplxMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
-                if (INDEX > 0 && INDEX < 3) {
-                    // probably SOLVED WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
-                    recBuffer = new Buffer(
-                        (T).toFixedDef() + " " +
-                        (recCmplxMV.re).toFixedDef() + " " +
-                        (recCmplxMV.im).toFixedDef() + " " +
-                        (KPFI * MC).toFixedDef()
-                    );
-                    //noinspection JSUnresolvedFunction
-                    fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
-                } else {
-                    if (INDEX > 3) {
-                        IMV = IMV0.add( (new Complex(0.5, 0)).multiply( MV.add(MV0) ).multiply( new Complex(DT, 0)) ) ;
-                        MV0 = MV;
-                        IMC = IMC0 + 0.5 * (MC + MC0) * DT;
-                        MC0 = MC;
-                        FIC = FIC + 0.5 * DT * (IMC + IMC0);
-                        IMC0 = IMC;
-                        DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
-                        IMV0 = IMV;
-                        // probably SOLVED WRITE(4,'(F10.3,7(2X,E10.3))') &
-                        var recCmplxIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
-                        var recCmplxDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
+                    var recCmplxMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
+                    if (INDEX > 0 && INDEX < 3) {
+                        // probably SOLVED WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
                         recBuffer = new Buffer(
                             (T).toFixedDef() + " " +
-                            (C2/LC * recCmplxMV.re).toFixedDef() + " " +
-                            (C2/LC * recCmplxMV.im).toFixedDef() + " " +
-                            (C2 * recCmplxIMV.re).toFixedDef() + " " +
-                            (C2 * recCmplxIMV.im).toFixedDef() + " " +
-                            (L * recCmplxDZC.re).toFixedDef() + " " +
-                            (L * recCmplxDZC.im).toFixedDef() + " " +
-                            (KPFI * MC / (LC*LC)).toFixedDef() + "!!!\n;;;"
+                            (recCmplxMV.re).toFixedDef() + " " +
+                            (recCmplxMV.im).toFixedDef() + " " +
+                            (KPFI * MC).toFixedDef()
                         );
                         //noinspection JSUnresolvedFunction
                         fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+                    } else {
+                        if (INDEX > 3) {
+                            IMV = IMV0.add( (new Complex(0.5, 0)).multiply( MV.add(MV0) ).multiply( new Complex(DT, 0)) ) ;
+                            MV0 = MV;
+                            IMC = IMC0 + 0.5 * (MC + MC0) * DT;
+                            MC0 = MC;
+                            FIC = FIC + 0.5 * DT * (IMC + IMC0);
+                            IMC0 = IMC;
+                            DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
+                            IMV0 = IMV;
+                            // probably SOLVED WRITE(4,'(F10.3,7(2X,E10.3))') &
+                            var recCmplxIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
+                            var recCmplxDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
+                            recBuffer = new Buffer(
+                                (T).toFixedDef() + " " +
+                                (C2/LC * recCmplxMV.re).toFixedDef() + " " +
+                                (C2/LC * recCmplxMV.im).toFixedDef() + " " +
+                                (C2 * recCmplxIMV.re).toFixedDef() + " " +
+                                (C2 * recCmplxIMV.im).toFixedDef() + " " +
+                                (L * recCmplxDZC.re).toFixedDef() + " " +
+                                (L * recCmplxDZC.im).toFixedDef() + " " +
+                                (KPFI * MC / (LC*LC)).toFixedDef() + "!!!\n;;;"
+                            );
+                            //noinspection JSUnresolvedFunction
+                            fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+                        }
                     }
                 }
+
+                // 200, goto order to this place
+                if (WT) COUNTOUT(T);
+                T = T1;
+                data.currentT = T;
+
+                jStepsCnt++;
+                if (T >= 0) console.log(jStepsCnt, ")",  (new Date())-timeAtBegin, "ms to count");
+
+                setTimeout(callback, 1);
+            },
+            function(err){
+                if (err) console.log(err, "!!!!!!!!!!!");
+
+                //noinspection JSUnresolvedFunction
+                fs.closeSync(fd);
+                //DO I=11,20
+                //CLOSE(I)
+                //END DO
+                for (I = 0; I < fds1.length; I++) {
+                    //noinspection JSUnresolvedFunction
+                    fs.closeSync(fds1[I]);
+                }
+                for (I = 0; I < fds2.length; I++) {
+                    //noinspection JSUnresolvedFunction
+                    fs.closeSync(fds2[I]);
+                }
+
+                jOutput();
             }
+        );  // end of async.whilst
 
-            // 200, goto order to this place
-            if (WT) COUNTOUT(T);
-            T = T1;
-            data.currentT = T;
+        ////}
 
-            jStepsCnt++;
-            console.log(jStepsCnt, ')',  (new Date())-timeAtBegin, 'ms to count');
-        }
-
-        //noinspection JSUnresolvedFunction
-        fs.closeSync(fd);
-        //DO I=11,20
-            //CLOSE(I)
-        //END DO
-        for (I = 0; I < fds1.length; I++) {
-            //noinspection JSUnresolvedFunction
-            fs.closeSync(fds1[I]);
-        }
-        for (I = 0; I < fds2.length; I++) {
-            //noinspection JSUnresolvedFunction
-            fs.closeSync(fds2[I]);
-        }
-
-        jOutput();
+        // there were descriptor closers
 
         function jOutput(){
             // jOutputBlock, output
@@ -742,7 +750,7 @@
 
                 for (K = 0; K <= NBX; K++) {
                     KSI = KSIN - K*DX*CF;
-                    PSI = BBstart.TENS(LC * (T-KSI));
+                    PSI = BBstart.TENS(LC * (T - KSI));
                     if (T >= KSI) {
                         for (var c1 in G) {
                             if (!G.hasOwnProperty(c1)) continue;

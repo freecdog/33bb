@@ -2,6 +2,8 @@
  * Created by jaric on 22.10.2014.
  */
 
+var clientSide = typeof exports === 'undefined' ? true : false;
+
 (function(exports){
 
     var FUNC2 = require('./Func2.js');
@@ -53,6 +55,7 @@
         var GAPOIS = new Boolean();
         var I;
 
+        var startProcProfiler = new Date();
         console.log("STARTPROC has start work");
 
         function loadData(source){
@@ -61,7 +64,7 @@
             if (source == 'json'){
                 // TODO, move method to module, and make it
                 function loadFromJSONFile(extendedObject, filePath){
-                    console.log(filePath);
+                    console.log('reading from',filePath);
                     var fs = require('fs');
 
                     try {
@@ -82,7 +85,7 @@
                                 }
                             }
                             console.log("Loaded fields:", objectFieldsCounter);
-                            console.log("Current object:", extendedObject);
+                            //console.log("Current object:", extendedObject);
                         } else {
                             console.log('No json data in file');
                         }
@@ -281,6 +284,7 @@
             DELTA = inputData.DELTA;
         }
         loadData('json');    // json, dat, null (default config)
+        console.log((new Date()) - startProcProfiler, "ms to complete loadData");
 
         ALFA = ALFA * Math.PI / 180;
         ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
@@ -322,9 +326,6 @@
             console.error('unknown EPUR value');
         }
 
-        // write to console? There wasn't opened any file for writing, was it?
-        // It's just writing to console
-        console.log('\n');
         console.log('S0 =', S0);
         if (SPLIT) {
             RC0 = RO0 * C0;
@@ -338,6 +339,7 @@
         M0 = 1 / M0;
 
         GEOMPROC();
+        console.log((new Date()) - startProcProfiler, "ms to complete GEOMPROC");
 
         LC = L / C2;
         if (INDEX > 0) {
@@ -355,16 +357,19 @@
         ITP = new Array(NTP+2);
 
         STEPFI();
+        console.log((new Date()) - startProcProfiler, "ms to complete STEPFI");
 
         T0 = 1.1 * XDESTR;
-        // SOLVED, Harry said that NINT == Round, also MIFI book tells the same.
         NT = Math.round(TM/DT);
         NXDST = Math.round(XDESTR/STEPX);
         NBX = NT + Math.round(XDESTR/DX) + 10;
         NTIME = Math.round((TM+T0)/STEP) + 3;
         STARTOUT();
+        console.log((new Date()) - startProcProfiler, "ms to complete STARTOUT");
         if (EPUR > 0) WAVEEPURE();
+        console.log((new Date()) - startProcProfiler, "ms to complete WAVEEPURE");
         MTRXPROC();
+        console.log((new Date()) - startProcProfiler, "ms to complete MTRXPROC");
 
         data.NXDST = NXDST;
         data.NTP = NTP;
@@ -410,7 +415,7 @@
         data.ALIM = ALIM;
         data.C2 = C2;
 
-        console.log("STARTPROC has end work");
+        console.log("STARTPROC has end work", (new Date()) - startProcProfiler, "ms to complete STARTPROC");
 
     }
     exports.STARTPROC = STARTPROC;
@@ -448,12 +453,8 @@
             // adaptiveSimpson don't have number of steps. Number of steps depends on eps
             // SIMPLE simpson defined in BBstart, but we can improve it.
 
-            // SOLVED real + complex == real + complex.RE , isn't it?
-            // It is correct.
             S = S + SIMPS(RTET, 2, 0, TETA, H).re;  // .re because S and JC is float values
             JC = JC + SIMPS(RTET, 4, 0, TETA, H).re;
-            // SOLVED, What type returns SIMPS function float or Complex?
-            // SIMPS are defined in BBstart, it is complex
             MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
             RT = RTET(TETA);
             //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
@@ -478,7 +479,7 @@
         //WRITE(*,'()');
         console.log("S =", S, "L =", L);
 
-        JC = .25 * JC / (Math.pow(L, 4));
+        JC = 0.25 * JC / (Math.pow(L, 4));
         ZC = MOM.divide(new Complex(S, 0));
         H = Math.PI / 6;
         TK = 0;
@@ -504,8 +505,8 @@
                 T1 = T - H;
                 T2 = T;
                 while (true) {
-                    if ((Math.abs(T2 - T1) < .0001) || ROOT) break;
-                    T = .5 * (T1 + T2);
+                    if ((Math.abs(T2 - T1) < 0.0001) || ROOT) break;
+                    T = 0.5 * (T1 + T2);
                     B = FUNC2.ATN(T) - AK;
                     //ROOT = (B==0); // there was float finite issue
                     ROOT = compareWithEps(B, 0);
@@ -518,7 +519,7 @@
                 if (ROOT) {
                     TK = T;
                 } else {
-                    TK = .5 * (T1 + T2);
+                    TK = 0.5 * (T1 + T2);
                 }
             }
 
@@ -531,13 +532,9 @@
 
         if (TET0 >= (2*Math.PI)) TET0 = TET0 - 2 * Math.PI;
         L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / L;
-        // SOLVED, DO DO... exp for Complex.  Euler's formula: exp(ix) = cos(x) + i * sin(x). Is it correct that ALIM is complex value?
-        // from upper exapmple, ALIM = Math.exp(IM * ALFA); ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
         //ZC = ZC / L * Math.exp(-IM*ALFA);
         ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
-        // SOLVED, JC initialized as float, why there is
-        // because it is real value
-        JC = JC - Math.PI * ((ZC.multiply(ZC.conjugate())).re); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
+        JC = JC - ( Math.PI * ((ZC.multiply(ZC.conjugate())).re) ); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
         RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
 
         // fs.close

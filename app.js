@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var clientCalc = require('./routes/clientCalc');
 
 var app = express();
 
@@ -24,22 +25,33 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/calc', clientCalc);
 
 var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 
-var numbers = require('numbers');
-console.log(1, numbers.basic.sum([1,2,3]));
-console.log(2, numbers.matrix.multiply([[2,3]], [[4],[5]]));
-console.log(3, numbers.matrix.multiply([[2],[3]], [[4,5]]));
-var Complex = numbers.complex;
-console.log(4, new Complex(-5, -6));
+//var numbers = require('numbers');
+//console.log(1, numbers.basic.sum([1,2,3]));
+//console.log(2, numbers.matrix.multiply([[2,3]], [[4],[5]]));
+//console.log(3, numbers.matrix.multiply([[2],[3]], [[4,5]]));
+//var Complex = numbers.complex;
+//console.log(4, new Complex(-5, -6));
+//console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
 
-console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
-
-var startTime = Date.now();
 var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
-BBup.run();
-console.log((Date.now() - startTime) + " ms to load");
+//BBup.run();
+
+app.use('/runcalc', function(req, res){
+    BBup.run();
+    res.redirect("/");
+});
+
+var Datatone = require(path.join(__dirname, 'public', 'javascripts', 'Datatone.js')).Datatone;
+var data = new Datatone();
+app.use('/stopcalc', function(req, res){
+    data.breakCalculation = true;
+
+    res.redirect("/");
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
