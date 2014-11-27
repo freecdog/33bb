@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-
-var matrix = exports;
+var matrix = {};
+//var matrix = exports;
 
 /**
  * Return a deep copy of the input matrix.
@@ -991,3 +991,18 @@ matrix.vectorTranspose = function (arr) {
 
     return result;
 };
+
+// Node.js
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = matrix;
+}
+// AMD / RequireJS
+else if (typeof define !== 'undefined' && define.amd) {
+    define([], function () {
+        return matrix;
+    });
+}
+// included directly via <script> tag
+else {
+    root.matrix = matrix;
+}

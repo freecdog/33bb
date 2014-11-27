@@ -5,16 +5,25 @@
 requirejs.config({
     baseUrl: 'javascripts',
     paths: {
-        numbers: 'numbers/src/numbers',
+        numbers: 'numbersAMD/lib/numbers',
+        //numbers: 'numbersAMD/index',
         async: 'async/lib/async'
     }
+    /*shim: {
+        'numbers': {
+            exports: 'numbers'
+        }
+    }*/
 });
 
 requirejs([
     'numbers',
-    'async'
-    //'FUNC2',
-    //'MatMult'
+    'async',
+    'FUNC2',
+    'MatMult',
+    'BBstart',
+    'BBcount',
+    'BBup'
 ], function(asd,dsa){
     console.log(asd, dsa);
 });

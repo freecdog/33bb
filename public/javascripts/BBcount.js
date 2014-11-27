@@ -21,7 +21,10 @@ var clientSide = typeof exports === 'undefined';
     var Complex = numbers.complex;
     var matrix = numbers.matrix;
 
-    var fs = require('fs');
+    var fs;
+    if (!clientSide){
+        fs = require('fs');
+    }
 
     // helpful methods
     function compareWithEps(num1, num2, eps){
@@ -34,7 +37,9 @@ var clientSide = typeof exports === 'undefined';
         str = arrToString(arguments, 1, arguments.length - 1);
         buffer = new Buffer(str);
         //noinspection JSUnresolvedFunction
-        fs.writeSync(descr, buffer, 0, buffer.length, null);
+        if (!clientSide) {
+            fs.writeSync(descr, buffer, 0, buffer.length, null);
+        }
     }
 
     function arrToString(arr, start, len){
@@ -244,7 +249,11 @@ var clientSide = typeof exports === 'undefined';
 
         var cntPath = 'BBdat/_Cnt.dat'; // looks like path depends on app.js for server side
         //noinspection JSUnresolvedFunction
-        var fd = fs.openSync(cntPath, 'w');
+        //var fd = fs.openSync(cntPath, 'w');
+        var fd;
+        if (!clientSide) {
+            fd = fs.openSync(cntPath, 'w');
+        }
         var recBuffer;
 
         if (INDEX > 0 && INDEX < 3) {
