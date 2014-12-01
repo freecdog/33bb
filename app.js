@@ -27,8 +27,7 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/calc', clientCalc);
 
-var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
-
+//var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 //var numbers = require('numbers');
 //console.log(1, numbers.basic.sum([1,2,3]));
 //console.log(2, numbers.matrix.multiply([[2,3]], [[4],[5]]));
@@ -37,7 +36,11 @@ var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'
 //console.log(4, new Complex(-5, -6));
 //console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
 
-var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
+var BB = require(path.join(__dirname, 'public', 'javascripts', 'BB', 'index.js'));
+//var BB = require('BB');
+
+var BBup = BB.BBup;
+//var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
 //BBup.run();
 
 app.use('/runcalc', function(req, res){
@@ -45,12 +48,17 @@ app.use('/runcalc', function(req, res){
     res.redirect("/");
 });
 
-var Datatone = require(path.join(__dirname, 'public', 'javascripts', 'Datatone.js')).Datatone;
+var Datatone = BB.Datatone;
+//var Datatone = require(path.join(__dirname, 'public', 'javascripts', 'Datatone.js')).Datatone;
 var data = new Datatone();
 app.use('/stopcalc', function(req, res){
     data.breakCalculation = true;
 
     res.redirect("/");
+});
+
+app.use('/t', function(req, res){
+    res.render("t");
 });
 
 // catch 404 and forward to error handler

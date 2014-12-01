@@ -9,8 +9,14 @@ var clientSide = typeof exports === 'undefined';
 
     var BBup = {};
 
-    var BBstart = require('./BBstart.js');
-    var BBcount = require('./BBcount.js');
+    //var BBstart = require('./BBstart.js');
+    //var BBcount = require('./BBcount.js');
+    var BBstart;
+    var BBcount;
+    if (!clientSide){
+        BBstart = require('./BBstart.js');
+        BBcount = require('./BBcount.js');
+    }
 
     function run(){
         var startTime = Date.now();

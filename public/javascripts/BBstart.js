@@ -9,18 +9,30 @@ var clientSide = typeof exports === 'undefined';
 
     var BBstart = {};
 
-    var FUNC2 = require('./FUNC2.js');
-    var MatMult = require('./MatMult.js');
-    var Datatone = require('./Datatone.js').Datatone;
+    //var FUNC2 = require('./FUNC2.js');
+    //var MatMult = require('./MatMult.js');
+    //var Datatone = require('./Datatone.js').Datatone;
+    //var numbers = require('numbers');
+    //var fs = require('fs');
+    var FUNC2;
+    var MatMult;
+    var Datatone;
+    var numbers;
+    var fs;
+
+    if (!clientSide){
+        FUNC2 = require('./FUNC2.js');
+        MatMult = require('./MatMult.js');
+        Datatone = require('./Datatone.js').Datatone;
+        numbers = require('numbers');
+        fs = require('fs');
+    }
     var data;
 
-    // JS dependencies
-    var numbers = require('numbers');
     var Complex = numbers.complex;
     var matrix = numbers.matrix;
     // var calculus = numbers.calculus;    // calculus contains adaptiveSimpson, but doesn't need now
 
-    var fs = require('fs');
 
     // helpful methods
     function charToBoolean(char){

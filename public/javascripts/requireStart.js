@@ -3,27 +3,27 @@
  */
 
 requirejs.config({
-    baseUrl: 'javascripts',
+    //baseUrl: 'javascripts',
     paths: {
         numbers: 'numbersAMD/lib/numbers',
         //numbers: 'numbersAMD/index',
         async: 'async/lib/async'
-    }
-    /*shim: {
+    },
+    shim: {
         'numbers': {
             exports: 'numbers'
         }
-    }*/
+    }
 });
 
 requirejs([
     'numbers',
-    'async',
-    'FUNC2',
-    'MatMult',
-    'BBstart',
-    'BBcount',
-    'BBup'
+    'async'
+    //'FUNC2',
+    //'MatMult',
+    //'BBstart',
+    //'BBcount',
+    //'BBup'
 ], function(asd,dsa){
     console.log(asd, dsa);
 });

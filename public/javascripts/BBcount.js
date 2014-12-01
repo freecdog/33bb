@@ -9,22 +9,34 @@ var clientSide = typeof exports === 'undefined';
 
     var BBcount = {};
 
-    var async = require('./async/lib/async.js');
-
-    var FUNC2 = require('./FUNC2.js');
-    var MatMult = require('./MatMult.js');
-    var BBstart = require('./BBstart.js');
-    var Datatone = require('./Datatone.js').Datatone;
-    var data;
-
-    var numbers = require('numbers');
-    var Complex = numbers.complex;
-    var matrix = numbers.matrix;
-
+    //var async = require('./async/lib/async.js');
+    //var FUNC2 = require('./FUNC2.js');
+    //var MatMult = require('./MatMult.js');
+    //var BBstart = require('./BBstart.js');
+    //var Datatone = require('./Datatone.js').Datatone;
+    //var numbers = require('numbers');
+    var async;
+    var FUNC2;
+    var MatMult;
+    var BBstart;
+    var Datatone;
+    var numbers;
     var fs;
+
     if (!clientSide){
+        async = require('./async/lib/async.js');
+        FUNC2 = require('./FUNC2.js');
+        MatMult = require('./MatMult.js');
+        BBstart = require('./BBstart.js');
+        Datatone = require('./Datatone.js').Datatone;
+        numbers = require('numbers');
         fs = require('fs');
     }
+
+    var data;
+
+    var Complex = numbers.complex;
+    var matrix = numbers.matrix;
 
     // helpful methods
     function compareWithEps(num1, num2, eps){
