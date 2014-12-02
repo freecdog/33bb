@@ -13,13 +13,26 @@ define(function (require, exports, module) {
 
         var BBstart = {};
 
-        var BB = require('../BB');
-        var FUNC2 = BB.FUNC2;
-        var MatMult = BB.MatMult;
-        var Datatone = BB.Datatone;
+        // global on the server, window in the browser
+        var root, previous_BBstart;
+
+        root = this;
+        if (root != null) {
+            previous_BBstart = root.BBstart;
+        }
+
+        //var BB = require('../BB');
+        //var FUNC2 = BB.FUNC2;
+        //var MatMult = BB.MatMult;
+        //var Datatone = BB.Datatone;
 
         var numbers = require('numbers');
         var fs = require('fs');
+
+        var Buffer = Buffer || function (inp){
+            return inp;
+        };
+
         //var FUNC2 = require('./FUNC2.js');
         //var MatMult = require('./MatMult.js');
         //var Datatone = require('./Datatone.js').Datatone;
@@ -63,6 +76,9 @@ define(function (require, exports, module) {
         var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
         function STARTPROC(){
+            var BB = require('../BB');
+            var Datatone = BB.Datatone;
+
             data = new Datatone();
 
             var RC0,RC1,RC2,B1,B2, M0,C0,C1,RO0,LS,X,RZ,GAMMA,POIS,BET,OMG; // float //FI,
@@ -437,6 +453,9 @@ define(function (require, exports, module) {
 
         // TODO do it asynchronous
         function GEOMPROC(){
+            var BB = require('../BB');
+            var FUNC2 = BB.FUNC2;
+
             var K; // integer
             var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
             var MOM; // Complex
@@ -560,6 +579,9 @@ define(function (require, exports, module) {
         }
 
         function STEPFI(){
+            var BB = require('../BB');
+            var FUNC2 = BB.FUNC2;
+
             var I,J,NI,K,K0,K1,M; // integer
             var RO,ROM,TET,LL,TETA; // real
             var ADF, ATAR; // of real
@@ -662,6 +684,9 @@ define(function (require, exports, module) {
         }
 
         function MTRXPROC(){
+            var BB = require('../BB');
+            var MatMult = BB.MatMult;
+
             var J;
             var M, F, LAY, LAX; // [5,5] of float
             var E; // [3,5] of float
@@ -963,6 +988,9 @@ define(function (require, exports, module) {
 
                 //fs.closeSync(fds2[I-16]);
             }
+
+            var BB = require('../BB');
+            var Datatone = BB.Datatone;
 
             data = new Datatone();
             data.fds1 = fds1;

@@ -12,6 +12,14 @@ define(function (require, exports, module) {
     //(function(exports) {
         var FUNC2 = {};
 
+        // global on the server, window in the browser
+        var root, previous_FUNC2;
+
+        root = this;
+        if (root != null) {
+            previous_FUNC2 = root.FUNC2;
+        }
+
         function RTET(TT) {
             var RTET;
             // REAL,INTENT(IN) :: TT

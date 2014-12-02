@@ -13,6 +13,14 @@ define(function (require, exports, module) {
 
         var Datatone = {};
 
+        // global on the server, window in the browser
+        var root, previous_Datatone;
+
+        root = this;
+        if (root != null) {
+            previous_Datatone = root.Datatone;
+        }
+
         // https://github.com/podgorniy/javascript-toolbox/blob/master/singletone.js
         var Singletone = (function () {
             var instance;

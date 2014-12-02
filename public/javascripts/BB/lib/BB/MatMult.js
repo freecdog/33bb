@@ -13,6 +13,14 @@ define(function (require, exports, module) {
 
         var MatMult = {};
 
+        // global on the server, window in the browser
+        var root, previous_MatMult;
+
+        root = this;
+        if (root != null) {
+            previous_MatMult = root.MatMult;
+        }
+
         //!
         function oINV() {
             // type overriding Inv, InvC

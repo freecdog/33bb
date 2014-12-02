@@ -11,19 +11,30 @@ define(function (require, exports, module) {
     (function () {
     //(function(exports){
 
-        var clientSide = false;
-
         var BBcount = {};
 
-        var BB = require('../BB');
-        var FUNC2 = BB.FUNC2;
-        var MatMult = BB.MatMult;
-        var BBstart = BB.BBstart;
-        var Datatone = BB.Datatone;
+        // global on the server, window in the browser
+        var root, previous_BBcount;
+
+        root = this;
+        if (root != null) {
+            previous_BBcount = root.BBcount;
+        }
+
+        //var BB = require('../BB');
+        //var FUNC2 = BB.FUNC2;
+        //var MatMult = BB.MatMult;
+        //var BBstart = BB.BBstart;
+        //var Datatone = BB.Datatone;
 
         var async = require('async');
         var numbers = require('numbers');
         var fs = require('fs');
+
+        var Buffer = Buffer || function (inp){
+            return inp;
+        };
+
         //var async = require('./async/lib/async.js');
         //var FUNC2 = require('./FUNC2.js');
         //var MatMult = require('./MatMult.js');
@@ -47,9 +58,7 @@ define(function (require, exports, module) {
             str = arrToString(arguments, 1, arguments.length - 1);
             buffer = new Buffer(str);
             //noinspection JSUnresolvedFunction
-            if (!clientSide) {
-                fs.writeSync(descr, buffer, 0, buffer.length, null);
-            }
+            fs.writeSync(descr, buffer, 0, buffer.length, null);
         }
 
         function arrToString(arr, start, len){
@@ -111,6 +120,12 @@ define(function (require, exports, module) {
         };
 
         function COUNTPROC(){
+            var BB = require('../BB');
+            var FUNC2 = BB.FUNC2;
+            var MatMult = BB.MatMult;
+            var BBstart = BB.BBstart;
+            var Datatone = BB.Datatone;
+
             var data = new Datatone();
             var NXDST = data.NXDST,
                 NTP = data.NTP,
@@ -261,9 +276,7 @@ define(function (require, exports, module) {
             //noinspection JSUnresolvedFunction
             //var fd = fs.openSync(cntPath, 'w');
             var fd;
-            if (!clientSide) {
-                fd = fs.openSync(cntPath, 'w');
-            }
+            fd = fs.openSync(cntPath, 'w');
             var recBuffer;
 
             if (INDEX > 0 && INDEX < 3) {

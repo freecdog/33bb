@@ -35,20 +35,29 @@ requirejs.config({
         async: 'BB/lib/node_modules/async/lib/async',
         fs: 'BB/lib/node_modules/fsFake/fsFake',
         BB: 'BB/lib/BB'
+        //BB: 'BB/lib/BB'
         //async: 'async/lib/async'
-    },
-    shim: {
-        'BB': {
-            exports: 'BB'
-        }
     }
+    //shim: {
+        //'BB': {
+        //    exports: 'BB'
+        //},
+        //'numbers': {
+        //    exports: 'numbers'
+        //}
+    //}
 });
 
+/*
 requirejs([
     'BB'
 ], function(BB){
     var BBup = BB.BBup;
     BBup.run();
-    //var FUNC2 = BB.FUNC2;
-    //console.log(FUNC2.ATN(1));
+});
+*/
+
+requirejs(['BB', 'BB/BBup'], function(BB, BBup){
+    //var BBup = BB.BBup;
+    BBup.run();
 });
