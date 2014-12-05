@@ -78,6 +78,7 @@ define(function (require, exports, module) {
         function STARTPROC(){
             var BB = require('../BB');
             var Datatone = BB.Datatone;
+            var MatMult = BB.MatMult;
 
             data = new Datatone();
 
@@ -444,6 +445,26 @@ define(function (require, exports, module) {
             data.KPA = KPA;
             data.ALIM = ALIM;
             data.C2 = C2;
+
+            // jmemOut init
+            // 10 files
+            // Tmax / step + 1 , time steps
+            // .max(NTP+1, NXDST) max of angle and coord steps
+            // [] last one should be filled by values
+            data.memOut = MatMult.createArray(10, Math.round(TM / STEP)+1,  Math.max(NTP+1, NXDST) +1, 1);   // clear memory output before new iteration
+            for (var moi in data.memOut){
+                if (!data.memOut.hasOwnProperty(moi)) continue;
+
+                for (var moj in data.memOut[moi]){
+                    if (!data.memOut[moi].hasOwnProperty(moj)) continue;
+
+                    for (var mok in data.memOut[moi][moj]){
+                        if (!data.memOut[moi][moj].hasOwnProperty(mok)) continue;
+
+                        data.memOut[moi][moj][mok] = [];
+                    }
+                }
+            }
 
             console.log("STARTPROC has end work", (new Date()) - startProcProfiler, "ms to complete STARTPROC");
 
