@@ -6,7 +6,17 @@ html
         meta(name="viewport", content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes")
         title= "BB test"
         script(data-main="javascripts/T", src="javascripts/require.js")
-        //-script(src='/javascripts/numbers/src/numbers.js')
         link(rel='stylesheet', href='/stylesheets/style.css')
     body
         | test
+        p
+            a(href='#', onclick='require("BB").BBup.run()') Run calculations
+        p
+            a(href='#', onclick='(new require("BB").Datatone()).breakCalculation = true') Stop calculations
+
+        div(id='Stats-output')
+
+        script(src="javascripts/stats.js")
+        script(src="javascripts/three.js")
+        script(src="javascripts/dat.gui.js")
+        script(src="javascripts/threeProbe.js")

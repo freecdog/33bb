@@ -28,6 +28,7 @@ requirejs([
 });
 */
 
+// TODO probably I should add three.js here, so I can control process from single point
 requirejs.config({
     //baseUrl: 'javascripts',
     paths: {
@@ -57,7 +58,7 @@ requirejs([
 });
 */
 
-requirejs(['BB', 'BB/BBup'], function(BB, BBup){
-    //var BBup = BB.BBup;
-    BBup.run();
+requirejs(['BB'], function(BB){
+    // Don't want to start it automatically for now
+    //BB.BBup.run();
 });
