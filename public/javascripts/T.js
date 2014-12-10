@@ -2,63 +2,35 @@
  * Created by jaric on 01.12.2014.
  */
 
-/*
-requirejs.config({
-    //baseUrl: 'javascripts',
-    paths: {
-        numbers: 'numbersAMD/lib/numbers',
-        FUNC2: 'FUNC2/FUNC2',
-        MatMult: 'MatMult/MatMult'
-    }
-});
-
-requirejs([
-    'numbers',
-    'FUNC2'
-], function(numbers, FUNC2){
-    console.warn(numbers, FUNC2);
-
-    console.log(0, FUNC2.ATN(1).toFixed(3));
-    console.log(1, numbers.basic.sum([1,2,3]));
-    console.log(2, numbers.matrix.multiply([[2,3]], [[4],[5]]));
-    console.log(3, numbers.matrix.multiply([[2],[3]], [[4,5]]));
-    var Complex = numbers.complex;
-    console.log(4, new Complex(-5, -6));
-    console.log(5, numbers.matrix.scalarSafe([[1,2],[3,4]], 3));
-});
-*/
-
-// TODO probably I should add three.js here, so I can control process from single point
 requirejs.config({
     //baseUrl: 'javascripts',
     paths: {
         numbers: 'numbersAMD/lib/numbers',
         async: 'BB/lib/node_modules/async/lib/async',
         fs: 'BB/lib/node_modules/fsFake/fsFake',
-        BB: 'BB/lib/BB'
-        //BB: 'BB/lib/BB'
-        //async: 'async/lib/async'
+        BB: 'BB/lib/BB',
+
+        THREE: 'three',
+        Stats: 'stats',
+        dat: 'dat.gui',
+        threeProbe: 'threeProbe'
+    },
+    shim: {
+        'THREE': {
+            exports: 'THREE'
+        },
+        'dat': {
+            exports: 'dat'
+        },
+        'Stats': {
+            exports: 'Stats'
+        }
     }
-    //shim: {
-        //'BB': {
-        //    exports: 'BB'
-        //},
-        //'numbers': {
-        //    exports: 'numbers'
-        //}
-    //}
 });
 
-/*
-requirejs([
-    'BB'
-], function(BB){
-    var BBup = BB.BBup;
-    BBup.run();
-});
-*/
-
-requirejs(['BB'], function(BB){
+requirejs(['BB', 'threeProbe'], function(BB, threeProbe) {
     // Don't want to start it automatically for now
     //BB.BBup.run();
+
+    threeProbe.start();
 });
