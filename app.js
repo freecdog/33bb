@@ -60,6 +60,9 @@ app.use('/stopcalc', function(req, res){
 app.use('/t', function(req, res){
     res.render("t");
 });
+app.use('/bb', function(req, res){
+    res.render("bb");
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

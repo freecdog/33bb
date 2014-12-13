@@ -98,7 +98,6 @@ define(function (require, exports, module) {
 
             var render = function () {
 
-                // TODO coords don't change, colors too.
                 // Raw shader (may be take a look on old backbone version)
                 // https://github.com/mrdoob/three.js/issues/4518
                 // https://github.com/mrdoob/three.js/commit/60bf8fbf975de1fce1716a63debfa3f8cbb8e180

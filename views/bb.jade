@@ -1,0 +1,17 @@
+//
+   Created by jaric on 12.12.2014.
+doctype html
+html
+    head
+        meta(name="viewport", content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes")
+        title= "BB"
+        script(data-main="javascripts/bb", src="javascripts/require.js")
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        | test
+        p
+            a(href='#', onclick='require("BB").BBup.run()') Run calculations
+        p
+            a(href='#', onclick='(new require("BB").Datatone()).breakCalculation = true') Stop calculations
+
+        div(id='Stats-output')
