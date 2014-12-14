@@ -31,13 +31,18 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
     // Don't want to start it automatically for now
     BB.BBup.run();
 
+    //bbCompile.start();
+
+
     setTimeout(function(){
         var d = (new BB.Datatone());
         d.breakCalculation = true;
 
         //localStorage.setItem('mo', JSON.stringify(d.memOut));
         d.memOut = JSON.parse( localStorage.getItem('mo') );
+        //console.error(localStorage.getItem('mo').length);
+
 
         bbCompile.start();
-    }, 1000);
+    }, 100);
 });

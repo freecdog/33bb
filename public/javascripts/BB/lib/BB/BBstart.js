@@ -445,6 +445,7 @@ define(function (require, exports, module) {
             data.KPA = KPA;
             data.ALIM = ALIM;
             data.C2 = C2;
+            data.TP = TP;
 
             // jmemOut init
             // 10 files
