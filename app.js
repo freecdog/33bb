@@ -9,6 +9,9 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var clientCalc = require('./routes/clientCalc');
 var memoutRouter = require('./routes/memout');
+var restartServer = require('./routes/restartServer');
+
+var crypto = require('crypto');
 
 var app = express();
 
@@ -19,11 +22,12 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // special limit definition (413 html error)
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+//app.use(bodyParser.json({limit: '50mb'}));
+//app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -32,6 +36,14 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/calc', clientCalc);
 app.use('/memout', memoutRouter);
+app.use('/restartServer', restartServer);
+
+app.getHash = function(password){
+    var hash = crypto.createHash('sha512');
+    hash.update(password, 'utf8');
+
+    return hash.digest('base64');
+};
 
 //var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 //var numbers = require('numbers');

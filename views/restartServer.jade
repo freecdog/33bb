@@ -1,0 +1,44 @@
+//
+   Created by jaric on 16.12.2014.
+
+doctype html
+html
+    head
+        meta(name="viewport", content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes")
+        meta(name="Description" content="restart page is here")
+        title= "BB Restart server"
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        form(action='/restartServer', method='post')
+            input(
+                class='inputView',
+                name='name',
+                placeholder='name',
+                required,
+                pattern='.{3,16}',
+                title='min3max16'
+            )
+            input(
+                type='password',
+                class='inputPasswordView',
+                name='password',
+                placeholder='password',
+                required,
+                pattern='.{3,16}',
+                title='min3max16'
+            )
+            input(type='checkbox',id='updateOnly',name='updateOnly')
+            label(for='updateOnly')
+                span
+                | update only
+            input(type='submit', class='inputSubmitView', value='[submit]')
+        -if (serverTime)
+            p #{serverTime}
+        -if (message)
+            p #{message}
+        -if (error)
+            p #{error}
+        -if (stdout)
+            p #{stdout}
+        -if (stderr)
+            p #{stderr}
