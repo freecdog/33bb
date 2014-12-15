@@ -268,23 +268,8 @@ define(function (require, exports, module) {
 
             // GUI
             var controls = new function () {
-                this.yellow = 1e-100;
-                this.x = geometry.attributes.position.array[ 0 ];
                 this.time = curTime;
                 this.memIndex = memIndex;
-
-                this.redraw = function () {
-                    //console.log(controls.yellow);
-                    var vc =  new Float32Array( vertexPositions.length * 3 );
-                    for (var i = 0; i < geometry.attributes.color.array.length; i++) vc[i] = geometry.attributes.color.array[i];
-                    vc[0] = controls.yellow;
-                    geometry.attributes.color = new THREE.BufferAttribute( vc, 3 );
-
-                    var vv = new Float32Array( vertexPositions.length * 3 ); // three components per vertex
-                    for (var j = 0; j < geometry.attributes.position.array.length; j++) vv[j] = geometry.attributes.position.array[j];
-                    vv[ 0 ] = controls.x;
-                    geometry.attributes.position = new THREE.BufferAttribute( vv, 3 );
-                };
 
                 this.changeTime = function(){
                     var vertexColors = [];
@@ -331,8 +316,6 @@ define(function (require, exports, module) {
             };
 
             var gui = new dat.GUI();
-            gui.add(controls, 'yellow', 0, 1).onChange(controls.redraw);
-            gui.add(controls, 'x', -1, 1).onChange(controls.redraw);
             gui.add(controls, 'time', 0, 49).onChange(controls.changeTime);
             gui.add(controls, 'memIndex', 0, 4).onChange(controls.changeMem);
 

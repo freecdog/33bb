@@ -38,11 +38,42 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var d = (new BB.Datatone());
         d.breakCalculation = true;
 
+        // storing to localStorage
         //localStorage.setItem('mo', JSON.stringify(d.memOut));
-        d.memOut = JSON.parse( localStorage.getItem('mo') );
-        //console.error(localStorage.getItem('mo').length);
 
+        // reading from localStorage
+        //d.memOut = JSON.parse( localStorage.getItem('mo') );
 
-        bbCompile.start();
+        //bbCompile.start();
+
+        function ajaxWrapper(mode, theJson, toUrl, callback){
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open(mode, toUrl, true);
+            xmlhttp.setRequestHeader("Content-type", "application/json");
+            xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    //console.log(xmlhttp.responseText);
+                    callback(xmlhttp.status, xmlhttp.responseText);
+                }else {
+                    callback(xmlhttp.status);
+                }
+            };
+            var parameters = JSON.stringify(theJson);
+            xmlhttp.send(parameters);
+        }
+        //ajaxWrapper('POST', d.memOut, "http://" + window.hostIp + "/memout");
+        ajaxWrapper('GET', null, "http://" + window.hostIp + "/memout", function(status, stringData){
+            if (status === 200 || status === 304){
+                if (stringData != undefined){
+                    d.memOut = JSON.parse(stringData);
+                    bbCompile.start();
+                }
+            } else {
+                alert(status.toString() + ", something goes wrong");
+                console.log(stringData);
+            }
+
+        });
+
     }, 100);
 });

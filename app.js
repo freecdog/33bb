@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var clientCalc = require('./routes/clientCalc');
+var memoutRouter = require('./routes/memout');
 
 var app = express();
 
@@ -18,14 +19,19 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+//app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({ extended: false }));
+// special limit definition (413 html error)
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
 app.use('/calc', clientCalc);
+app.use('/memout', memoutRouter);
 
 //var MatMult = require(path.join(__dirname, 'public', 'javascripts', 'MatMult.js'));
 //var numbers = require('numbers');
@@ -61,7 +67,7 @@ app.use('/t', function(req, res){
     res.render("t");
 });
 app.use('/bb', function(req, res){
-    res.render("bb");
+    res.render("bb", { host: req.headers.host});
 });
 
 // catch 404 and forward to error handler
