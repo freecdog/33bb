@@ -39,19 +39,10 @@ define(function (require, exports, module) {
             var renderer = new THREE.WebGLRenderer();
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
-            renderer.setSize( Math.min(window.innerWidth, window.innerHeight), Math.min(window.innerWidth, window.innerHeight) );
+            renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-100, Math.min(window.innerWidth, window.innerHeight)-100 );
             document.body.appendChild( renderer.domElement );
 
             var geometry = new THREE.BufferGeometry();
-//            var vertexPositions = [
-//                [ 0.50, 0.0,  1.0],
-//                [ 0.5, -0.50,  1.0],
-//                [ -0.5, -0.5,  1.0],
-//
-//                [ 0, -1, 1],
-//                [ -1, -1, 1],
-//                [ 0, 1, 1]
-//            ];
 
             var curTime = 0;
 
@@ -76,7 +67,7 @@ define(function (require, exports, module) {
             var vertexPositions = [];
             var vertexColors = [];
 
-            var cmin = 1e308, cmax = -1e308;
+            var cmin, cmax;
             countMinMax();
 
             // converts Num from diap (ds to df) to diap (dmin to dmax)
@@ -113,21 +104,15 @@ define(function (require, exports, module) {
                     vertexPositions.push( [p4x, p4y, defZ] );
 
                     // 1st triangle
-                    var ttt = curTime;
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0+1][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0+1][c1+1] ,cmin, cmax, 0,1), 0, 0] );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0+1][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                    var recTime = curTime;
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
 
                     // 2nd triangle
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0+1][c1+1] ,cmin, cmax, 0,1), 0, 0] );
-//                    vertexColors.push( [ 1-ctd( mem[ttt][c0][c1+1] ,cmin, cmax, 0,1), 0, 0] );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[ttt][c0][c1+1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1) ) );
                 }
             }
 
@@ -141,15 +126,6 @@ define(function (require, exports, module) {
                 vertices[ i*N + 1 ] = vertexPositions[i][1];
                 vertices[ i*N + 2 ] = vertexPositions[i][2];
 
-//                if (i % 2 == 0){
-//                    colors[ i*N ]     = 0;
-//                    colors[ i*N + 1 ] = 1;
-//                    colors[ i*N + 2 ] = 0;
-//                } else {
-//                    colors[ i*N ]     = 0;
-//                    colors[ i*N + 1 ] = 0;
-//                    colors[ i*N + 2 ] = 1;
-//                }
                 colors[ i*N + 0 ] = vertexColors[i][0];
                 colors[ i*N + 1 ] = vertexColors[i][1];
                 colors[ i*N + 2 ] = vertexColors[i][2];
@@ -175,18 +151,6 @@ define(function (require, exports, module) {
             animate();
 
             // usefull methods
-            function render() {
-                renderer.render(scene, camera);
-            }
-
-            function animate() {
-
-                requestAnimationFrame( animate );
-
-                render();
-                stats.update();
-            }
-
             function initStats() {
                 var stats = new Stats();
                 stats.setMode(1); // 0: fps, 1: ms
@@ -197,6 +161,8 @@ define(function (require, exports, module) {
             }
 
             function countMinMax(){
+                cmin = 1e308;
+                cmax = -1e308;
                 for (var m0 in mem){
                     for (var m1 in mem[m0]){
                         for (var m2 in mem[m0][m1]){
@@ -207,17 +173,17 @@ define(function (require, exports, module) {
                 }
             }
 
-            var piece = 0.16666666666666666666666666666667;
-            var borF = 0 * piece;  		// Fiolet
-            var borS = 1 * piece;    	// Sinij
-            var borG = 2 * piece;   	// Goluboj
-            var borZ = 3 * piece;		// Zelenij
-            var borZh = 4 * piece;		// Zheltyj
-            var borO = 5 * piece;		// Oranzhevyj
-            var borK = 6 * piece;		// Krasnyj
-
             // get color from value in diap 0..1
             function getRainbowColor(value){
+
+                var piece = 0.16666666666666666666666666666667;
+                var borF = 0 * piece;  		// Fiolet
+                var borS = 1 * piece;    	// Sinij
+                var borG = 2 * piece;   	// Goluboj
+                var borZ = 3 * piece;		// Zelenij
+                var borZh = 4 * piece;		// Zheltyj
+                var borO = 5 * piece;		// Oranzhevyj
+                var borK = 6 * piece;		// Krasnyj
 
                 var SRC_r, SRC_g, SRC_b;
                 var bright;
@@ -265,6 +231,18 @@ define(function (require, exports, module) {
                 return [SRC_r, SRC_g, SRC_b];
             }
 
+            // RENDER
+            function render() {
+                renderer.render(scene, camera);
+            }
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+
+                render();
+                stats.update();
+            }
 
             // GUI
             var controls = new function () {
@@ -278,17 +256,11 @@ define(function (require, exports, module) {
 
                             // 1st triangle
                             var ind = Math.round(controls.time);
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0+1][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1), 0, 0] );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1] ,cmin, cmax, 0,1) ) );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
 
                             // 2nd triangle
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1), 0, 0] );
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1), 0, 0] );
-//                            vertexColors.push( [ 1-ctd( mem[ind][c0][c1+1] ,cmin, cmax, 0,1), 0, 0] );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
                             vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1+1] ,cmin, cmax, 0,1) ) );
