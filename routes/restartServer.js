@@ -30,7 +30,7 @@ function restartServer(){
 }
 function updateServer(callback){
     // update from github
-    exec("git --git-dir=" + path.join(__dirname, '..', '.git') + " --work-tree=" + __dirname + " pull origin master", callback);
+    exec("git --git-dir=" + path.join(__dirname, '..', '.git') + " --work-tree=" + path.join(__dirname, '..') + " pull origin master", callback);
 }
 
 function prepareIpToConsole(req){
