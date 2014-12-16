@@ -44,7 +44,7 @@ define(function (require, exports, module) {
 
             var geometry = new THREE.BufferGeometry();
 
-            var curTime = 0;
+            var initTime = 0;
 
             // load from Datatone. Mem[time from 0 to 5, with 0.1 stop][coord from 0 to 1 with 0.1 step][angle from 0 to 90 with 15 step]
             var memIndex = 2;
@@ -104,7 +104,7 @@ define(function (require, exports, module) {
                     vertexPositions.push( [p4x, p4y, defZ] );
 
                     // 1st triangle
-                    var recTime = curTime;
+                    var recTime = initTime;
                     vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1) ) );
                     vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
                     vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
@@ -246,7 +246,7 @@ define(function (require, exports, module) {
 
             // GUI
             var controls = new function () {
-                this.time = curTime;
+                this.time = initTime;
                 this.memIndex = memIndex;
 
                 this.changeTime = function(){
