@@ -56,7 +56,6 @@ define(function (require, exports, module) {
                     angles.push(data.TP[cang]);
                 }
             }
-            console.log('pts', angles);
             var axisX = 2, axisY = 2;   // length of axises
             var axisX2 = axisX / 2, axisY2 = axisY / 2;
             var defZ = 1.0;
@@ -248,6 +247,48 @@ define(function (require, exports, module) {
             var controls = new function () {
                 this.time = initTime;
                 this.memIndex = memIndex;
+                this.autoPlay = false;
+
+                this.updateGUIdisplays = function(){
+                    if (gui !== undefined) {
+                        for (var guiElem in gui.__controllers) {
+                            if (!gui.__controllers.hasOwnProperty(guiElem)) continue;
+
+                            gui.__controllers[ guiElem ].updateDisplay();
+                        }
+                    } else {
+                        console.error('gui is undefined');
+                    }
+                };
+                this.updateGUIwithName = function(name){
+                    if (gui !== undefined) {
+                        for (var guiElem in gui.__controllers) {
+                            if (!gui.__controllers.hasOwnProperty(guiElem)) continue;
+
+                            if (gui.__controllers[ guiElem ].property === name) gui.__controllers[ guiElem ].updateDisplay();
+                        }
+                    } else {
+                        console.error('gui is undefined');
+                    }
+                };
+
+                this.autoUpdate = function(){
+                    if (controls.autoPlay){
+                        //onsole.log(Math.cos( (new Date()).getTime() ));
+                        //controls.time = Math.cos( (new Date()).getTime() );
+                        //controls.changeTime();
+
+                        //controls.autoUpdate();
+                        requestAnimationFrame( controls.autoUpdate );
+
+                        //controls.time += 1;
+                        controls.time = Math.cos( (new Date()).getTime()/1000 )*(49.0/2) + 49.0/2;
+
+                        //controls.updateGUIdisplays();
+                        controls.updateGUIwithName('time');
+                        controls.changeTime();
+                    }
+                };
 
                 this.changeTime = function(){
                     var vertexColors = [];
@@ -288,8 +329,15 @@ define(function (require, exports, module) {
             };
 
             var gui = new dat.GUI();
-            gui.add(controls, 'time', 0, 49).onChange(controls.changeTime);
-            gui.add(controls, 'memIndex', 0, 4).onChange(controls.changeMem);
+            gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
+            gui.add(controls, 'time').min(0).max(49).step(1).onChange(controls.changeTime);
+            gui.add(controls, 'memIndex', {
+                'V_1.dat': 0,
+                'V_2.dat': 1,
+                'S11.dat': 2,
+                'S22.dat': 3,
+                'S12.dat': 4
+            }).onChange(controls.changeMem);
 
         }
         bbCompile.start = start;
