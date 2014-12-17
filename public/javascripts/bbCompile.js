@@ -364,6 +364,10 @@ define(function (require, exports, module) {
 
                     controls.changeTime();
                 };
+
+                this.reloadPage = function(){
+                    document.location.reload(true);
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -383,6 +387,7 @@ define(function (require, exports, module) {
             }).onChange(controls.changeMem);
             gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
             gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
+            gui.add(controls, 'reloadPage').onChange(controls.reloadPage);
 
             function initStats() {
                 var stats = new Stats();
