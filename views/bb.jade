@@ -8,10 +8,11 @@ html
         script(data-main="javascripts/bb", src="javascripts/require.js")
         link(rel='stylesheet', href='/stylesheets/style.css')
     body
-        | test
-        p
-            a(href='#', onclick='require("BB").BBup.run()') Run calculations
-        p
-            a(href='#', onclick='(new require("BB").Datatone()).breakCalculation = true') Stop calculations
+        //-
+            | test
+            p
+                a(href='#', onclick='require("BB").BBup.run()') Run calculations
+            p
+                a(href='#', onclick='(new require("BB").Datatone()).breakCalculation = true') Stop calculations
 
-        div(id='Stats-output')
+            div(id='Stats-output')

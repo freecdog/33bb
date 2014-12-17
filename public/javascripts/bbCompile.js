@@ -32,6 +32,10 @@ define(function (require, exports, module) {
 
             var stats = initStats();
 
+            var N = 3; // number of components per vertex
+            var useDuplicate = true;
+            var useInvertationColors = false;
+
             var scene = new THREE.Scene();
             var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000); //PerspectiveCamera( 75, 400.0 / 300.0, 0.1, 1000 );
             camera.position.z = 10;
@@ -47,8 +51,8 @@ define(function (require, exports, module) {
             var initTime = 0;
 
             // load from Datatone. Mem[time from 0 to 5, with 0.1 stop][coord from 0 to 1 with 0.1 step][angle from 0 to 90 with 15 step]
-            var memIndex = 2;
-            var mem = data.memOut[memIndex];
+            var schemeIndex = 2;
+            var mem = data.memOut[schemeIndex];
             // converting TP to correct array of angles (indexed from 0)
             var angles = [];
             for (var cang in data.TP) {
@@ -66,74 +70,125 @@ define(function (require, exports, module) {
             var vertexPositions = [];
             var vertexColors = [];
 
-            var cmin, cmax;
+            var cmin = 1e308, cmax = -1e308;
             countMinMax();
 
+            // adding attributes with empty arrays, so they weren't empty
+            geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
+            geometry.addAttribute( 'color',  new THREE.BufferAttribute( [], N ) );
+
             // converts Num from diap (ds to df) to diap (dmin to dmax)
-            function ctd(num, ds, df, dmin, dmax){
+            function ctd(num, ds, df, dmin, dmax, invert){
                 var diap = Math.abs(df - ds);
                 var delta = Math.abs(dmax - dmin);
-                return (delta / diap) * (num-ds) + dmin;
+                var ans = (delta / diap) * (num-ds) + dmin;
+                if (invert === true) ans = dmax - ans;
+                return ans;
             }
             //console.warn( 'value:', ctd(-1e-7,cmin, cmax, 0,1),'min:', cmin, 'max:', cmax);
             function deg2rad(angle){ return angle / 180 * Math.PI; }
-            for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
-                var r1 = c0 * data.STEPX;
-                var r2 = r1 + data.STEPX;
-                for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
+            function initPositionVertices(){
+                vertexPositions = [];
 
-                    var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
-                    p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                    p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                    p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                    p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                    p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                    p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                    p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                    p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
+                    var r1 = c0 * data.STEPX;
+                    var r2 = r1 + data.STEPX;
+                    for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
-                    // 1st triangle
-                    vertexPositions.push( [p1x, p1y, defZ] );
-                    vertexPositions.push( [p2x, p2y, defZ] );
-                    vertexPositions.push( [p3x, p3y, defZ] );
+                        var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+                        p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
 
-                    // 2nd triangle
-                    vertexPositions.push( [p2x, p2y, defZ] );
-                    vertexPositions.push( [p3x, p3y, defZ] );
-                    vertexPositions.push( [p4x, p4y, defZ] );
+                        // 1st triangle
+                        vertexPositions.push( [p1x, p1y, defZ] );
+                        vertexPositions.push( [p2x, p2y, defZ] );
+                        vertexPositions.push( [p3x, p3y, defZ] );
 
-                    // 1st triangle
-                    var recTime = initTime;
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                        // 2nd triangle
+                        vertexPositions.push( [p2x, p2y, defZ] );
+                        vertexPositions.push( [p3x, p3y, defZ] );
+                        vertexPositions.push( [p4x, p4y, defZ] );
 
-                    // 2nd triangle
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1) ) );
+                        // duplicate
+                        if (useDuplicate){
+                            p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                            p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                            p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                            p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                            p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                            p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                            p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                            p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                            vertexPositions.push( [p1x, 1-p1y -1, defZ] );
+                            vertexPositions.push( [p2x, 1-p2y -1, defZ] );
+                            vertexPositions.push( [p3x, 1-p3y -1, defZ] );
+                            vertexPositions.push( [p2x, 1-p2y -1, defZ] );
+                            vertexPositions.push( [p3x, 1-p3y -1, defZ] );
+                            vertexPositions.push( [p4x, 1-p4y -1, defZ] );
+                        }
+                    }
                 }
+
+                var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
+
+                for ( var i = 0, len = vertexPositions.length; i < len; i++ ) {
+                    for (var j = 0; j < N; j++) vertices[ i*N + j ] = vertexPositions[i][j];
+                }
+
+                geometry.attributes.position = new THREE.BufferAttribute( vertices, N );
+
+                geometry.computeBoundingSphere();
             }
+            function initColorVertices(currentTime){
+                vertexColors = [];
 
-            var N = 3; // number of components per vertex
-            var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
-            var colors = new Float32Array( vertexPositions.length * N );
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
+                    for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
-            for ( var i = 0; i < vertexPositions.length; i++ )
-            {
-                vertices[ i*N + 0 ] = vertexPositions[i][0];
-                vertices[ i*N + 1 ] = vertexPositions[i][1];
-                vertices[ i*N + 2 ] = vertexPositions[i][2];
+                        var isInvert = useInvertationColors;
 
-                colors[ i*N + 0 ] = vertexColors[i][0];
-                colors[ i*N + 1 ] = vertexColors[i][1];
-                colors[ i*N + 2 ] = vertexColors[i][2];
+                        // 1st triangle
+                        var recTime = currentTime;
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+
+                        // 2nd triangle
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+
+                        // duplicate
+                        if (useDuplicate){
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                        }
+                    }
+                }
+
+                var colors = new Float32Array( vertexColors.length * N );
+
+                for ( var i = 0, len = vertexColors.length; i < len; i++ ) {
+                    for (var k = 0; k < N; k++) colors[ i*N + k ] = vertexColors[i][k];
+                }
+
+                geometry.attributes.color = new THREE.BufferAttribute( colors, N );
             }
-
-            geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, N ) );
-            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-
-            geometry.computeBoundingSphere();
+            function initVertices(){
+                initPositionVertices();
+                initColorVertices(initTime);
+            }
+            initVertices();
 
 //            geometry.dynamic = true;  // it is not make sense for my app
 
@@ -143,22 +198,14 @@ define(function (require, exports, module) {
                 side: THREE.DoubleSide  // if there is only front side it may be rotated with backside (and become invisible)
             } );
 
-            // TODO triangle strip? how it could change colors initialization?
+            // TODO triangle strip? how it could change colors initialization? But probably it aren't too much necessary
+            // because there are not too much triangles (default case: 10 * 12 * 2 = 240 triangles)
             var mesh = new THREE.Mesh( geometry, material );
             scene.add(mesh);
 
             animate();
 
             // usefull methods
-            function initStats() {
-                var stats = new Stats();
-                stats.setMode(1); // 0: fps, 1: ms
-
-                document.getElementById('Stats-output').appendChild(stats.domElement);
-
-                return stats;
-            }
-
             function countMinMax(){
                 cmin = 1e308;
                 cmax = -1e308;
@@ -246,8 +293,10 @@ define(function (require, exports, module) {
             // GUI
             var controls = new function () {
                 this.time = initTime;
-                this.memIndex = memIndex;
+                this.schemeIndex = schemeIndex;
                 this.autoPlay = false;
+                this.invertColors = useInvertationColors;
+                this.duplicate = useDuplicate;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -290,37 +339,23 @@ define(function (require, exports, module) {
                     }
                 };
 
+                this.changeDuplicate = function(){
+                    useDuplicate = controls.duplicate;
+                    initVertices();
+                    controls.changeTime();
+                };
+
+                this.changeInvertation = function(){
+                    useInvertationColors = controls.invertColors;
+                    controls.changeTime();
+                };
+
                 this.changeTime = function(){
-                    var vertexColors = [];
-                    for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
-                        for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
-
-                            // 1st triangle
-                            var ind = Math.round(controls.time);
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-
-                            // 2nd triangle
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1+1] ,cmin, cmax, 0,1) ) );
-                        }
-                    }
-
-                    var colors = new Float32Array( vertexPositions.length * N );
-                    for ( var i = 0; i < vertexPositions.length; i++ )
-                    {
-                        colors[ i*N + 0 ] = vertexColors[i][0];
-                        colors[ i*N + 1 ] = vertexColors[i][1];
-                        colors[ i*N + 2 ] = vertexColors[i][2];
-                    }
-
-                    geometry.attributes.color = new THREE.BufferAttribute( colors, 3 );
+                    initColorVertices( Math.round(controls.time) );
                 };
 
                 this.changeMem = function(){
-                    mem = data.memOut[ Math.round( controls.memIndex ) ];
+                    mem = data.memOut[ Math.round( controls.schemeIndex ) ];
 
                     countMinMax();
 
@@ -331,13 +366,28 @@ define(function (require, exports, module) {
             var gui = new dat.GUI();
             gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
             gui.add(controls, 'time').min(0).max(49).step(1).onChange(controls.changeTime);
-            gui.add(controls, 'memIndex', {
+            gui.add(controls, 'schemeIndex', {
                 'V_1.dat': 0,
                 'V_2.dat': 1,
                 'S11.dat': 2,
                 'S22.dat': 3,
                 'S12.dat': 4
             }).onChange(controls.changeMem);
+            gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
+            gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
+
+            function initStats() {
+                var stats = new Stats();
+                stats.setMode(1); // 0: fps, 1: ms
+
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
+                //document.getElementById('Stats-output').appendChild(stats.domElement);
+                document.body.appendChild(stats.domElement);
+
+                return stats;
+            }
 
         }
         bbCompile.start = start;
