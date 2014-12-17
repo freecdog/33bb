@@ -364,7 +364,12 @@ define(function (require, exports, module) {
                 };
             };
 
-            var gui = new dat.GUI();
+            var gui = new dat.GUI({autoPlace: false});
+            gui.domElement.style.position = 'absolute';
+            gui.domElement.style.left = '0px';
+            gui.domElement.style.top = '50px';
+            document.body.appendChild(gui.domElement);
+
             gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
             gui.add(controls, 'time').min(0).max(49).step(1).onChange(controls.changeTime);
             gui.add(controls, 'schemeIndex', {
