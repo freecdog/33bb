@@ -44,9 +44,14 @@ define(function (require, exports, module) {
             renderer.setClearColor( 0x000000, 0);
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
-            renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-100, Math.min(window.innerWidth, window.innerHeight)-100 );
+            renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-50, Math.min(window.innerWidth, window.innerHeight)-50 );
             renderer.domElement.style.position = 'absolute';
-            renderer.domElement.style.left = '50px';
+            if ( window.innerWidth / window.innerHeight < 1 ) {
+                renderer.domElement.style.right = '50px';
+            } else {
+                renderer.domElement.style.right = '50px';
+            }
+            renderer.domElement.style.bottom = '10px';
             document.body.appendChild( renderer.domElement );
 
             var geometry = new THREE.BufferGeometry();
