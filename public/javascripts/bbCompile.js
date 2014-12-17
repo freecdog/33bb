@@ -45,6 +45,8 @@ define(function (require, exports, module) {
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
             renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-100, Math.min(window.innerWidth, window.innerHeight)-100 );
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.left = '250px';
             document.body.appendChild( renderer.domElement );
 
             var geometry = new THREE.BufferGeometry();
