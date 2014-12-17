@@ -46,7 +46,7 @@ define(function (require, exports, module) {
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
             renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-100, Math.min(window.innerWidth, window.innerHeight)-100 );
             renderer.domElement.style.position = 'absolute';
-            renderer.domElement.style.left = '250px';
+            renderer.domElement.style.left = '50px';
             document.body.appendChild( renderer.domElement );
 
             var geometry = new THREE.BufferGeometry();
@@ -365,9 +365,6 @@ define(function (require, exports, module) {
                     controls.changeTime();
                 };
 
-                this.reloadPage = function(){
-                    document.location.reload(true);
-                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -387,7 +384,6 @@ define(function (require, exports, module) {
             }).onChange(controls.changeMem);
             gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
             gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
-            gui.add(controls, 'reloadPage').onChange(controls.reloadPage);
 
             function initStats() {
                 var stats = new Stats();
