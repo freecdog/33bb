@@ -40,7 +40,8 @@ define(function (require, exports, module) {
             var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000); //PerspectiveCamera( 75, 400.0 / 300.0, 0.1, 1000 );
             camera.position.z = 10;
 
-            var renderer = new THREE.WebGLRenderer();
+            var renderer = new THREE.WebGLRenderer({alpha: true});
+            renderer.setClearColor( 0x000000, 0);
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
             renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-100, Math.min(window.innerWidth, window.innerHeight)-100 );
