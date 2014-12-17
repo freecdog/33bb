@@ -8,6 +8,7 @@ requirejs.config({
         async: 'BB/lib/node_modules/async/lib/async',
         fs: 'BB/lib/node_modules/fsFake/fsFake',
         BB: 'BB/lib/BB',
+        bulkedData: 'bulkedData',
 
         THREE: 'three',
         Stats: 'stats',
@@ -27,7 +28,7 @@ requirejs.config({
     }
 });
 
-requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
+requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData) {
     // Don't want to start it automatically for now
     BB.BBup.run();
 
@@ -38,6 +39,9 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var d = (new BB.Datatone());
         d.breakCalculation = true;
 
+        d.memOut = bulkedData;
+        bbCompile.start();
+
         // storing to localStorage
         //localStorage.setItem('mo', JSON.stringify(d.memOut));
 
@@ -46,7 +50,7 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
 
         //bbCompile.start();
 
-        function ajaxWrapper(mode, theJson, toUrl, callback){
+        /*function ajaxWrapper(mode, theJson, toUrl, callback){
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open(mode, toUrl, true);
             xmlhttp.setRequestHeader("Content-type", "application/json");
@@ -73,7 +77,7 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
                 console.log(stringData);
             }
 
-        });
+        });*/
 
     }, 100);
 });

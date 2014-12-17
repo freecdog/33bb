@@ -28,7 +28,7 @@ define(function (require, exports, module) {
                 console.error('there is no three.js: ', THREE);
             }
 
-            console.log('have THREE:', THREE, BB, data);
+            //console.log('have THREE:', THREE, BB, data);
 
             var stats = initStats();
 
@@ -105,14 +105,14 @@ define(function (require, exports, module) {
 
                     // 1st triangle
                     var recTime = initTime;
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
 
                     // 2nd triangle
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-                    vertexColors.push( getRainbowColor( 1-ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                    vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1) ) );
                 }
             }
 
@@ -256,14 +256,14 @@ define(function (require, exports, module) {
 
                             // 1st triangle
                             var ind = Math.round(controls.time);
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
 
                             // 2nd triangle
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
-                            vertexColors.push( getRainbowColor( 1-ctd( mem[ind][c0][c1+1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0+1][c1+1] ,cmin, cmax, 0,1) ) );
+                            vertexColors.push( getRainbowColor( ctd( mem[ind][c0][c1+1] ,cmin, cmax, 0,1) ) );
                         }
                     }
 
