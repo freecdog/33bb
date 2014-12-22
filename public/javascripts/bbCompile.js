@@ -78,10 +78,10 @@ define(function (require, exports, module) {
             var vertexPositions = [];
             var vertexColors = [];
 
-            var cmin = 1e308, cmax = -1e308;
+            var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
             countMinMax();
 
-            // adding attributes with empty arrays, so they weren't empty
+            // adding attributes with empty arrays, so properties would be available
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
             geometry.addAttribute( 'color',  new THREE.BufferAttribute( [], N ) );
 
@@ -215,8 +215,8 @@ define(function (require, exports, module) {
 
             // usefull methods
             function countMinMax(){
-                cmin = 1e308;
-                cmax = -1e308;
+                cmin = Number.MAX_VALUE;
+                cmax = -Number.MAX_VALUE;
                 for (var m0 in mem){
                     for (var m1 in mem[m0]){
                         for (var m2 in mem[m0][m1]){
