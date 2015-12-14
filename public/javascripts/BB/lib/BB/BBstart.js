@@ -350,6 +350,7 @@ define(function (require, exports, module) {
                 // A2=48.611;
                 // A2=A1*A1/A2;
                 // A1=1E03/A1;
+                // TODO probably commented strings are correct
                 S0 = 0.19836 * 1E12 / (C2 * RC2);
                 BETTA = 875;
                 A1 = 325;
@@ -872,6 +873,7 @@ define(function (require, exports, module) {
                     return 0;
                 } else {
                     // !FF=-S0*SIN(BETTA*T)*EXP(-A2*(A1*T-1)**2);
+                    // TODO I should use string below !FF=-S0*SIN(BETTA*T)*EXP(-A2*(A1*T-1)**2);
                     return -S0 * T * T * Math.sin(BETTA*T) * Math.exp(-A1 * T);
                 }
             } else {

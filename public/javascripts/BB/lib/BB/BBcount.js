@@ -721,7 +721,7 @@ define(function (require, exports, module) {
                             for (var c5 in QP){
                                 if (!QP.hasOwnProperty(c5)) continue;
 
-                                QP[c5][N][J] = G[c5][K][I];
+                                QP[c5][N][J] = G[c5][K][I]; // original *C2
                             }
                         }
                         X = X + STEPX;
@@ -729,7 +729,7 @@ define(function (require, exports, module) {
                     }
                 }
 
-                // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-06;
+                // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-05/0.981;
                 // this string uncommented when it is need to get real measurements
                 for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
                     var st;
