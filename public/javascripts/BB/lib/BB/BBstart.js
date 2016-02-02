@@ -127,7 +127,8 @@ define(function (require, exports, module) {
 
                     loadFromJSONFile(inputData, 'public/dat/BBinput.json');
 
-                } else if (source == 'dat'){
+                }
+                else if (source == 'dat'){
 
                     // helpful method for reading
                     var lastIndex = 0;
@@ -217,7 +218,8 @@ define(function (require, exports, module) {
                     inputData.STEPX = jParse('float');
                     inputData.DELTA = jParse('int');
 
-                } else {
+                }
+                else {
                     // default config
                     inputData = {
                         ALFA: 0,
@@ -252,7 +254,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 5,
+                        TM: 1,
                         DT: 0.02,
                         DFI: 3.0,
                         DX: 0.02,
@@ -314,7 +316,11 @@ define(function (require, exports, module) {
                 STEPX = inputData.STEPX;
                 DELTA = inputData.DELTA;
             }
-            loadData('null');    // json, dat, null (default config)
+            loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
+            // TODO I need simple configurator for client side.
+            // At first launch, client will take configuration from server BBinput.json
+            // and save it to localStorage, after will take config from localStorage.
+            // Also there should be button to restore settings to default values.
             console.log((new Date()) - startProcProfiler, "ms to complete loadData");
 
             ALFA = ALFA * Math.PI / 180;
@@ -344,16 +350,17 @@ define(function (require, exports, module) {
                 ALEF = BETTA / Math.tan(BETTA * TH);
                 TPLUS = Math.PI / BETTA;
             } else if (EPUR == 2) {
-                // S0=9.6*1E06/(C2*RC2);
-                // BETTA=900;
-                // A1=7.917;
-                // A2=48.611;
-                // A2=A1*A1/A2;
-                // A1=1E03/A1;
-                // TODO probably commented strings are correct
-                S0 = 0.19836 * 1E12 / (C2 * RC2);
-                BETTA = 875;
-                A1 = 325;
+                 S0 = 1; // S0=9.6*1E06/(C2*RC2);
+                 BETTA = 900;
+                 A1 = 7.917;
+                 A2 = 48.611;
+                 A2 = A1 * A1 / A2;
+                 A1 = 1E03 / A1;
+
+                // This 3 commented strings were from another version of BB
+                //S0 = 0.19836 * 1E12 / (C2 * RC2);
+                //BETTA = 875;
+                //A1 = 325;
             } else {
                 console.error('unknown EPUR value');
             }
@@ -389,7 +396,7 @@ define(function (require, exports, module) {
             ITP = new Array(NTP+2);
 
             STEPFI();
-            console.log((new Date()) - startProcProfiler, "ms to complete STEPFI");
+            console.log((new Date()) - startProcProfiler, "ms passed when STEPFI finished");
 
             T0 = 1.1 * XDESTR;
             NT = Math.round(TM/DT);
@@ -397,11 +404,11 @@ define(function (require, exports, module) {
             NBX = NT + Math.round(XDESTR/DX) + 10;
             NTIME = Math.round((TM+T0)/STEP) + 3;
             STARTOUT();
-            console.log((new Date()) - startProcProfiler, "ms to complete STARTOUT");
+            console.log((new Date()) - startProcProfiler, "ms passed when STARTOUT finished");
             if (EPUR > 0) WAVEEPURE();
-            console.log((new Date()) - startProcProfiler, "ms to complete WAVEEPURE");
+            console.log((new Date()) - startProcProfiler, "ms passed when WAVEEPURE finished");
             MTRXPROC();
-            console.log((new Date()) - startProcProfiler, "ms to complete MTRXPROC");
+            console.log((new Date()) - startProcProfiler, "ms passed when MTRXPROC finished");
 
             data.NXDST = NXDST;
             data.NTP = NTP;
@@ -478,6 +485,7 @@ define(function (require, exports, module) {
         function GEOMPROC(){
             var BB = require('../BB');
             var FUNC2 = BB.FUNC2;
+            var RTET = FUNC2.RTET;
 
             var K; // integer
             var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
@@ -501,7 +509,6 @@ define(function (require, exports, module) {
             H = Math.PI/180;
             TETA = 0;
 
-            var RTET = FUNC2.RTET;
             while(true){
                 if (TETA > 2 * Math.PI) break;
                 // SOLVED, SIMPS from what part of code is it? http://en.wikipedia.org/wiki/Simpson's_rule
@@ -514,6 +521,7 @@ define(function (require, exports, module) {
                 JC = JC + SIMPS(RTET, 4, 0, TETA, H).re;
                 MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
                 RT = RTET(TETA);
+
                 //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
                 recBuffer = new Buffer(
                     (TETA*180/Math.PI).toFixedDef() + " " +
@@ -525,12 +533,18 @@ define(function (require, exports, module) {
                     "\n" );
                 //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+
                 TETA = TETA + H;
             }
+            // fs.close
+            //noinspection JSUnresolvedFunction
+            fs.closeSync(fd);
+            console.log(CavformPath, "file written");
 
             S = S / 2;
             // L - характерный размер
             L = Math.sqrt(S / Math.PI);
+
             //WRITE(*,'()');
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
             //WRITE(*,'()');
@@ -591,13 +605,10 @@ define(function (require, exports, module) {
             L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / L;
             //ZC = ZC / L * Math.exp(-IM*ALFA);
             ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
+            // TODO Is it works properly?
             JC = JC - ( Math.PI * ((ZC.multiply(ZC.conjugate())).re) ); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
             RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
 
-            // fs.close
-            //noinspection JSUnresolvedFunction
-            fs.closeSync(fd);
-            console.log(CavformPath, "file written");
             console.log("GEOMPROC has end work");
         }
 

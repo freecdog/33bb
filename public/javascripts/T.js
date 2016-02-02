@@ -30,6 +30,7 @@ requirejs.config({
 
 requirejs(['BB', 'threeProbe'], function(BB, threeProbe) {
     // Don't want to start it automatically for now
+    // TODO Code to start calculations is in view (this is not an architecture)
     //BB.BBup.run();
 
     threeProbe.start();

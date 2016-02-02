@@ -245,7 +245,7 @@ define(function (require, exports, module) {
             //    AUX[c1] = new Array(NBX +1);
             //    for (var c2 = 0; c2 < NBX +1; c2++) {
             //        AUX[c1][c2] = [];
-            //        // TODO js can't count correctly length of [-1:1], it shows length = 2, except of 3
+            //        // TODO js can't count correctly length of [-1:1], it shows length = 2, while was expected 3
             //        for (var c3 = -1; c3 <= 1; c3++) {
             //            AUX[c1][c2][c3] = 0;
             //        }
@@ -289,14 +289,16 @@ define(function (require, exports, module) {
                 recBuffer = new Buffer('T, ' + 'WX, ' + 'WY, ' + 'VX, ' + 'VY, ' + 'X, ' + 'Y, ' + 'EPS\n');
                 //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+            } else if (INDEX == 0){
+                console.log("INDEX =", INDEX, ", so we have empty space");
             } else {
                 console.log("Unknown value of INDEX", INDEX);
             }
 
             E = MatMult.createArray(5, 5);
             MatMult.fillArray(E, 0);
-
             for (I = 0; I < E.length; I++) E[I][I] = 1;
+
             T = -T0;
             data.currentT = T;
             TOUT = T;
@@ -327,7 +329,7 @@ define(function (require, exports, module) {
                     return calcNext;
                 },
                 function(callback){
-                    var timeAtBegin = new Date();
+                    var timeAtStart = new Date();
 
                     N++;
                     ////if (T > TM) break;
@@ -599,7 +601,7 @@ define(function (require, exports, module) {
                     data.currentT = T;
 
                     jStepsCnt++;
-                    if (T >= 0) console.log(jStepsCnt, ")",  (new Date())-timeAtBegin, "ms to count");
+                    if (T >= 0) console.log(jStepsCnt, ")",  (new Date())-timeAtStart, "ms to count");
 
                     setTimeout(callback, 1);
                 },
@@ -637,7 +639,7 @@ define(function (require, exports, module) {
                 for (var ji in outBuf){
                     if (!outBuf.hasOwnProperty(ji)) continue;
 
-                    var jpath = 'BBdat/!' + joNames[ji];
+                    var jpath = 'BBdat/2016.02/!' + joNames[ji];
                     //noinspection JSUnresolvedFunction
                     var jfd = fs.openSync(jpath, 'w');
 
@@ -731,6 +733,7 @@ define(function (require, exports, module) {
 
                 // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-05/0.981;
                 // this string uncommented when it is need to get real measurements
+                // last version is QP(3:5,:,:)=QP(3:5,:,:)   !*RC2*C2*1E-05/0.981;    (RC2 not RO2)
                 for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
                     var st;
                     if (I <= NXDST) {
