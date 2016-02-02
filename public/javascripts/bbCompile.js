@@ -98,9 +98,22 @@ define(function (require, exports, module) {
             function initPositionVertices(){
                 vertexPositions = [];
 
+                // TODO we are using special radius that isn't moved from FUNC2.js (RTET) to configuration
+                // until it is not moved, we add const
+                var objectRadius = 2.05;
+                var totalRadius = objectRadius + data.XDESTR;
+                var normalaizedObjectRadius = 2.05 / totalRadius;
+
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
-                    var r1 = c0 * data.STEPX;
+                    //var r1 = c0 * data.STEPX;
+                    //var r2 = r1 + data.STEPX;
+                    var r1 = objectRadius + c0 * data.STEPX;
                     var r2 = r1 + data.STEPX;
+
+                    // normalization of radiuses
+                    r1 = r1 / totalRadius;
+                    r2 = r2 / totalRadius;
+
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                         var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;

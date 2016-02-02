@@ -20,13 +20,57 @@ define(function (require, exports, module) {
             previous_FUNC2 = root.FUNC2;
         }
 
+        // This method is for creation object form
         function RTET(TT) {
             var RTET;
+            // REAL,INTENT(IN) :: TT
+            var N = 2, N1 = 1.3, N2 = 1.2, A = 2.05, B = 4.05, C = 4.5,
+                PI2 = 2 / Math.PI, EPS = B / A, VORTEX = 0;
+            var NOEDGE = true;
+            var T0, T, FI, M, EPS1; // float
+
+            T0 = Math.PI * VORTEX / 180;    // solvedTODO it is zero always, isn't it???
+            // SOLVED, VORTEX can be changed MANUALLY
+            // TODO if VORTEX can be changed manually, it should be moved to configuration or elsewhere
+            EPS1 = B * Math.cos(T0) / C;
+            // SOLVED, если окружность, то return, иначе комментируем эту строчку
+            // TODO if we are using simple circle, we should change radius in configuration file
+            RTET = A;
+            return RTET;
+
+            function repeatedFunction(angle, power, epsilon){
+                return B * Math.pow( (Math.pow(Math.abs(Math.sin(angle)), power) + Math.pow(epsilon * Math.abs(Math.cos(angle)), power)) , (-1.0/power))
+            }
+
+            if (NOEDGE){
+                RTET = repeatedFunction(TT, N, EPS);
+                return RTET;
+            }
+
+            T = TT;
+            if (T > 2 * Math.PI) T = T - 2 * Math.PI;
+
+            if ((T > Math.PI / 2) && (T < 3 * Math.PI / 2)) {
+                RTET = repeatedFunction(T, N, EPS);
+            } else {
+                if (T >= 3 * Math.PI / 2) T = T - 2 * Math.PI;
+                if (T < T0) {
+                    FI = (T - T0) / (1 + PI2 * T0);
+                    M = N2;
+                } else {
+                    FI = (T - T0) / (1 - PI2 * T0);
+                    M = N1;
+                }
+                RTET = repeatedFunction(FI, M, EPS1);
+            }
+            return RTET;
+
+            /*var RTET;
             // REAL,INTENT(IN) :: TT
             var N = 8, N1 = 1.3, N2 = 1.2, A = 2.05, B = 2.05, C = 4.5, PI2 = 2 / Math.PI, EPS = B / A, VORTEX = 0;
             var T0, T, FI, M, EPS1; // float
 
-            T0 = Math.PI * VORTEX / 180;    // TODO it is zero always, isn't it???
+            T0 = Math.PI * VORTEX / 180;    // solvedTODO it is zero always, isn't it???
             // SOLVED, VORTEX could be changed, MANUALLY
             EPS1 = B * Math.cos(T0) / C;
             // SOLVED, если окружность, то return, иначе комментируем эту строчку
@@ -49,7 +93,7 @@ define(function (require, exports, module) {
                 }
                 RTET = B * Math.pow(Math.pow(Math.abs(Math.sin(FI)), M) + Math.pow(EPS1 * Math.abs(Math.cos(FI)), M), (-1.0 / M));
             }
-            return RTET;
+            return RTET;*/
         }
 
         FUNC2.RTET = RTET;
