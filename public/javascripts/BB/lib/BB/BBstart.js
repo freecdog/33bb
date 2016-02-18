@@ -11,6 +11,9 @@ define(function (require, exports, module) {
     (function () {
     //(function(exports){
 
+        // TODO remove SPLIT totally (BBinput, BBstart)
+        // TODO move to config RTET vars (from N to NOEDGE)
+
         var BBstart = {};
 
         // global on the server, window in the browser
@@ -231,7 +234,7 @@ define(function (require, exports, module) {
                         GAPOIS: false,
                         POIS: 0.25,
                         GAMMA: 0.6,
-                        XDESTR: 1.0,
+                        XDESTR: 4.0,
 
                         EPUR: 2,
 
@@ -254,7 +257,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 1,
+                        TM: 5,
                         DT: 0.02,
                         DFI: 3.0,
                         DX: 0.02,

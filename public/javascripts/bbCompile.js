@@ -102,7 +102,7 @@ define(function (require, exports, module) {
                 // until it is not moved, we add const
                 var objectRadius = 2.05;
                 var totalRadius = objectRadius + data.XDESTR;
-                var normalaizedObjectRadius = 2.05 / totalRadius;
+                var normalaizedObjectRadius = objectRadius / totalRadius;
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
                     //var r1 = c0 * data.STEPX;

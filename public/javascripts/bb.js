@@ -50,7 +50,27 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
 
         //bbCompile.start();
 
-        /*function ajaxWrapper(mode, theJson, toUrl, callback){
+//        BB.BBup.run();
+        var doCheckTime = true;
+        var checkInterval = 1000;
+        function checkTime(){
+
+            if (d.currentT >= d.TM - 0.2) {
+                setTimeout(function(){
+                    ajaxWrapper('POST', d.memOut, "http://" + "localhost:3113" + "/memout", function(){
+                        console.warn("it seems like it is finished");
+                    });
+                }, checkInterval);
+                doCheckTime = false;
+            }
+
+            if (doCheckTime){
+                setTimeout( checkTime, checkInterval);
+            }
+        }
+        setTimeout(checkTime, checkInterval);
+
+        function ajaxWrapper(mode, theJson, toUrl, callback){
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open(mode, toUrl, true);
             xmlhttp.setRequestHeader("Content-type", "application/json");
@@ -65,7 +85,8 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
             var parameters = JSON.stringify(theJson);
             xmlhttp.send(parameters);
         }
-        //ajaxWrapper('POST', d.memOut, "http://" + window.hostIp + "/memout");
+        /*
+        ajaxWrapper('POST', d.memOut, "http://" + window.hostIp + "/memout");
         ajaxWrapper('GET', null, "http://" + window.hostIp + "/memout", function(status, stringData){
             if (status === 200 || status === 304){
                 if (stringData != undefined){
@@ -76,8 +97,8 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
                 alert(status.toString() + ", something goes wrong");
                 console.log(stringData);
             }
-
-        });*/
+        });
+        */
 
     }, 100);
 });

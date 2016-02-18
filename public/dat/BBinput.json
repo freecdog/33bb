@@ -8,7 +8,7 @@
     "GAPOIS": false,
     "POIS": 0.25,
     "GAMMA": 0.6,
-    "XDESTR": 1.0,
+    "XDESTR": 4.0,
 
     "EPUR": 2,
 
