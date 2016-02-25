@@ -6,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var clientCalc = require('./routes/clientCalc');
 var memoutRouter = require('./routes/memout');
 var restartServer = require('./routes/restartServer');
@@ -34,7 +33,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
 app.use('/calc', clientCalc);
 app.use('/memout', memoutRouter);
 app.use('/restartServer', restartServer);

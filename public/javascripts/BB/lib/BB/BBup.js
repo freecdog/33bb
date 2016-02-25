@@ -20,16 +20,29 @@ define(function (require, exports, module) {
             previous_BBup = root.BBup;
         }
 
-        function run() {
-            var startTime = Date.now();
+        function run(callback) {
+            callback = callback || function(){};
 
             var BB = require('../BB');
             var BBstart = BB.BBstart;
             var BBcount = BB.BBcount;
-            BBstart.STARTPROC();
-            BBcount.COUNTPROC();
 
-            console.log((Date.now() - startTime) + " ms to count all data in BBup.run()");
+            var d = (new BB.Datatone());
+            d.status = {};
+            d.status.startTime = Date.now();
+            d.status.active = true;
+
+            BBstart.STARTPROC(function(){
+                BBcount.COUNTPROC(function(){
+                    d.status.active = false;
+                    d.status.finishTime = Date.now();
+                    d.status.duration = d.status.finishTime - d.status.startTime;
+
+                    console.log(d.status.duration.toString() + " ms to count all data in BBup.run()");
+
+                    callback();
+                });
+            });
         }
         BBup.run = run;
 

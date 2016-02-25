@@ -46,7 +46,7 @@ router.post('/', function(req, res){
                 console.log("write error:", err);
                 callback(e, null);
             } else {
-                console.log('File has been successfully written');
+                console.log('File has been successfully written', new Date());
                 callback();
             }
         });

@@ -81,6 +81,8 @@ define(function (require, exports, module) {
             var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
             countMinMax();
 
+            var timeStepsCount = Math.round(data.TM/data.STEP)-1;
+
             // adding attributes with empty arrays, so properties would be available
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
             geometry.addAttribute( 'color',  new THREE.BufferAttribute( [], N ) );
@@ -352,7 +354,7 @@ define(function (require, exports, module) {
                         requestAnimationFrame( controls.autoUpdate );
 
                         //controls.time += 1;
-                        controls.time = Math.cos( (new Date()).getTime()/1000 )*(49.0/2) + 49.0/2;
+                        controls.time = Math.cos( (new Date()).getTime()/1000 )*(timeStepsCount/2) + timeStepsCount/2;
 
                         //controls.updateGUIdisplays();
                         controls.updateGUIwithName('time');
@@ -392,7 +394,7 @@ define(function (require, exports, module) {
             document.body.appendChild(gui.domElement);
 
             gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
-            gui.add(controls, 'time').min(0).max(49).step(1).onChange(controls.changeTime);
+            gui.add(controls, 'time').min(0).max(timeStepsCount).step(1).onChange(controls.changeTime);
             gui.add(controls, 'schemeIndex', {
                 'V_1.dat': 0,
                 'V_2.dat': 1,

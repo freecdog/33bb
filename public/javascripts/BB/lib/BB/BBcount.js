@@ -121,7 +121,12 @@ define(function (require, exports, module) {
             return s;
         };
 
-        function COUNTPROC(){
+        function COUNTPROC(callback){
+            var countProcProfiler = new Date();
+            console.log("COUNTPROC has start work");
+
+            callback = callback || function(){};
+
             var BB = require('../BB');
             var FUNC2 = BB.FUNC2;
             var MatMult = BB.MatMult;
@@ -603,6 +608,9 @@ define(function (require, exports, module) {
                     jStepsCnt++;
                     if (T >= 0) console.log(jStepsCnt, ")",  (new Date())-timeAtStart, "ms to count");
 
+                    //callback();
+                    // It should be a joke, but setTimeout works faster or for the same time! How come?
+                    // but setTimeout at least has interruptions so DOM can be rendered
                     setTimeout(callback, 1);
                 },
                 function(err){
@@ -623,6 +631,10 @@ define(function (require, exports, module) {
                     }
 
                     jOutput();
+
+                    console.log("COUNTPROC has end work", (new Date()) - countProcProfiler, "ms to complete COUNTPROC");
+
+                    callback();
                 }
             );  // end of async.whilst
 

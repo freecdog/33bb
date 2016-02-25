@@ -78,7 +78,12 @@ define(function (require, exports, module) {
         var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
         var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
 
-        function STARTPROC(){
+        function STARTPROC(callback){
+            var startProcProfiler = new Date();
+            console.log("STARTPROC has start work");
+
+            callback = callback || function(){};
+
             var BB = require('../BB');
             var Datatone = BB.Datatone;
             var MatMult = BB.MatMult;
@@ -88,9 +93,6 @@ define(function (require, exports, module) {
             var RC0,RC1,RC2,B1,B2, M0,C0,C1,RO0,LS,X,RZ,GAMMA,POIS,BET,OMG; // float //FI,
             var GAPOIS = new Boolean();
             var I;
-
-            var startProcProfiler = new Date();
-            console.log("STARTPROC has start work");
 
             function loadData(source){
                 var inputData = {};
@@ -228,11 +230,11 @@ define(function (require, exports, module) {
                         ALFA: 0,
                         SPLIT: false,
                         RZ: 2.55E-02,
-                        X: 10,
-                        RO2: 2.8E03,
-                        C2: 4.5E03,
+                        X: 100,
+                        RO2: 2.7E03,
+                        C2: 5.8E03,
                         GAPOIS: false,
-                        POIS: 0.25,
+                        POIS: 0.35,
                         GAMMA: 0.6,
                         XDESTR: 4.0,
 
@@ -258,15 +260,15 @@ define(function (require, exports, module) {
                         M0: 1.5,
 
                         TM: 5,
-                        DT: 0.02,
-                        DFI: 3.0,
-                        DX: 0.02,
+                        DT: 0.05,
+                        DFI: 5.0,
+                        DX: 0.05,
                         NTP: 7,
                         printPoints: [ 0,15,30,45,60,75,90 ],
                         OMG: 0.98,
                         BET: 0.7,
-                        STEP: 0.1,
-                        STEPX: 0.1,
+                        STEP: 0.05,
+                        STEPX: 1,
                         DELTA: 1
                     };
 
@@ -480,6 +482,7 @@ define(function (require, exports, module) {
 
             console.log("STARTPROC has end work", (new Date()) - startProcProfiler, "ms to complete STARTPROC");
 
+            callback();
         }
         //exports.STARTPROC = STARTPROC;
         BBstart.STARTPROC = STARTPROC;
