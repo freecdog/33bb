@@ -52,9 +52,11 @@ router.post('/', function(req, res){
         });
     }
 
-    writeJSONFile(path.join(__dirname, '..', 'public', 'dat', 'def01.json'), req.body, null);
+    writeJSONFile(path.join(__dirname, '..', 'public', 'dat', 'def01.json'), req.body, function(err){
+        if (err != null) console.log('Some errors occurred:', err);
 
-    res.send('write JSON is turned off');
+        res.send('Data has been written');
+    });
 
 });
 

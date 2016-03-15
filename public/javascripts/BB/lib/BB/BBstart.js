@@ -11,7 +11,7 @@ define(function (require, exports, module) {
     (function () {
     //(function(exports){
 
-        // TODO remove SPLIT totally (BBinput, BBstart)
+        // TODO remove SPLIT parametr totally (BBinput, BBstart), at least now we don't need to use special layer between object and environment
         // TODO move to config RTET vars (from N to NOEDGE)
 
         var BBstart = {};
@@ -77,6 +77,8 @@ define(function (require, exports, module) {
             FU,FG,FR,FL; // [5, 5] of float
         var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
         var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
+
+        var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
         function STARTPROC(callback){
             var startProcProfiler = new Date();
@@ -223,6 +225,7 @@ define(function (require, exports, module) {
                     inputData.STEPX = jParse('float');
                     inputData.DELTA = jParse('int');
 
+                    console.log("NO DATA FOR RTET, NO DATA FOR RTET, NO DATA FOR RTET");
                 }
                 else {
                     // default config
@@ -269,7 +272,17 @@ define(function (require, exports, module) {
                         BET: 0.7,
                         STEP: 0.05,
                         STEPX: 1,
-                        DELTA: 1
+                        DELTA: 1,
+
+                        rtetN: 2,
+                        rtetN1: 1.3,
+                        rtetN2: 1.2,
+                        rtetA: 2.05,
+                        rtetB: 4.05,
+                        rtetC: 4.5,
+                        rtetVortex: 0,
+                        rtetNoEdge: true
+
                     };
 
                 }
@@ -320,6 +333,16 @@ define(function (require, exports, module) {
                 STEP = inputData.STEP;
                 STEPX = inputData.STEPX;
                 DELTA = inputData.DELTA;
+
+                rtetN = inputData.rtetN;
+                rtetN1 = inputData.rtetN1;
+                rtetN2 = inputData.rtetN2;
+                rtetA = inputData.rtetA;
+                rtetB = inputData.rtetB;
+                rtetC = inputData.rtetC;
+                rtetVortex = inputData.rtetVortex;
+                rtetNoEdge = inputData.rtetNoEdge;
+
             }
             loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
             // TODO I need simple configurator for client side.
@@ -460,6 +483,15 @@ define(function (require, exports, module) {
             data.C2 = C2;
             data.TP = TP;
 
+            data.rtetN = rtetN;
+            data.rtetN1 = rtetN1;
+            data.rtetN2 = rtetN2;
+            data.rtetA = rtetA;
+            data.rtetB = rtetB;
+            data.rtetC = rtetC;
+            data.rtetVortex = rtetVortex;
+            data.rtetNoEdge = rtetNoEdge;
+
             // jmemOut init
             // 10 files
             // Tmax / step + 1 , time steps
@@ -487,7 +519,7 @@ define(function (require, exports, module) {
         //exports.STARTPROC = STARTPROC;
         BBstart.STARTPROC = STARTPROC;
 
-        // TODO do it asynchronous
+        // TODO do it asynchronously
         function GEOMPROC(){
             var BB = require('../BB');
             var FUNC2 = BB.FUNC2;

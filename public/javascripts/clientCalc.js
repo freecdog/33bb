@@ -64,42 +64,18 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         // reading from localStorage
         //d.memOut = JSON.parse( localStorage.getItem('mo') );
 
-        //bbCompile.start();
-
         var doCheckTime = true;
         var checkInterval = 1000;
         function checkTime(){
             domCurrentTime.innerHTML = d.currentT.toFixed(2);
-            if (d.currentT >= d.TM ) {
-                //setTimeout(function(){
-                //    ajaxWrapper('POST', d.memOut, "http://" + "localhost:3113" + "/memout", function(){
-                //        console.warn("it seems like it is finished");
-                //    });
-                //}, checkInterval);
-                doCheckTime = false;
-            }
+
+            if (d.currentT >= d.TM ) doCheckTime = false;
 
             if (doCheckTime){
                 setTimeout( checkTime, checkInterval);
             }
         }
         setTimeout(checkTime, checkInterval);
-
-
-
-        //ajaxWrapper('POST', d.memOut, "http://" + window.hostIp + "/memout");
-        //ajaxWrapper('GET', null, "http://" + window.hostIp + "/memout", function(status, stringData){
-        //    if (status === 200 || status === 304){
-        //        if (stringData != undefined){
-        //            d.memOut = JSON.parse(stringData);
-        //            bbCompile.start();
-        //        }
-        //    } else {
-        //        alert(status.toString() + ", something goes wrong");
-        //        console.log(stringData);
-        //    }
-        //});
-
 
     }, 100);
 

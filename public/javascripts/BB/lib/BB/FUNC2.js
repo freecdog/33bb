@@ -20,13 +20,31 @@ define(function (require, exports, module) {
             previous_FUNC2 = root.FUNC2;
         }
 
+        var BB = require('../BB');
+        var Datatone = BB.Datatone;
+        console.log("BB:", BB);
+        console.log("Datatone:", Datatone);
+
+        var data = new Datatone();
+
         // This method is for creation object form
         function RTET(TT) {
             var RTET;
             // REAL,INTENT(IN) :: TT
-            var N = 2, N1 = 1.3, N2 = 1.2, A = 2.05, B = 4.05, C = 4.5,
-                PI2 = 2 / Math.PI, EPS = B / A, VORTEX = 0;
-            var NOEDGE = true;
+
+            //var N = 2, N1 = 1.3, N2 = 1.2, A = 2.05, B = 4.05, C = 4.5, VORTEX = 0;
+            //var NOEDGE = true;
+
+            var N = data.rtetN,
+                N1 = data.rtetN1,
+                N2 = data.rtetN2,
+                A = data.rtetA,
+                B = data.rtetB,
+                C = data.rtetC,
+                VORTEX = data.rtetVortex,
+                NOEDGE = data.rtetNoEdge;
+
+            var PI2 = 2 / Math.PI, EPS = B / A;
             var T0, T, FI, M, EPS1; // float
 
             T0 = Math.PI * VORTEX / 180;    // solvedTODO it is zero always, isn't it???

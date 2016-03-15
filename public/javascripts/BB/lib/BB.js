@@ -23,10 +23,10 @@ define(function (require, exports, module) {
         }
 
         // Expose methods
+        BB.Datatone = require('./BB/Datatone');
         BB.BBup = require('./BB/BBup');
         BB.FUNC2 = require('./BB/FUNC2');
         BB.MatMult = require('./BB/MatMult');
-        BB.Datatone = require('./BB/Datatone');
         BB.BBstart = require('./BB/BBstart');
         BB.BBcount = require('./BB/BBcount');
 

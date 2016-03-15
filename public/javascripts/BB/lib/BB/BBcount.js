@@ -21,12 +21,6 @@ define(function (require, exports, module) {
             previous_BBcount = root.BBcount;
         }
 
-        //var BB = require('../BB');
-        //var FUNC2 = BB.FUNC2;
-        //var MatMult = BB.MatMult;
-        //var BBstart = BB.BBstart;
-        //var Datatone = BB.Datatone;
-
         var async = require('async');
         var numbers = require('numbers');
         var fs = require('fs');
@@ -36,13 +30,6 @@ define(function (require, exports, module) {
                 return inp;
             };
         }
-
-        //var async = require('./async/lib/async.js');
-        //var FUNC2 = require('./FUNC2.js');
-        //var MatMult = require('./MatMult.js');
-        //var BBstart = require('./BBstart.js');
-        //var Datatone = require('./Datatone.js').Datatone;
-        //var numbers = require('numbers');
 
         var data;
 
@@ -133,7 +120,7 @@ define(function (require, exports, module) {
             var BBstart = BB.BBstart;
             var Datatone = BB.Datatone;
 
-            var data = new Datatone();
+            data = new Datatone();
             var NXDST = data.NXDST,
                 NTP = data.NTP,
                 NFI = data.NFI,
