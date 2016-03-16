@@ -20,3 +20,26 @@ html
     body(ng-app="jClientCalcApp")
         div(id="currentTime")
         div(ng-controller="jClientCalcController as CalcCtrl")
+            div(class="container" ng-show="true")
+                div(class="row")
+                    div(class="col-xs-12")
+                        div(id="trainTable")
+                            div(class="row")
+                                div(class="col-xs-3")
+                                    span rtetN = {{CalcCtrl.data.rtetN}}
+                                div(class="col-xs-3")
+                                    span rest
+                                div(class="col-xs-3")
+                                    span name
+                                div(class="col-xs-3")
+                                    span media
+
+                            //-div(class="row" ng-repeat="attempt in activeTraining.attempts track by $index" ng-hide="attempt.passed")
+                                div(class="col-xs-3")
+                                    span {{TrainCtrl.getValueForTable($index, 0) | timeFilter}}
+                                div(class="col-xs-3")
+                                    span {{TrainCtrl.getValueForTable($index, 1) | timeFilter}}
+                                div(class="col-xs-3")
+                                    span {{attempt.name}}
+                                div(class="col-xs-3")
+                                    span &nbsp;

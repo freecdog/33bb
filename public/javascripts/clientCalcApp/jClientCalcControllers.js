@@ -26,7 +26,12 @@
         }
 
         function drawMe(param){
-            console.warn("hey, you should write something here and we have a param here:", param);
+            console.log("hey, I see you've started to do something and we have a param here:", param);
+
+            self.data = param;
+
+            $scope.$apply();
+            //$scope.$digest();
         }
         this.drawMe = drawMe;
 
