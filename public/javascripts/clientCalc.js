@@ -28,13 +28,16 @@ requirejs.config({
 });
 
 requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
-    var d = (new BB.Datatone());
+    var data = (new BB.Datatone());
     BB.BBup.run(function(){
         var url = window.location.href;
         var addressArr = url.split("/");
-        ajaxWrapper('POST', d.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(){
+        ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(){
             console.log("memOut has been post to", addressArr[2]);
+
+            window.connectToApp(data);
         });
+
     });
 
     function ajaxWrapper(mode, theJson, toUrl, callback){
@@ -46,7 +49,8 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
                 //console.log(xmlhttp.responseText);
                 callback(xmlhttp.status, xmlhttp.responseText);
             }else {
-                callback(xmlhttp.status);
+                console.log("xmlhttp.readyState:", xmlhttp.readyState == 4, "status:", xmlhttp.status);
+                //callback(xmlhttp.status); // here we had several callbacks fired while we need only one
             }
         };
         var parameters = JSON.stringify(theJson);
@@ -67,9 +71,11 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var doCheckTime = true;
         var checkInterval = 1000;
         function checkTime(){
-            domCurrentTime.innerHTML = d.currentT.toFixed(2);
+            var str = data.currentT.toFixed(2) + " s; ";
+            if (data.status.duration) str += data.status.duration.toFixed(2) + " ms left";
+            domCurrentTime.innerHTML =  str;
 
-            if (d.currentT >= d.TM ) doCheckTime = false;
+            if (data.currentT >= data.TM ) doCheckTime = false;
 
             if (doCheckTime){
                 setTimeout( checkTime, checkInterval);

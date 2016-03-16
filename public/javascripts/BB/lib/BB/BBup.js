@@ -27,18 +27,18 @@ define(function (require, exports, module) {
             var BBstart = BB.BBstart;
             var BBcount = BB.BBcount;
 
-            var d = (new BB.Datatone());
-            d.status = {};
-            d.status.startTime = Date.now();
-            d.status.active = true;
+            var data = (new BB.Datatone());
+            data.status = {};
+            data.status.startTime = Date.now();
+            data.status.active = true;
 
             BBstart.STARTPROC(function(){
                 BBcount.COUNTPROC(function(){
-                    d.status.active = false;
-                    d.status.finishTime = Date.now();
-                    d.status.duration = d.status.finishTime - d.status.startTime;
+                    data.status.active = false;
+                    data.status.finishTime = Date.now();
+                    data.status.duration = data.status.finishTime - data.status.startTime;
 
-                    console.log(d.status.duration.toString() + " ms to count all data in BBup.run()");
+                    console.log(data.status.duration.toString() + " ms to count all data in BBup.run()");
 
                     callback();
                 });

@@ -27,7 +27,6 @@ define(function (require, exports, module) {
         //var BB = require('../BB');
         //var FUNC2 = BB.FUNC2;
         //var MatMult = BB.MatMult;
-        //var Datatone = BB.Datatone;
 
         var numbers = require('numbers');
         var fs = require('fs');
@@ -39,8 +38,6 @@ define(function (require, exports, module) {
         //var FUNC2 = require('./FUNC2.js');
         //var MatMult = require('./MatMult.js');
         //var Datatone = require('./Datatone.js').Datatone;
-        //var numbers = require('numbers');
-        //var fs = require('fs');
 
         var data;
 
@@ -262,7 +259,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 5,
+                        TM: 1,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -405,6 +402,15 @@ define(function (require, exports, module) {
 
             M0 = 1 / M0;
 
+            data.rtetN = rtetN;
+            data.rtetN1 = rtetN1;
+            data.rtetN2 = rtetN2;
+            data.rtetA = rtetA;
+            data.rtetB = rtetB;
+            data.rtetC = rtetC;
+            data.rtetVortex = rtetVortex;
+            data.rtetNoEdge = rtetNoEdge;
+
             GEOMPROC();
             console.log((new Date()) - startProcProfiler, "ms to complete GEOMPROC");
 
@@ -482,15 +488,6 @@ define(function (require, exports, module) {
             data.ALIM = ALIM;
             data.C2 = C2;
             data.TP = TP;
-
-            data.rtetN = rtetN;
-            data.rtetN1 = rtetN1;
-            data.rtetN2 = rtetN2;
-            data.rtetA = rtetA;
-            data.rtetB = rtetB;
-            data.rtetC = rtetC;
-            data.rtetVortex = rtetVortex;
-            data.rtetNoEdge = rtetNoEdge;
 
             // jmemOut init
             // 10 files

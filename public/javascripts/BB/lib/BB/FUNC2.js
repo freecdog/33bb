@@ -21,10 +21,8 @@ define(function (require, exports, module) {
         }
 
         var BB = require('../BB');
-        var Datatone = BB.Datatone;
-        console.log("BB:", BB);
-        console.log("Datatone:", Datatone);
-
+        //var Datatone = BB.Datatone;
+        var Datatone = require('./Datatone');
         var data = new Datatone();
 
         // This method is for creation object form
