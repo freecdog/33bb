@@ -11,6 +11,7 @@
     var jClientCalcControllers = angular.module('jClientCalcControllers', []);
 
     var calcCtrl = null;
+    // method that is called by clientCalc.js after calculations have finished
     window.connectToApp = function(param){
         calcCtrl.drawMe(param);
     };
@@ -22,6 +23,9 @@
 
         function init(){
             calcCtrl = self;
+
+            self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22', 'V01', 'V02', 'S011', 'S012', 'S022'];
+
             console.log("controller init");
         }
 
@@ -35,6 +39,33 @@
         }
         this.drawMe = drawMe;
 
+    }]);
+
+    jClientCalcControllers.controller('TabController', function(){
+        this.curTab = 2;
+
+        this.setTab = function(tabIndex){
+            this.curTab = tabIndex;
+        };
+        this.isSet = function(tabIndex){
+            return this.curTab === tabIndex;
+        };
+    });
+
+    jClientCalcControllers.filter('numberFilter', ['$filter', function ($filter) {
+        return function (input) {
+            var inputStr = input.toExponential().toString();
+            if (input === 0) {
+                return input;
+            }else{
+                var eIndex = inputStr.indexOf("e");
+                var ans = inputStr;
+                if (eIndex){
+                    ans = inputStr.substr(0, 6) + inputStr.substr(eIndex, inputStr.length - eIndex);
+                }
+                return ans;
+            }
+        };
     }]);
 
 })(angular, window);

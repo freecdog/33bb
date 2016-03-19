@@ -23,16 +23,36 @@ html
             div(class="container" ng-show="true")
                 div(class="row")
                     div(class="col-xs-12")
-                        div(id="trainTable")
-                            div(class="row")
-                                div(class="col-xs-3")
-                                    span rtetN = {{CalcCtrl.data.rtetN}}
-                                div(class="col-xs-3")
-                                    span rest
-                                div(class="col-xs-3")
-                                    span name
-                                div(class="col-xs-3")
-                                    span media
+
+                        div(id="dataHolder")
+
+                            section(class="tab" ng-controller="TabController as tab")
+                                ul(class="nav nav-tabs")
+                                    li(ng-repeat="tabName in CalcCtrl.dataNames track by $index" ng-class="{active: tab.isSet($index)}" )
+                                        a(href ng-click="tab.setTab($index)") {{tabName}}
+
+                                div(ng-repeat="tabName in CalcCtrl.dataNames track by $index" ng-show="tab.isSet( {{$index}} )")
+                                    div(id="table{{tabName}}")
+                                        div(class="row" ng-repeat="currentCoord in CalcCtrl.data.memOut[$index] track by $index")
+                                            table(class="table table-striped table-hover")
+                                                tbody
+                                                    tr(ng-repeat="currentTimeStamp in currentCoord track by $index" )
+                                                        td(width="{{1/currentTimeStamp.length*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index")
+                                                            span {{currentAngle | numberFilter}}
+                                                        td(width="{{1/currentCoord[0].length*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
+                                                            span &nbsp;
+
+
+
+                                //-
+                                    div(class="col-xs-3")
+                                        span rtetN = {{CalcCtrl.data.rtetN}}
+                                    div(class="col-xs-3")
+                                        span rest
+                                    div(class="col-xs-3")
+                                        span name
+                                    div(class="col-xs-3")
+                                        span media
 
                             //-div(class="row" ng-repeat="attempt in activeTraining.attempts track by $index" ng-hide="attempt.passed")
                                 div(class="col-xs-3")
