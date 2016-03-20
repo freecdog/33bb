@@ -14,6 +14,8 @@ define(function (require, exports, module) {
 
     (function () {
 
+        'use strict';
+
         var bbCompile = {};
 
         function start(){
@@ -89,8 +91,6 @@ define(function (require, exports, module) {
 
             // converts Num from diap (ds to df) to diap (dmin to dmax)
             function ctd(num, ds, df, dmin, dmax, invert){
-                console.warn(num);
-
                 var diap = Math.abs(df - ds);
                 var delta = Math.abs(dmax - dmin);
                 var ans = (delta / diap) * (num-ds) + dmin;
@@ -291,7 +291,7 @@ define(function (require, exports, module) {
                     SRC_b = 0;
                     SRC_g = 1 - 0.5 * bright * (value - borZh) / piece;
                 }
-                if ((value >= borO) && (value < borK)) {
+                if ((value >= borO) && (value <= borK)) {
                     SRC_r = 1;
                     SRC_g = 0.5;
                     SRC_b = 0;

@@ -14,6 +14,8 @@ define(function (require, exports, module) {
         // TODO remove SPLIT parametr totally (BBinput, BBstart), at least now we don't need to use special layer between object and environment
         // TODO move to config RTET vars (from N to NOEDGE)
 
+        'use strict';
+
         var BBstart = {};
 
         // global on the server, window in the browser
@@ -93,77 +95,77 @@ define(function (require, exports, module) {
             var GAPOIS = new Boolean();
             var I;
 
+            var fileData;
+            var lastIndex;
+            function jParse(varType, shift, symb, len, src){
+                shift = shift || 1;
+                symb = symb || '=';
+                len = len || 10;
+                src = src || fileData;
+
+                var pnt = src.indexOf(symb, lastIndex) + shift;
+                var ans;
+                if (varType == 'float')
+                    ans = parseFloat(src.substr(pnt, len));
+                else if (varType == 'int')
+                    ans = parseInt(src.substr(pnt, len));
+                else if (varType == 'bool')
+                    ans = charToBoolean(src.substr(pnt, len));
+                else
+                    ans = src.substr(pnt, len);
+                //lastIndex = pnt + shift + len;
+                lastIndex = pnt + ans.toString().length;
+
+                return ans;
+            }
+            // TODO, create specialized module and move method into it
+            function loadFromJSONFile(extendedObject, filePath){
+                console.log('reading from',filePath);
+                var fs = require('fs');
+
+                try {
+                    //noinspection JSUnresolvedFunction
+                    fileData = fs.readFileSync(filePath, {encoding: "utf8"});
+                    // some hack with first symbol =/
+                    fileData = fileData.replace(/^\uFEFF/, '');
+                    // parsing file to JSON object
+                    var jsonData = JSON.parse(fileData);
+
+                    if (jsonData){
+                        var objectFieldsCounter = 0;
+                        for (var property in jsonData) {
+                            if (jsonData.hasOwnProperty(property)) {
+                                objectFieldsCounter++;
+
+                                extendedObject[property] = jsonData[property];
+                            }
+                        }
+                        console.log("Loaded fields:", objectFieldsCounter);
+                        //console.log("Current object:", extendedObject);
+                    } else {
+                        console.log('No json data in file');
+                    }
+                } catch (e) {
+                    console.log("error:", e);
+                }
+            }
+
             function loadData(source){
                 var inputData = {};
 
                 if (source == 'json'){
-                    // TODO, move method to module, and make it
-                    function loadFromJSONFile(extendedObject, filePath){
-                        console.log('reading from',filePath);
-                        var fs = require('fs');
-
-                        try {
-                            //noinspection JSUnresolvedFunction
-                            var filedata = fs.readFileSync(filePath, {encoding: "utf8"});
-                            // some hack with first symbol =/
-                            filedata = filedata.replace(/^\uFEFF/, '');
-                            // parsing file to JSON object
-                            var jsondata = JSON.parse(filedata);
-
-                            if (jsondata){
-                                var objectFieldsCounter = 0;
-                                for (var property in jsondata) {
-                                    if (jsondata.hasOwnProperty(property)) {
-                                        objectFieldsCounter++;
-
-                                        extendedObject[property] = jsondata[property];
-                                    }
-                                }
-                                console.log("Loaded fields:", objectFieldsCounter);
-                                //console.log("Current object:", extendedObject);
-                            } else {
-                                console.log('No json data in file');
-                            }
-                        } catch (e) {
-                            console.log("error:", e);
-                        }
-                    }
-
                     loadFromJSONFile(inputData, 'public/dat/BBinput.json');
-
                 }
                 else if (source == 'dat'){
-
                     // helpful method for reading
-                    var lastIndex = 0;
-                    function jParse(varType, shift, symb, len, src){
-                        shift = shift || 1;
-                        symb = symb || '=';
-                        len = len || 10;
-                        src = src || filedata;
-
-                        var pnt = src.indexOf(symb, lastIndex) + shift;
-                        var ans;
-                        if (varType == 'float')
-                            ans = parseFloat(src.substr(pnt, len));
-                        else if (varType == 'int')
-                            ans = parseInt(src.substr(pnt, len));
-                        else if (varType == 'bool')
-                            ans = charToBoolean(src.substr(pnt, len));
-                        else
-                            ans = src.substr(pnt, len);
-                        //lastIndex = pnt + shift + len;
-                        lastIndex = pnt + ans.toString().length;
-
-                        return ans;
-                    }
+                    lastIndex = 0;
 
                     var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
                     //noinspection JSUnresolvedFunction
-                    var filedata = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
-                    //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, filedata){
+                    fileData = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
+                    //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, fileData){
                     //if (err) throw err;
-                    console.log(filedata);
+                    console.log(fileData);
                     console.log("=============================");
                     inputData.ALFA = jParse('int');
 
@@ -259,7 +261,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 1,
+                        TM: 5,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -525,7 +527,7 @@ define(function (require, exports, module) {
             var K; // integer
             var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
             var MOM; // Complex
-            var ROOT = new Boolean();
+            var ROOT = false;
 
             console.log("GEOMPROC has start work");
 

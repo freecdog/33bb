@@ -10,6 +10,8 @@ define(function (require, exports, module) {
 
     (function () {
     //(function(exports) {
+        'use strict';
+
         var FUNC2 = {};
 
         // global on the server, window in the browser

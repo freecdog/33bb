@@ -51,22 +51,23 @@
         this.drawMe = drawMe;
 
         function changeCellValueOnServer(scopeCellHas){
-            console.warn(scopeCellHas);
-            console.warn("indices:", scopeCellHas.$parent.$parent.$parent.$index, scopeCellHas.$parent.$parent.$index, scopeCellHas.$parent.$index, scopeCellHas.$index);
+            console.log(scopeCellHas);
+            console.log("indices:", scopeCellHas.$parent.$parent.$parent.$index, scopeCellHas.$parent.$parent.$index, scopeCellHas.$parent.$index, scopeCellHas.$index);
+            console.log("we have some code here to change direct value of cell, just uncomment the following code");
 
-            self.data.memOut
-                [scopeCellHas.$parent.$parent.$parent.$index]
-                [scopeCellHas.$parent.$parent.$index]
-                [scopeCellHas.$parent.$index]
-                [scopeCellHas.$index] = 1e-31;
-
-            var url = window.location.href;
-            var addressArr = url.split("/");
-            ajaxWrapper('POST', self.data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
-                console.log("memOut has been post to", addressArr[2], "status code:", status, "server message:", responseText);
-
-                window.connectToApp(self.data);
-            });
+            //self.data.memOut
+            //    [scopeCellHas.$parent.$parent.$parent.$index]
+            //    [scopeCellHas.$parent.$parent.$index]
+            //    [scopeCellHas.$parent.$index]
+            //    [scopeCellHas.$index] = 3.3806873310289274e-8; // 1e-31; //3.3806873310289274e-8
+            //
+            //var url = window.location.href;
+            //var addressArr = url.split("/");
+            //ajaxWrapper('POST', self.data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
+            //    console.log("memOut has been post to", addressArr[2], "status code:", status, "server message:", responseText);
+            //
+            //    window.connectToApp(self.data);
+            //});
 
         }
         this.changeCellValueOnServer = changeCellValueOnServer;

@@ -8,8 +8,16 @@ if (typeof define !== 'function') {
 
 define(function (require, exports, module) {
 
-    (function () {
+    if (typeof Buffer !== "function") {
+        Buffer = function (inp){
+            return inp;
+        };
+    }
+
+    (function (Buffer) {
     //(function(exports){
+
+        'use strict';
 
         var BBcount = {};
 
@@ -24,12 +32,6 @@ define(function (require, exports, module) {
         var async = require('async');
         var numbers = require('numbers');
         var fs = require('fs');
-
-        if (typeof Buffer !== "function") {
-            Buffer = function (inp){
-                return inp;
-            };
-        }
 
         var data;
 
@@ -841,7 +843,7 @@ define(function (require, exports, module) {
             root.BBcount = BBcount;
         }
 
-    }());
+    }(Buffer));
     //})(typeof exports === 'undefined'? this['BBcount']={} : exports);
 
 });
