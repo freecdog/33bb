@@ -32,8 +32,8 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
     BB.BBup.run(function(){
         var url = window.location.href;
         var addressArr = url.split("/");
-        ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(){
-            console.log("memOut has been post to", addressArr[2]);
+        ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
+            console.log("memOut has been post to", addressArr[2], "status code:", status, "server message:", responseText);
 
             window.connectToApp(data);
         });
@@ -41,7 +41,7 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
     });
 
     function ajaxWrapper(mode, theJson, toUrl, callback){
-        xmlhttp = new XMLHttpRequest();
+        var xmlhttp = new XMLHttpRequest();
         xmlhttp.open(mode, toUrl, true);
         xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.onreadystatechange = function () { //Call a function when the state changes.

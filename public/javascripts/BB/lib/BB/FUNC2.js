@@ -47,10 +47,10 @@ define(function (require, exports, module) {
 
             T0 = Math.PI * VORTEX / 180;    // solvedTODO it is zero always, isn't it???
             // SOLVED, VORTEX can be changed MANUALLY
-            // TODO if VORTEX can be changed manually, it should be moved to configuration or elsewhere
+            // SOLVED if VORTEX can be changed manually, it should be moved to configuration or elsewhere
             EPS1 = B * Math.cos(T0) / C;
             // SOLVED, если окружность, то return, иначе комментируем эту строчку
-            // TODO if we are using simple circle, we should change radius in configuration file
+            // SOLVED if we are using simple circle, we should change radius in configuration file
             RTET = A;
             return RTET;
 

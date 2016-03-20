@@ -36,21 +36,21 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
 
         var url = window.location.href;
         var addressArr = url.split("/");
-        ajaxWrapper('GET', null, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, stringData){
+        ajaxWrapper('GET', null, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
             if (status === 200 || status === 304){
-                if (stringData != undefined){
-                    d.memOut = JSON.parse(stringData);
+                if (responseText != undefined){
+                    d.memOut = JSON.parse(responseText);
                     bbCompile.start();
                 }
             } else {
                 alert(status.toString() + ", something goes wrong");
-                console.log(stringData);
+                console.log(responseText);
             }
         });
     });
 
     function ajaxWrapper(mode, theJson, toUrl, callback){
-        xmlhttp = new XMLHttpRequest();
+        var xmlhttp = new XMLHttpRequest();
         xmlhttp.open(mode, toUrl, true);
         xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.onreadystatechange = function () { //Call a function when the state changes.

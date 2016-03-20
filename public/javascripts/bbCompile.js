@@ -89,6 +89,8 @@ define(function (require, exports, module) {
 
             // converts Num from diap (ds to df) to diap (dmin to dmax)
             function ctd(num, ds, df, dmin, dmax, invert){
+                console.warn(num);
+
                 var diap = Math.abs(df - ds);
                 var delta = Math.abs(dmax - dmin);
                 var ans = (delta / diap) * (num-ds) + dmin;

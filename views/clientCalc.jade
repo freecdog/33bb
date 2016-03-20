@@ -21,6 +21,13 @@ html
         div(id="currentTime")
         div(ng-controller="jClientCalcController as CalcCtrl")
             div(class="container" ng-show="true")
+
+                div(class="row")
+                    div(id="fontSetter" style="float: right;")
+                        h5(ng-click="CalcCtrl.changeBodyFontSize(12)") Aa
+                        h4(ng-click="CalcCtrl.changeBodyFontSize(14)") Aa
+                        h3(ng-click="CalcCtrl.changeBodyFontSize(16)") Aa
+
                 div(class="row")
                     div(class="col-xs-12")
 
@@ -47,9 +54,9 @@ html
                                                             span {{angleValue}}
 
                                                     tr(ng-repeat="currentTimeStamp in currentCoord track by $index" )
-                                                        td(width="{{1/(currentCoord[0].length+1)*100}}%" class="active text-right")
+                                                        td(width="{{1/(currentCoord[0].length+1)*100}}%" class="active")
                                                             span {{($index * 0.1).toFixed(2)}}
-                                                        td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index" class="text-right")
+                                                        td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index" ng-click="CalcCtrl.changeCellValueOnServer(this)" class="text-right")
                                                             span {{currentAngle | numberFilter}}
                                                         td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
                                                             span &nbsp;

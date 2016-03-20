@@ -1,5 +1,7 @@
 body {
-    padding: 50px 50px 10px 50px;
+    /*padding: 50px 50px 10px 50px;*/
+    padding: 25px;
+    /*to print the text on A4 pages set font-size to 12px*/
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     background-color: #222;
     color: #fff;
