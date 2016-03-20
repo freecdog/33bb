@@ -33,14 +33,14 @@ define(function (require, exports, module) {
             var stats = initStats();
 
             var N = 3; // number of components per vertex
-            var useDuplicate = true;
+            var useDuplicate = false;
             var useInvertationColors = false;
 
             var scene = new THREE.Scene();
             var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000); //PerspectiveCamera( 75, 400.0 / 300.0, 0.1, 1000 );
             camera.position.z = 10;
 
-            var renderer = new THREE.WebGLRenderer({alpha: true});
+            var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
             renderer.setClearColor( 0x000000, 0);
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
@@ -58,7 +58,7 @@ define(function (require, exports, module) {
 
             var initTime = 0;
 
-            // load from Datatone. Mem[time from 0 to 5, with 0.1 stop][coord from 0 to 1 with 0.1 step][angle from 0 to 90 with 15 step]
+            // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
             var schemeIndex = 2;
             var mem = data.memOut[schemeIndex];
             // converting TP to correct array of angles (indexed from 0)
@@ -100,9 +100,8 @@ define(function (require, exports, module) {
             function initPositionVertices(){
                 vertexPositions = [];
 
-                // TODO we are using special radius that isn't moved from FUNC2.js (RTET) to configuration
-                // until it is not moved, we add const
-                var objectRadius = 2.05;
+                // TODO we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
+                var objectRadius = data.rtetA;
                 var totalRadius = objectRadius + data.XDESTR;
                 var normalaizedObjectRadius = objectRadius / totalRadius;
 

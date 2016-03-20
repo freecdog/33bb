@@ -24,7 +24,8 @@
         function init(){
             calcCtrl = self;
 
-            self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22', 'V01', 'V02', 'S011', 'S012', 'S022'];
+            //self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22', 'V01', 'V02', 'S011', 'S012', 'S022'];
+            self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22'];
 
             console.log("controller init");
         }

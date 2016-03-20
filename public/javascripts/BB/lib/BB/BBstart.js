@@ -230,13 +230,13 @@ define(function (require, exports, module) {
                         ALFA: 0,
                         SPLIT: false,
                         RZ: 2.55E-02,
-                        X: 100,
+                        X: 10,
                         RO2: 2.7E03,
                         C2: 5.8E03,
                         GAPOIS: false,
                         POIS: 0.35,
                         GAMMA: 0.6,
-                        XDESTR: 4.0,
+                        XDESTR: 1.0,
 
                         EPUR: 2,
 
@@ -268,7 +268,7 @@ define(function (require, exports, module) {
                         OMG: 0.98,
                         BET: 0.7,
                         STEP: 0.05,
-                        STEPX: 1,
+                        STEPX: 0.1,
                         DELTA: 1,
 
                         rtetN: 2,

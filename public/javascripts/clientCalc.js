@@ -71,9 +71,10 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var doCheckTime = true;
         var checkInterval = 1000;
         function checkTime(){
-            var str = data.currentT.toFixed(2) + " s; ";
-            if (data.status.duration) str += data.status.duration.toFixed(2) + " ms left";
-            domCurrentTime.innerHTML =  str;
+            var str = data.currentT.toFixed(2) + " s";
+            str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
+            if (data.status.duration) str += "; " + data.status.duration.toFixed(2) + " ms left";
+            domCurrentTime.innerHTML = str;
 
             if (data.currentT >= data.TM ) doCheckTime = false;
 
