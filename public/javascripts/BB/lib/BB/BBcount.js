@@ -8,9 +8,10 @@ if (typeof define !== 'function') {
 
 define(function (require, exports, module) {
 
+    // TODO npm install buffer
     if (typeof Buffer !== "function") {
         Buffer = function (inp){
-            return inp;
+            return new String(inp);
         };
     }
 

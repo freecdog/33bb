@@ -8,7 +8,14 @@ if (typeof define !== 'function') {
 
 define(function (require, exports, module) {
 
-    (function () {
+    // TODO npm install buffer
+    if (typeof Buffer !== "function") {
+        Buffer = function (inp){
+            return new String(inp);
+        };
+    }
+
+    (function (Buffer) {
     //(function(exports){
 
         // TODO remove SPLIT parametr totally (BBinput, BBstart), at least now we don't need to use special layer between object and environment
@@ -33,14 +40,15 @@ define(function (require, exports, module) {
         var numbers = require('numbers');
         var fs = require('fs');
 
-        var Buffer = Buffer || function (inp){
-            return inp;
-        };
+        //var Buffer = Buffer || function (inp){
+        //    return inp;
+        //};
 
         //var FUNC2 = require('./FUNC2.js');
         //var MatMult = require('./MatMult.js');
         //var Datatone = require('./Datatone.js').Datatone;
 
+        var BB;// = require('BB'); console.warn("start BB", BB);
         var data;
 
         var Complex = numbers.complex;
@@ -85,14 +93,14 @@ define(function (require, exports, module) {
 
             callback = callback || function(){};
 
-            var BB = require('../BB');
+            BB = require('../BB');
             var Datatone = BB.Datatone;
             var MatMult = BB.MatMult;
 
             data = new Datatone();
 
             var RC0,RC1,RC2,B1,B2, M0,C0,C1,RO0,LS,X,RZ,GAMMA,POIS,BET,OMG; // float //FI,
-            var GAPOIS = new Boolean();
+            var GAPOIS = false;
             var I;
 
             var fileData;
@@ -261,7 +269,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 5,
+                        TM: 1,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -520,7 +528,7 @@ define(function (require, exports, module) {
 
         // TODO do it asynchronously
         function GEOMPROC(){
-            var BB = require('../BB');
+            //var BB = require('../BB');
             var FUNC2 = BB.FUNC2;
             var RTET = FUNC2.RTET;
 
@@ -650,7 +658,7 @@ define(function (require, exports, module) {
         }
 
         function STEPFI(){
-            var BB = require('../BB');
+            //var BB = require('../BB');
             var FUNC2 = BB.FUNC2;
 
             var I,J,NI,K,K0,K1,M; // integer
@@ -755,7 +763,7 @@ define(function (require, exports, module) {
         }
 
         function MTRXPROC(){
-            var BB = require('../BB');
+            //var BB = require('../BB');
             var MatMult = BB.MatMult;
 
             var J;
@@ -1061,7 +1069,7 @@ define(function (require, exports, module) {
                 //fs.closeSync(fds2[I-16]);
             }
 
-            var BB = require('../BB');
+            //var BB = require('../BB');
             var Datatone = BB.Datatone;
 
             data = new Datatone();
@@ -1084,7 +1092,7 @@ define(function (require, exports, module) {
             root.BBstart = BBstart;
         }
 
-    }());
+    }(Buffer));
     //})(typeof exports === 'undefined'? this['BBstart']={} : exports);
 
 });
