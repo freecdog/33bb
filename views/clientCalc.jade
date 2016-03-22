@@ -27,6 +27,35 @@ html
                         h5(ng-click="CalcCtrl.changeBodyFontSize(12)") Aa
                         h4(ng-click="CalcCtrl.changeBodyFontSize(14)") Aa
                         h3(ng-click="CalcCtrl.changeBodyFontSize(16)") Aa
+                        h5(ng-click="CalcCtrl.calcAllWatchers()") calc all watchers
+
+                div(class="row")
+                    h3 S = {{CalcCtrl.data.geomprocS}}
+                div(class="row")
+                    h3 L = {{CalcCtrl.data.geomprocL}}
+
+                div(class="row")
+                    h3(class="text-warning") Uncomment what you need otherwise loading tooks about minute and a half
+
+                div(class="row" )
+                    a(class="btn btn-primary" ng-click="this.showS11 = !this.showS11") BBdat/2016.02/!S11.dat (expand/collapse)
+                    table(ng-show="this.showS11" class="table table-striped table-hover")
+                        tbody
+                            tr(ng-repeat="s11Str in CalcCtrl.data.files['BBdat/2016.02/!S11.dat'].buffers track by $index")
+                                td(ng-repeat="subStr in s11Str.toString().split(' ') track by $index")
+                                    span {{subStr}}
+
+                div(class="row")
+                    a(class="btn btn-primary" ng-click="this.showCavform = !this.showCavform") BBdat/_Cavform.dat (expand/collapse)
+                    table(ng-show="this.showCavform" class="table table-striped table-hover")
+                        tbody
+                            tr(ng-repeat="cavStr in CalcCtrl.data.files['BBdat/_Cavform.dat'].buffers track by $index")
+                                td(ng-repeat="subStr in cavStr.toString().split(' ') track by $index")
+                                    span {{subStr}}
+
+                    //-div(class="row" ng-show="this.showCavform" ng-repeat="cavStr in CalcCtrl.data.files['BBdat/_Cavform.dat'].buffers track by $index")
+                        div(class="col-xs-2" ng-repeat="subStr in cavStr.toString().split(' ') track by $index")
+                            span {{subStr}}
 
                 div(class="row")
                     div(class="col-xs-12")
@@ -43,7 +72,7 @@ html
                                     div(id="data{{tabName}}")
                                         div(class="row" ng-repeat="currentCoord in CalcCtrl.data.memOut[$index] track by $index")
                                             table(class="table table-striped table-hover")
-                                                caption X = {{($index * CalcCtrl.data.DX).toFixed(2)}}
+                                                caption X = {{($index * CalcCtrl.data.STEPX).toFixed(2)}}
                                                 tbody
                                                     thead
                                                         th
@@ -55,7 +84,7 @@ html
 
                                                     tr(ng-repeat="currentTimeStamp in currentCoord track by $index" )
                                                         td(width="{{1/(currentCoord[0].length+1)*100}}%" class="active")
-                                                            span {{($index * 0.1).toFixed(2)}}
+                                                            span {{($index * CalcCtrl.data.STEP).toFixed(2)}}
                                                         td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index" ng-click="CalcCtrl.changeCellValueOnServer(this)" class="text-right")
                                                             span {{currentAngle | numberFilter}}
                                                         td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")

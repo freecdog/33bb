@@ -246,7 +246,7 @@ define(function (require, exports, module) {
                         GAPOIS: false,
                         POIS: 0.35,
                         GAMMA: 0.6,
-                        XDESTR: 1.0,
+                        XDESTR: 2.0,
 
                         EPUR: 2,
 
@@ -278,7 +278,7 @@ define(function (require, exports, module) {
                         OMG: 0.98,
                         BET: 0.7,
                         STEP: 0.05,
-                        STEPX: 0.1,
+                        STEPX: 0.05,
                         DELTA: 1,
 
                         rtetN: 2,
@@ -590,6 +590,9 @@ define(function (require, exports, module) {
             // L - характерный размер
             L = Math.sqrt(S / Math.PI);
 
+            data.geomprocS = S;
+            data.geomprocL = L;
+
             //WRITE(*,'()');
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
             //WRITE(*,'()');
@@ -896,7 +899,9 @@ define(function (require, exports, module) {
             function FS(value) {
                 // FS=(F(T)**N)*EXP(IM*M*T);
                 // probably SOLVED, probably F could return complex value so... there is huge bug place probably
-                return (new Complex(Math.pow(F(value), N), 0)).multiply(new Complex(Math.cos(M * T), Math.sin(M * T)));
+                var ans = (new Complex(Math.pow(F(value), N), 0)).multiply(new Complex(Math.cos(M * T), Math.sin(M * T)));
+                //console.log("last FS from value:", value, " is ", ans);
+                return ans;
             }
 
             // SOLVED, returned value isn't complex, but it should be. Now it is.

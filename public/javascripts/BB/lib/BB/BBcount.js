@@ -34,6 +34,8 @@ define(function (require, exports, module) {
         var numbers = require('numbers');
         var fs = require('fs');
 
+        var BB;
+
         var data;
 
         var Complex = numbers.complex;
@@ -117,7 +119,7 @@ define(function (require, exports, module) {
 
             callback = callback || function(){};
 
-            var BB = require('../BB');
+            BB = require('../BB');
             var FUNC2 = BB.FUNC2;
             var MatMult = BB.MatMult;
             var BBstart = BB.BBstart;
@@ -332,9 +334,9 @@ define(function (require, exports, module) {
                         T = 0;
                         data.currentT = T;
                     }
-                    console.log(" T = ", T.toFixedDef());
                     T1 = T + DT;
-                    WT = (T > TOUT - DT/4);
+                    WT = T > (TOUT - (DT/4));
+                    console.log(" T = ", T.toFixedDef(), ";", "WT", WT, "; TOUT-DT/4", TOUT.toFixedDef(), DT, DT/4);
                     if (WT) TOUT = TOUT + STEP;
                     // НАЧАЛЬНАЯ ЗАГРУЗКА
                     if (compareWithEps(T, 0)) INITLOAD(T);
@@ -518,7 +520,7 @@ define(function (require, exports, module) {
                         IK = IS;
                         IS = IA;
                         if ((NFI == 2 * I) || (NFI == 2 * I - 1)) break;
-                    }
+                    }   // end of while(true)
 
                     //if (T < 0) goto200();
                     if (T >= 0) {
@@ -688,6 +690,7 @@ define(function (require, exports, module) {
                 // jmemOut memory and cpu optimization
                 var memOut = data.memOut;
                 var moT = Math.round(T / data.STEP);
+                console.log("out for T = ", T.toFixedDef(), "; index = ", moT);
 
                 // JNT = COUNT; // not used
                 // TETA = TET0; // not used

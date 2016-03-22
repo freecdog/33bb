@@ -53,8 +53,8 @@ define(function (require, exports, module) {
             EPS1 = B * Math.cos(T0) / C;
             // SOLVED, если окружность, то return, иначе комментируем эту строчку
             // SOLVED if we are using simple circle, we should change radius in configuration file
-            RTET = A;
-            return RTET;
+
+            //RTET = A; return RTET;
 
             function repeatedFunction(angle, power, epsilon){
                 return B * Math.pow( (Math.pow(Math.abs(Math.sin(angle)), power) + Math.pow(epsilon * Math.abs(Math.cos(angle)), power)) , (-1.0/power))
