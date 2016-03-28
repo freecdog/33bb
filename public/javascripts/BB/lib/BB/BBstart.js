@@ -498,6 +498,8 @@ define(function (require, exports, module) {
             data.ALIM = ALIM;
             data.C2 = C2;
             data.TP = TP;
+            data.RC2 = RC2;
+            data.S0 = S0;
 
             // jmemOut init
             // 10 files
@@ -999,7 +1001,7 @@ define(function (require, exports, module) {
         function STARTOUT(){
             var I, J, K, JNT; // integer
             var X; // float
-            var ARS1 = ['V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
+            var ARS1 = ['ACC1.dat', 'ACC2.dat', 'V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
             var ARS2 = ['V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
             var STR = [];
 
@@ -1008,8 +1010,9 @@ define(function (require, exports, module) {
             var recBuffer, recStr;
             var path;
 
-            for (I = 11; I <= 15; I++) {
-                path = 'BBdat/_' + ARS1[I-11]; // looks like path depends on app.js for server side
+            var iStart = 9;
+            for (I = iStart; I <= 15; I++) {
+                path = 'BBdat/_' + ARS1[I-iStart]; // looks like path depends on app.js for server side
                 //noinspection JSUnresolvedFunction
                 fds1.push( fs.openSync(path, 'w') );
 
@@ -1028,18 +1031,18 @@ define(function (require, exports, module) {
 
                     recBuffer = new Buffer('X= ' + X.toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
+                    fs.writeSync(fds1[I-iStart], recBuffer, 0, recBuffer.length, null);
 
                     recStr = '';
                     for (var c1 = 0, lenStr = STR.length; c1 < lenStr; c1++) recStr += STR[c1] + ' ';
                     recBuffer = new Buffer('T ' + recStr + '\n');
                     //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds1[I-11], recBuffer, 0, recBuffer.length, null);
+                    fs.writeSync(fds1[I-iStart], recBuffer, 0, recBuffer.length, null);
 
                     X = X + STEPX;
                 }
 
-                //fs.closeSync(fds1[I-11]);
+                //fs.closeSync(fds1[I-iStart]);
             }
 
             STR = [];

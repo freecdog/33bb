@@ -57,7 +57,12 @@ define(function (require, exports, module) {
             //RTET = A; return RTET;
 
             function repeatedFunction(angle, power, epsilon){
-                return B * Math.pow( (Math.pow(Math.abs(Math.sin(angle)), power) + Math.pow(epsilon * Math.abs(Math.cos(angle)), power)) , (-1.0/power))
+                var ans;
+                var poweredSin = Math.pow(Math.abs(Math.sin(angle)), power);
+                var poweredCos = Math.pow(epsilon * Math.abs(Math.cos(angle)), power);
+                var poweredSum = Math.pow( poweredSin + poweredCos , (-1.0/power));
+                ans = B * poweredSum;
+                return ans;
             }
 
             if (NOEDGE){

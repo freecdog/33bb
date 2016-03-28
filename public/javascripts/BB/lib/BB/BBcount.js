@@ -170,7 +170,8 @@ define(function (require, exports, module) {
                 ALIM = data.ALIM,
                 C2 = data.C2,
                 fds1 = data.fds1,
-                fds2 = data.fds2;
+                fds2 = data.fds2,
+                RC2 = data.RC2;
 
             // jOutputBlock, init
             var outBuf = MatMult.createArray(10, Math.max(NTP+1, NXDST) +1, 1);
@@ -192,7 +193,7 @@ define(function (require, exports, module) {
             var LX, LAX, E; // [5, 5] of float
             var GA; // [5, -1:1] of float
             var W, U, UFI; // [5] of float
-            var G, AUX, QP; // [,,] of float
+            var G, AUX, QP, ACC, QAC; // [,,] of float
 
             W = new Array(5);
             UFI = new Array(5); MatMult.fillArray(UFI, 0);
@@ -210,7 +211,7 @@ define(function (require, exports, module) {
             IMV = new Complex(0, 0);
             IMC = 0;
 
-            QP = MatMult.createArray(genSize +1, NXDST+5 +1, NTP+5 +1);    // QP(5,0:NXDST+5,1:NTP+5)
+            QP = MatMult.createArray(genSize +1, NXDST+5 +1, NTP+5 +1);    // QP(5,0:NXDST+5,1:NTP+5) !!! 1:NTP+5
             delete QP[0];
             //MatMult.fillArray(QP, 0);
             //delete QP[0];
@@ -220,6 +221,8 @@ define(function (require, exports, module) {
             //    }
             //}
             //QP.splice(0, 1);
+            QAC = MatMult.createArray(2 +1, NXDST+5 +1, NTP+5 +1);    // QAC(2,0:NXDST+5,1:NTP+5)) !!! 1:NTP+5
+            delete QAC[0];
 
             // ALLOCATE (G(5,0:NBX,0:NFI),AUX(5,0:NBX,-1:1));
             AUX = MatMult.createArray(genSize +1, NBX +1, 2); //new Array(5 +1);
@@ -248,6 +251,23 @@ define(function (require, exports, module) {
             //        }
             //    }
             //}
+
+            // ACC(2,0:NBX,0:NFI))
+            ACC = MatMult.createArray(2 +1, NBX +1, NFI +1);
+            delete ACC[0];
+            for (var c1 in ACC){
+                if (!ACC.hasOwnProperty(c1)) continue;
+
+                for (var c2 in ACC[c1]){
+                    if (!ACC[c1].hasOwnProperty(c2)) continue;
+
+                    for (var c3 in ACC[c1][c2]){
+                        if (!ACC[c1][c2].hasOwnProperty(c3)) continue;
+
+                        ACC[c1][c2][c3] = 0;
+                    }
+                }
+            }
 
             G = MatMult.createArray(genSize +1, NBX +1, NFI +1);
             delete G[0];
@@ -502,6 +522,16 @@ define(function (require, exports, module) {
                                 AUX[c18][0][IK] = recWpU[c18 -1][0];
                             } // recWpU[c18 -1]
                             if ((I > 1) && (I < NFI-1)) {
+                                // TODO ACC uses value of G array, before it will be counted, is it correct?
+                                // ACC(:,:,I-SN)=(AUX(1:2,:,IS)-G(1:2,:,I-SN))/DT;
+                                for (var c27 = 1; c27 <= 2; c27++){
+                                    for (var c28 in AUX[c27]){
+                                        if (!AUX[c27].hasOwnProperty(c28)) continue;
+
+                                        ACC[c27][c28][I-SN] = (AUX[c27][c28][IS] - G[c27][c28][I-SN]) / DT;
+                                    }
+                                }
+                                // G(:,:,I-SN)=AUX(:,:,IS);
                                 for (var c19 in G){
                                     if (!G.hasOwnProperty(c19)) continue;
 
@@ -524,41 +554,118 @@ define(function (require, exports, module) {
 
                     //if (T < 0) goto200();
                     if (T >= 0) {
-                        for (var c21 in G){
-                            if (!G.hasOwnProperty(c21)) continue;
+                        // old code goes next commented lines
+                        //for (var c21 in G){
+                        //    if (!G.hasOwnProperty(c21)) continue;
+                        //
+                        //    for (var c22 in G[c21]){
+                        //        if (!G[c21].hasOwnProperty(c22)) continue;
+                        //
+                        //        G[c21][c22][I+SN] = AUX[c21][c22][IS];
+                        //    }
+                        //}
+                        //for (var c23 in G){
+                        //    if (!G.hasOwnProperty(c23)) continue;
+                        //
+                        //    for (var c24 in G[c23]){
+                        //        if (!G[c23].hasOwnProperty(c24)) continue;
+                        //
+                        //        G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
+                        //    }
+                        //}
+                        //for (var c25 in G){
+                        //    if (!G.hasOwnProperty(c25)) continue;
+                        //
+                        //    for (var c26 in G[c25]){
+                        //        if (!G[c25].hasOwnProperty(c26)) continue;
+                        //
+                        //        G[c25][c26][0] = G[c25][c26][NFI-1];
+                        //    }
+                        //}
 
-                            for (var c22 in G[c21]){
-                                if (!G[c21].hasOwnProperty(c22)) continue;
+                        // TODO ACC uses value of G array, before it will be counted, is it correct?
+                        // ACC(:,:,I+SN)=(AUX(1:2,:,IS)-G(1:2,:,I+SN))/DT;
+                        for (var c29 = 1; c29 <= 2; c29++){
+                            for (var c30 in AUX[c29]){
+                                if (!AUX[c29].hasOwnProperty(c30)) continue;
 
-                                G[c21][c22][I+SN] = AUX[c21][c22][IS];
+                                ACC[c29][c30][I+SN] = (AUX[c29][c30][IS] - G[c29][c30][I+SN]) / DT;
                             }
                         }
-                        for (var c23 in G){
-                            if (!G.hasOwnProperty(c23)) continue;
+                        // ACC(:,:,I)=(AUX(1:2,:,-(IS+IK))-G(1:2,:,I))/DT;
+                        for (var c31 = 1; c31 <= 2; c31++){
+                            for (var c32 in AUX[c31]){
+                                if (!AUX[c31].hasOwnProperty(c32)) continue;
 
-                            for (var c24 in G[c23]){
-                                if (!G[c23].hasOwnProperty(c24)) continue;
-
-                                G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
+                                ACC[c31][c32][I+SN] = (AUX[c31][c32][-(IS+IK)] - G[c31][c32][I]) / DT;
                             }
                         }
-                        for (var c25 in G){
-                            if (!G.hasOwnProperty(c25)) continue;
+                        // G(:,:,I+SN)=AUX(:,:,IS);
+                        for (var c33 in G){
+                            if (!G.hasOwnProperty(c33)) continue;
 
-                            for (var c26 in G[c25]){
-                                if (!G[c25].hasOwnProperty(c26)) continue;
+                            for (var c34 in G[c33]){
+                                if (!G[c33].hasOwnProperty(c34)) continue;
 
-                                G[c25][c26][0] = G[c25][c26][NFI-1];
+                                G[c33][c34][I+SN] = AUX[c33][c34][IS];
+                            }
+                        }
+                        // G(:,:,I)=AUX(:,:,-(IS+IK));
+                        for (var c35 in G){
+                            if (!G.hasOwnProperty(c35)) continue;
+
+                            for (var c36 in G[c35]){
+                                if (!G[c35].hasOwnProperty(c36)) continue;
+
+                                G[c35][c36][I] = AUX[c35][c36][-(IS+IK)];
+                            }
+                        }
+                        //          !ДООПРЕДЕЛЕЕНИЕ ВЕКТОРОВ G(:,J,0),G(:,J,NFI)
+                        // G(:,:,NFI)=G(:,:,1);
+                        for (var c37 in G){
+                            if (!G.hasOwnProperty(c37)) continue;
+
+                            for (var c38 in G[c37]){
+                                if (!G[c37].hasOwnProperty(c38)) continue;
+
+                                G[c37][c38][NFI] = G[c37][c38][1];
+                            }
+                        }
+                        // G(:,:,0)=G(:,:,NFI-1);
+                        for (var c39 in G){
+                            if (!G.hasOwnProperty(c39)) continue;
+
+                            for (var c40 in G[c39]){
+                                if (!G[c39].hasOwnProperty(c40)) continue;
+
+                                G[c39][c40][0] = G[c39][c40][NFI-1];
+                            }
+                        }
+                        // ACC(:,:,NFI)=ACC(:,:,1);
+                        for (var c41 = 1; c41 <= 2; c41++){
+                            for (var c42 in ACC[c41]){
+                                if (!ACC[c41].hasOwnProperty(c42)) continue;
+
+                                ACC[c41][c42][NFI] = ACC[c41][c42][1];
+                            }
+                        }
+                        // ACC(:,:,0)=ACC(:,:,1);
+                        for (var c43 = 1; c43 <= 2; c43++){
+                            for (var c44 in ACC[c43]){
+                                if (!ACC[c43].hasOwnProperty(c44)) continue;
+
+                                ACC[c43][c44][0] = ACC[c43][c44][1];
                             }
                         }
 
-                        var recCmplxMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
+                        var recComplexMV = (new Complex(KPA, 0)).multiply(MV).multiply(ALIM);
+                        // TODO if INDEX == 0 or 3, no data will be printed, is it ok?
                         if (INDEX > 0 && INDEX < 3) {
                             // probably SOLVED WRITE(4,'(5X,F10.3,3(2X,E10.3))') &
                             recBuffer = new Buffer(
                                 (T).toFixedDef() + " " +
-                                (recCmplxMV.re).toFixedDef() + " " +
-                                (recCmplxMV.im).toFixedDef() + " " +
+                                (recComplexMV.re).toFixedDef() + " " +
+                                (recComplexMV.im).toFixedDef() + " " +
                                 (KPFI * MC).toFixedDef()
                             );
                             //noinspection JSUnresolvedFunction
@@ -574,16 +681,16 @@ define(function (require, exports, module) {
                                 DZC = DZC.add( (new Complex(0.5 * DT, 0)).multiply( IMV.add(IMV0) ) ) ;
                                 IMV0 = IMV;
                                 // probably SOLVED WRITE(4,'(F10.3,7(2X,E10.3))') &
-                                var recCmplxIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
-                                var recCmplxDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
+                                var recComplexIMV = (new Complex(KPA, 0)).multiply(IMV).multiply(ALIM);
+                                var recComplexDZC = (new Complex(KPA, 0)).multiply(DZC).multiply(ALIM);
                                 recBuffer = new Buffer(
                                     (T).toFixedDef() + " " +
-                                    (C2/LC * recCmplxMV.re).toFixedDef() + " " +
-                                    (C2/LC * recCmplxMV.im).toFixedDef() + " " +
-                                    (C2 * recCmplxIMV.re).toFixedDef() + " " +
-                                    (C2 * recCmplxIMV.im).toFixedDef() + " " +
-                                    (L * recCmplxDZC.re).toFixedDef() + " " +
-                                    (L * recCmplxDZC.im).toFixedDef() + " " +
+                                    (C2/LC * recComplexMV.re).toFixedDef() + " " +
+                                    (C2/LC * recComplexMV.im).toFixedDef() + " " +
+                                    (C2 * recComplexIMV.re).toFixedDef() + " " +
+                                    (C2 * recComplexIMV.im).toFixedDef() + " " +
+                                    (L * recComplexDZC.re).toFixedDef() + " " +
+                                    (L * recComplexDZC.im).toFixedDef() + " " +
                                     (KPFI * MC / (LC*LC)).toFixedDef() + "!!!\n;;;"
                                 );
                                 //noinspection JSUnresolvedFunction
@@ -670,7 +777,7 @@ define(function (require, exports, module) {
 
             function COUNTOUT(T){
                 var I, M, J, K, N; //, JNT, COUNT=3; // integer
-                var X;  // float
+                var X, DPSI;  // float
                 var rBuffer;
                 // QP = 0;
                 //MatMult.fillArray(QP, 0);
@@ -683,6 +790,18 @@ define(function (require, exports, module) {
                         var QPlen = QP[c1][c2].length;
                         for (var c3 = 0; c3 < QPlen; c3++){
                             QP[c1][c2][c3] = 0;
+                        }
+                    }
+                }
+                for (var c1 in QAC){
+                    if (!QP.hasOwnProperty(c1)) continue;
+
+                    for (var c2 in QAC[c1]){
+                        if (!QAC[c1].hasOwnProperty(c2)) continue;
+
+                        var QAClen = QAC[c1][c2].length;
+                        for (var c3 = 0; c3 < QAClen; c3++){
+                            QAC[c1][c2][c3] = 0;
                         }
                     }
                 }
@@ -708,27 +827,37 @@ define(function (require, exports, module) {
                         UFI[2] = 1 - 2*B * SF*SF;
                         UFI[3] = 1 - 2*B * CF*CF;
                         UFI[4] = -2*B * CF*SF;
+                        // TODO there are small mistakes in UFI e.g. for UFI[4] diff = 0.00001282782528004; my result 0.02611787782528004 vs. 2.610505E-02
+                        // TODO for UFI[0] cos(1.627479), calc.exe shows result next to my results, but not Fortran. May be they use old methods for cos and sin, not that accurate
                     }
                     X = 0;
                     N = 0;
 
                     while (true){
+                        // TODO what is for original -> X>1.01*XDESTR (why exactly 1.01?)
                         if (X > 1.01 * XDESTR) break;
                         K = Math.round(X / DX);
                         if (T < 0){
                             KSI = KSIN - K*DX*CF;
                             PSI = BBstart.TENS(LC * (T - KSI));
+                            DPSI = (BBstart.TENS(LC*(T+DT-KSI)) - BBstart.TENS(LC*(T-KSI)))/DT;
                             for (var c4 in QP){
                                 if (!QP.hasOwnProperty(c4)) continue;
 
                                 // TODO, hmm, why not UFI(:) ???? original: QP(:,N,J)=PSI*UFI
-                                QP[c4][N][J] = PSI * UFI[c4 -1];
+                                QP[c4][N][J] = PSI * UFI[c4 -1];    // original *C2
+                            }
+                            for (var c6 = 1; c6 <= 2; c6++){
+                                QAC[c6][N][J] = DPSI * UFI[c6] *C2*C2/L; // QAC(:,N,J)=DPSI*UFI(1:2)*C2*C2/L;
                             }
                         } else {
                             for (var c5 in QP){
                                 if (!QP.hasOwnProperty(c5)) continue;
 
                                 QP[c5][N][J] = G[c5][K][I]; // original *C2
+                            }
+                            for (var c7 = 1; c7 <= 2; c7++){
+                                QAC[c7][N][J] = ACC[c7][K][I] *C2*C2/L;
                             }
                         }
                         X = X + STEPX;
@@ -739,9 +868,44 @@ define(function (require, exports, module) {
                 // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-05/0.981;
                 // this string uncommented when it is need to get real measurements
                 // last version is QP(3:5,:,:)=QP(3:5,:,:)   !*RC2*C2*1E-05/0.981;    (RC2 not RO2)
+                var needRealValues = false;
+                if (needRealValues){
+                    var realValuesConst = RC2 * C2 * 1e-05 / 0.981;
+                    for (var c7 in QP){
+                        if (!QP.hasOwnProperty(c7)) continue;
+
+                        for (var c8 in QP[c7]){
+                            if (!QP[c7].hasOwnProperty(c8)) continue;
+
+                            var recQPlen = QP[c7][c8].length;
+                            for (var c9 = 0; c9 < recQPlen; c9++){
+                                QP[c7][c8][c9] = QP[c7][c8][c9] * realValuesConst;
+                            }
+                        }
+                    }
+                }
+
+                //if(!window.debugBool){
+                //    console.error(QP);
+                //    window.debugBool = true;
+                //}
+
                 for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
                     var st;
                     if (I <= NXDST) {
+                        for (M = 1; M <= 2; M++){
+                            st = "";
+                            // WRITE(M+8,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QAC(M,I,J),J=1,NTP+1);
+                            st += T.toFixedDef().toFixedLen(6) + "   ";
+                            for (var qacj = 1; qacj <= NTP + 1; qacj++){
+                                st += (QAC[M][I][qacj]).toExponential(5).toFixedLen(12); //.toFixedDef();
+                                st += "   ";
+                            }
+                            st += "\n";
+                            rBuffer = new Buffer(st);
+                            //noinspection JSUnresolvedFunction
+                            fs.writeSync(fds1[M-1], rBuffer, 0, rBuffer.length, null);
+                        }
                         for (M = 1; M <= 5; M++){
                             // probably SOLVED WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
                             st = "";
@@ -751,6 +915,7 @@ define(function (require, exports, module) {
                                 st += "   ";
 
                                 // jmemOut store
+                                // TODO probably I should feel memOut in the end, when all data are calculated
                                 if (T >= 0) {
                                     memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
                                 }
@@ -758,7 +923,7 @@ define(function (require, exports, module) {
                             st += "\n";
                             rBuffer = new Buffer(st);
                             //noinspection JSUnresolvedFunction
-                            fs.writeSync(fds1[M-1], rBuffer, 0, rBuffer.length, null);
+                            fs.writeSync(fds1[M+2-1], rBuffer, 0, rBuffer.length, null);    // +2 because ACC1, ACC2 were added
 
                             // jOutputBlock, recording
                             outBuf[M-1][I].push(rBuffer);

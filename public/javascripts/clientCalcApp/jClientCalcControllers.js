@@ -41,12 +41,14 @@
         }
 
         function drawMe(param){
-            console.log("hey, I see you've started to do something and we have a param here:", param);
+            console.log("we have a params here:", param);
 
             self.data = param;
 
-            $scope.$apply();
-            //$scope.$digest();
+            var curTime = Date.now();
+            //$scope.$apply();
+            $scope.$digest();
+            console.log("Time to update $scope:", (Date.now() - curTime), "msec");
         }
         this.drawMe = drawMe;
 
@@ -85,8 +87,8 @@
         }
         this.changeBodyFontSize = changeBodyFontSize;
 
-        // http://stackoverflow.com/a/18526757
         function calcAllWatchers() {
+            // http://stackoverflow.com/a/18526757
             var root = angular.element(document.getElementsByTagName('body'));
 
             var watchers = [];
@@ -138,24 +140,25 @@
             if (input === 0) {
                 return input;
             }else{
-                var symbolsAfterDot = 3;
-                var signIndex = inputStr.indexOf("-");
-                // SOLVED if separator isn't "." (learn how toExponential() uses locales). It seems like locales apply after.
-                var separator = ".";
-                var dotIndex = inputStr.indexOf(separator);
-                var eIndex = inputStr.indexOf("e");
                 var ans = "";
-                if (signIndex == 0) ans += "-";
-                // Maybe it will be better to use (number % 1) instead of this substring methods
-                if (dotIndex != -1){
-                    if (signIndex == 0) ans += inputStr.substr(1, 1);
-                    else ans += inputStr.substr(0, 1);
-
-                    var realLengthOfFractionalPart = Math.min(symbolsAfterDot, eIndex - dotIndex);
-                    ans += separator;
-                    ans += inputStr.substr(dotIndex + 1, realLengthOfFractionalPart);
-                }else ans += inputStr.substr(0, eIndex);
-                ans += inputStr.substr(eIndex, inputStr.length - eIndex);
+                var symbolsAfterDot = 3;
+                ans = input.toExponential(symbolsAfterDot);
+                //var signIndex = inputStr.indexOf("-");
+                //// SOLVED if separator isn't "." (learn how toExponential() uses locales). It seems like locales apply after.
+                //var separator = ".";
+                //var dotIndex = inputStr.indexOf(separator);
+                //var eIndex = inputStr.indexOf("e");
+                //if (signIndex == 0) ans += "-";
+                //// Maybe it will be better to use (number % 1) instead of this substring methods
+                //if (dotIndex != -1){
+                //    if (signIndex == 0) ans += inputStr.substr(1, 1);
+                //    else ans += inputStr.substr(0, 1);
+                //
+                //    var realLengthOfFractionalPart = Math.min(symbolsAfterDot, eIndex - dotIndex);
+                //    ans += separator;
+                //    ans += inputStr.substr(dotIndex + 1, realLengthOfFractionalPart);
+                //}else ans += inputStr.substr(0, eIndex);
+                //ans += inputStr.substr(eIndex, inputStr.length - eIndex);
                 return ans;
             }
         };

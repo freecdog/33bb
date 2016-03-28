@@ -30,22 +30,26 @@ html
                         h5(ng-click="CalcCtrl.calcAllWatchers()") calc all watchers
 
                 div(class="row")
+                    h3 S0 = {{CalcCtrl.data.S0}}
+                div(class="row")
                     h3 S = {{CalcCtrl.data.geomprocS}}
                 div(class="row")
                     h3 L = {{CalcCtrl.data.geomprocL}}
 
                 div(class="row")
-                    h3(class="text-warning") Uncomment what you need otherwise loading tooks about minute and a half
+                    h3(class="text-warning") Fix calcs of FUNC2.RCURB(), even for T == 0 results are differed
+                    h3(class="text-warning") memOut isn't source of data for now
+                    h3(class="text-warning") Uncomment what you need otherwise loading takes about minute and a half (with $scope.$digest() twice faster)
 
                 div(class="row" )
                     a(class="btn btn-primary" ng-click="this.showS11 = !this.showS11") BBdat/2016.02/!S11.dat (expand/collapse)
                     table(ng-show="this.showS11" class="table table-striped table-hover")
                         tbody
                             tr(ng-repeat="s11Str in CalcCtrl.data.files['BBdat/2016.02/!S11.dat'].buffers track by $index")
-                                td(ng-repeat="subStr in s11Str.toString().split(' ') track by $index")
+                                td(ng-repeat="subStr in s11Str.toString().split('   ') track by $index")
                                     span {{subStr}}
 
-                div(class="row")
+                //-div(class="row")
                     a(class="btn btn-primary" ng-click="this.showCavform = !this.showCavform") BBdat/_Cavform.dat (expand/collapse)
                     table(ng-show="this.showCavform" class="table table-striped table-hover")
                         tbody
@@ -53,11 +57,7 @@ html
                                 td(ng-repeat="subStr in cavStr.toString().split(' ') track by $index")
                                     span {{subStr}}
 
-                    //-div(class="row" ng-show="this.showCavform" ng-repeat="cavStr in CalcCtrl.data.files['BBdat/_Cavform.dat'].buffers track by $index")
-                        div(class="col-xs-2" ng-repeat="subStr in cavStr.toString().split(' ') track by $index")
-                            span {{subStr}}
-
-                div(class="row")
+                //-div(class="row")
                     div(class="col-xs-12")
 
                         div(class="text-danger") add 'V01', 'V02', 'S011', 'S012', 'S022'
@@ -89,25 +89,3 @@ html
                                                             span {{currentAngle | numberFilter}}
                                                         td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
                                                             span &nbsp;
-
-
-
-                                //-
-                                    div(class="col-xs-3")
-                                        span rtetN = {{CalcCtrl.data.rtetN}}
-                                    div(class="col-xs-3")
-                                        span rest
-                                    div(class="col-xs-3")
-                                        span name
-                                    div(class="col-xs-3")
-                                        span media
-
-                            //-div(class="row" ng-repeat="attempt in activeTraining.attempts track by $index" ng-hide="attempt.passed")
-                                div(class="col-xs-3")
-                                    span {{TrainCtrl.getValueForTable($index, 0) | timeFilter}}
-                                div(class="col-xs-3")
-                                    span {{TrainCtrl.getValueForTable($index, 1) | timeFilter}}
-                                div(class="col-xs-3")
-                                    span {{attempt.name}}
-                                div(class="col-xs-3")
-                                    span &nbsp;
