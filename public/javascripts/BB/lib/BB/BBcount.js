@@ -21,6 +21,7 @@ define(function (require, exports, module) {
         'use strict';
 
         var BBcount = {};
+        console.log("BBcount is starting");
 
         // global on the server, window in the browser
         var root, previous_BBcount;

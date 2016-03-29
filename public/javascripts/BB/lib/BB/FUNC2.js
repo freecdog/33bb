@@ -13,6 +13,7 @@ define(function (require, exports, module) {
         'use strict';
 
         var FUNC2 = {};
+        console.log("FUNC2 is starting");
 
         // global on the server, window in the browser
         var root, previous_FUNC2;
@@ -66,27 +67,28 @@ define(function (require, exports, module) {
             }
 
             if (NOEDGE){
+                // RTET=B*(ABS(SIN(TT))**N+(EPS*ABS(COS(TT)))**N)**(-1.0/N)
                 RTET = repeatedFunction(TT, N, EPS);
                 return RTET;
-            }
-
-            T = TT;
-            if (T > 2 * Math.PI) T = T - 2 * Math.PI;
-
-            if ((T > Math.PI / 2) && (T < 3 * Math.PI / 2)) {
-                RTET = repeatedFunction(T, N, EPS);
             } else {
-                if (T >= 3 * Math.PI / 2) T = T - 2 * Math.PI;
-                if (T < T0) {
-                    FI = (T - T0) / (1 + PI2 * T0);
-                    M = N2;
+                T = TT;
+                if (T > 2 * Math.PI) T = T - 2 * Math.PI;
+
+                if ((T > Math.PI / 2) && (T < 3 * Math.PI / 2)) {
+                    RTET = repeatedFunction(T, N, EPS);
                 } else {
-                    FI = (T - T0) / (1 - PI2 * T0);
-                    M = N1;
+                    if (T >= 3 * Math.PI / 2) T = T - 2 * Math.PI;
+                    if (T < T0) {
+                        FI = (T - T0) / (1 + PI2 * T0);
+                        M = N2;
+                    } else {
+                        FI = (T - T0) / (1 - PI2 * T0);
+                        M = N1;
+                    }
+                    RTET = repeatedFunction(FI, M, EPS1);
                 }
-                RTET = repeatedFunction(FI, M, EPS1);
+                return RTET;
             }
-            return RTET;
 
             /*var RTET;
             // REAL,INTENT(IN) :: TT

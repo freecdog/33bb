@@ -24,6 +24,7 @@ define(function (require, exports, module) {
         'use strict';
 
         var BBstart = {};
+        console.log("BBstart is starting");
 
         // global on the server, window in the browser
         var root, previous_BBstart;
@@ -744,6 +745,7 @@ define(function (require, exports, module) {
                 LONG[I] = rcurbTetaAns.B;
                 FAR[I] = FUNC2.ATN(TETA) - ALFA;
             }
+            // TODO there are small differs in FAR but not too big, I think. Reasons are RCURB and RTET functions
             I = 0;
             J = JTP;
             while (true){
@@ -937,7 +939,8 @@ define(function (require, exports, module) {
                 } else {
                     // !FF=-S0*SIN(BETTA*T)*EXP(-A2*(A1*T-1)**2);
                     // TODO I should use string below !FF=-S0*SIN(BETTA*T)*EXP(-A2*(A1*T-1)**2);
-                    return -S0 * T * T * Math.sin(BETTA*T) * Math.exp(-A1 * T);
+                    //return -S0 * T * T * Math.sin(BETTA*T) * Math.exp(-A1 * T); // this string is from old version (took me 2 days to find it =/ )
+                    return -S0 * Math.sin(BETTA*T) * Math.exp(-A2*Math.pow(A1*T-1,2));
                 }
             } else {
                 console.log("Unknown value of EPUR in FF", EPUR);
