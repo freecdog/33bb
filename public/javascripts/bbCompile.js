@@ -61,8 +61,12 @@ define(function (require, exports, module) {
             var initTime = 0;
 
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
-            var schemeIndex = 2;
+            var schemeIndex = 0;
             var mem = data.memOut[schemeIndex];
+            console.log(data);
+
+            var visualisationSchemeIndex = 0;
+
             // converting TP to correct array of angles (indexed from 0)
             var angles = [];
             for (var cang in data.TP) {
@@ -83,7 +87,7 @@ define(function (require, exports, module) {
             var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
             countMinMax();
 
-            var timeStepsCount = Math.round(data.TM/data.STEP)-1;
+            var timeStepsCount = Math.round(data.TM/data.STEP);
 
             // adding attributes with empty arrays, so properties would be available
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
@@ -98,6 +102,27 @@ define(function (require, exports, module) {
                 return ans;
             }
             //console.warn( 'value:', ctd(-1e-7,cmin, cmax, 0,1),'min:', cmin, 'max:', cmax);
+
+            // converts Num from diap (ds to df) to diap (dmin to center value, center value to dmax). 3 colored diap
+            function ctd3(num, ds, dc, df, dmin, dcenter, dmax){
+                if (!(ds < dc) || !(dc < df)) {
+                    console.error("something wrong:", ds, " < ", dc, " < ", df);
+                    return 0;
+                }
+                if (!(dmin < dcenter) || !(dcenter < dmax)) {
+                    console.error("something wrong:", dmin, "<", centerValue, "<", dmax);
+                    return 0;
+                }
+                var ans;
+                if (num < dc){
+                    ans = ctd(num, ds, dc, dmin, dcenter, false);
+                } else {
+                    ans = ctd(num, dc, df, dcenter, dmax, false);
+                }
+                return ans;
+            }
+            //console.warn( 'value:', ctd3(0.1, cmin, 0, cmax, -1, 0, 1),'min:', cmin, 'max:', cmax);
+
             function deg2rad(angle){ return angle / 180 * Math.PI; }
             function initPositionVertices(){
                 vertexPositions = [];
@@ -170,6 +195,7 @@ define(function (require, exports, module) {
                 geometry.computeBoundingSphere();
             }
             function initColorVertices(currentTime){
+                console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
@@ -177,25 +203,53 @@ define(function (require, exports, module) {
 
                         var isInvert = useInvertationColors;
 
-                        // 1st triangle
                         var recTime = currentTime;
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
 
-                        // 2nd triangle
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                        vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                        if (visualisationSchemeIndex == 1){
+                            // HSV
+                            var intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
+                            // 1st triangle
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+
+                            // 2nd triangle
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,intervalMax, isInvert) ) );
+                        } else if (visualisationSchemeIndex == 2){
+                            // Blue White Red
+                            // 1st triangle
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0+1][c1] ,cmin, 0, cmax, -1, 0,1) ) );
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0][c1] ,cmin, 0, cmax, -1,0,1) ) );
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0+1][c1+1] ,cmin, 0, cmax, -1,0,1) ) );
+
+                            // 2nd triangle
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0][c1] ,cmin, 0, cmax, -1,0,1) ) );
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0+1][c1+1] ,cmin, 0, cmax, -1,0,1) ) );
+                            vertexColors.push( getColorFromValue( ctd3( mem[recTime][c0][c1+1] ,cmin, 0, cmax, -1,0,1) ) );
+                        } else {
+                            // Rainbow color and others single colors schemes
+                            // 1st triangle
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+
+                            // 2nd triangle
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                        }
+
 
                         // duplicate
                         if (useDuplicate){
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getRainbowColor( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
+                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
                         }
                     }
                 }
@@ -241,7 +295,100 @@ define(function (require, exports, module) {
                         }
                     }
                 }
+                console.log("cmin:", cmin, "; cmax:", cmax);
             }
+
+            function getColorFromValue(value){
+                if (visualisationSchemeIndex == 1) {
+                    return getRainbowColorHSV(value);
+                } else if (visualisationSchemeIndex == 2) {
+                    return getBlueWhiteRedColor(value);
+                } else {
+                    if (visualisationSchemeIndex == 0) return getRainbowColor(value);
+                    else if (visualisationSchemeIndex == 3) return getGrayColor(value);
+                    else if (visualisationSchemeIndex == 4) return getRedColor(value);
+                    else if (visualisationSchemeIndex == 5) return getGreenColor(value);
+                    else if (visualisationSchemeIndex == 6) return getBlueColor(value);
+                }
+                //return getGreenColor(value);
+                //return getRainbowColor(value);
+                //return getBlueWhiteRedColor(value);
+                //return getRainbowColorHSV(value);
+            }
+            function getGrayColor(value){
+                var SRC_r = value, SRC_g = value, SRC_b = value;
+                return [SRC_r, SRC_g, SRC_b];
+            }
+            function getRedColor(value){
+                var SRC_r = value, SRC_g = 0, SRC_b = 0;
+                return [SRC_r, SRC_g, SRC_b];
+            }
+            function getGreenColor(value){
+                var SRC_r = 0, SRC_g = value, SRC_b = 0;
+                return [SRC_r, SRC_g, SRC_b];
+            }
+            function getBlueColor(value){
+                var SRC_r = 0, SRC_g = 0, SRC_b = value;
+                return [SRC_r, SRC_g, SRC_b];
+            }
+
+            function getBlueWhiteRedColor(value){
+                var borB = -1;  	// Blue
+                var borW = 0;    	// White
+                var borR = 1;   	// Red
+
+                var SRC_r, SRC_g, SRC_b;
+
+                var bright = 1;
+                var power;
+
+                if (value < 0){
+                    power = bright * (value / borB);
+                    SRC_r = bright - power;
+                    SRC_g = bright - power;
+                    SRC_b = 1;
+                } else {
+                    power = bright * (value / borR);
+                    SRC_r = 1;
+                    SRC_g = bright - power;
+                    SRC_b = bright - power;
+                }
+
+                //console.log(value, [Math.round(SRC_r * 255), Math.round(SRC_g * 255), Math.round(SRC_b * 255)]);
+                return [SRC_r, SRC_g, SRC_b];
+            }
+            //for (var testI = -1; testI <= 1; testI += 0.25) console.warn(testI, getBlueWhiteRedColor(testI));
+
+            function HSVtoRGB(h, s, v) {
+                // http://stackoverflow.com/a/17243070
+                var r, g, b, i, f, p, q, t;
+                if (arguments.length === 1) {
+                    s = h.s, v = h.v, h = h.h;
+                }
+                i = Math.floor(h * 6);
+                f = h * 6 - i;
+                p = v * (1 - s);
+                q = v * (1 - f * s);
+                t = v * (1 - (1 - f) * s);
+                switch (i % 6) {
+                    case 0: r = v, g = t, b = p; break;
+                    case 1: r = q, g = v, b = p; break;
+                    case 2: r = p, g = v, b = t; break;
+                    case 3: r = p, g = q, b = v; break;
+                    case 4: r = t, g = p, b = v; break;
+                    case 5: r = v, g = p, b = q; break;
+                }
+                //return {
+                //    r: Math.round(r * 255),
+                //    g: Math.round(g * 255),
+                //    b: Math.round(b * 255)
+                //};
+                return [r, g, b];
+            }
+            function getRainbowColorHSV(value){
+                return HSVtoRGB(value, 1, 1);
+            }
+            //for (var testI = 0; testI <= 1; testI += 1/6) console.warn("HSV", testI, getRainbowColorHSV(testI));
 
             // get color from value in diap 0..1
             function getRainbowColor(value){
@@ -300,6 +447,7 @@ define(function (require, exports, module) {
 
                 return [SRC_r, SRC_g, SRC_b];
             }
+            //for (var testI = 0; testI <= 1; testI += 1/12) console.warn("RGB", testI, getBlueWhiteRedColor(testI));
 
             // RENDER
             function render() {
@@ -321,6 +469,9 @@ define(function (require, exports, module) {
                 this.autoPlay = false;
                 this.invertColors = useInvertationColors;
                 this.duplicate = useDuplicate;
+                this.visualisationSchemeIndex = visualisationSchemeIndex;
+                this.autoUpdateTimer = 0;
+                this.autoUpdateInterval = 10;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -352,21 +503,33 @@ define(function (require, exports, module) {
                         //controls.changeTime();
 
                         //controls.autoUpdate();
-                        requestAnimationFrame( controls.autoUpdate );
+                        requestAnimationFrame(controls.autoUpdate);
 
-                        //controls.time += 1;
-                        controls.time = Math.cos( (new Date()).getTime()/1000 )*(timeStepsCount/2) + timeStepsCount/2;
+                        //controls.time = Math.cos( (new Date()).getTime()/1000 )*(timeStepsCount/2) + timeStepsCount/2;
 
                         //controls.updateGUIdisplays();
                         controls.updateGUIwithName('time');
-                        controls.changeTime();
+
+                        var currentTime = Date.now();
+                        if (currentTime - controls.autoUpdateTimer > controls.autoUpdateInterval) {
+                            controls.autoUpdateTimer = currentTime;
+
+                            controls.time += 1;
+                            if (controls.time >= timeStepsCount) controls.time = 0;
+
+                            controls.changeTime();
+                        }
+
                     }
                 };
 
                 this.changeDuplicate = function(){
-                    useDuplicate = controls.duplicate;
-                    initVertices();
-                    controls.changeTime();
+                    console.error("unfortunately duplicate is not available now");
+                    return;
+
+                    //useDuplicate = controls.duplicate;
+                    //initVertices();
+                    //controls.changeTime();
                 };
 
                 this.changeInvertation = function(){
@@ -386,6 +549,10 @@ define(function (require, exports, module) {
                     controls.changeTime();
                 };
 
+                this.changeVisualisationScheme = function(){
+                    visualisationSchemeIndex = controls.visualisationSchemeIndex;
+                    controls.changeTime();
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -395,7 +562,7 @@ define(function (require, exports, module) {
             document.body.appendChild(gui.domElement);
 
             gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
-            gui.add(controls, 'time').min(0).max(timeStepsCount).step(1).onChange(controls.changeTime);
+            gui.add(controls, 'time').min(0).max(timeStepsCount-1).step(1).onChange(controls.changeTime);
             gui.add(controls, 'schemeIndex', {
                 'V_1.dat': 0,
                 'V_2.dat': 1,
@@ -405,6 +572,16 @@ define(function (require, exports, module) {
             }).onChange(controls.changeMem);
             gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
             gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
+            gui.add(controls, 'visualisationSchemeIndex', {
+                'Rainbow': 0,
+                'HSV': 1,
+                'Red-White-Blue': 2,
+                'Gray': 3,
+                'Red': 4,
+                'Green': 5,
+                'Blue': 6
+            }).onChange(controls.changeVisualisationScheme);
+            gui.add(controls, 'autoUpdateInterval').min(10).max(1000).step(10);
 
             function initStats() {
                 var stats = new Stats();

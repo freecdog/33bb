@@ -48,14 +48,6 @@ define(function (require, exports, module) {
             return (Math.abs(num1 - num2) < eps);
         }
 
-        function writeToFile(descr){
-            var buffer, str = "";
-            str = arrToString(arguments, 1, arguments.length - 1);
-            buffer = new Buffer(str);
-            //noinspection JSUnresolvedFunction
-            fs.writeSync(descr, buffer, 0, buffer.length, null);
-        }
-
         function arrToString(arr, start, len){
             start = start || 0;
             len = len || arr.length;
@@ -256,16 +248,16 @@ define(function (require, exports, module) {
             // ACC(2,0:NBX,0:NFI))
             ACC = MatMult.createArray(2 +1, NBX +1, NFI +1);
             delete ACC[0];
-            for (var c1 in ACC){
-                if (!ACC.hasOwnProperty(c1)) continue;
+            for (var c45 in ACC){
+                if (!ACC.hasOwnProperty(c45)) continue;
 
-                for (var c2 in ACC[c1]){
-                    if (!ACC[c1].hasOwnProperty(c2)) continue;
+                for (var c46 in ACC[c45]){
+                    if (!ACC[c45].hasOwnProperty(c46)) continue;
 
-                    for (var c3 in ACC[c1][c2]){
-                        if (!ACC[c1][c2].hasOwnProperty(c3)) continue;
+                    for (var c47 in ACC[c45][c46]){
+                        if (!ACC[c45][c46].hasOwnProperty(c47)) continue;
 
-                        ACC[c1][c2][c3] = 0;
+                        ACC[c45][c46][c47] = 0;
                     }
                 }
             }
@@ -777,6 +769,8 @@ define(function (require, exports, module) {
             }
 
             function COUNTOUT(T){
+                var countoutStart = Date.now();
+
                 var I, M, J, K, N; //, JNT, COUNT=3; // integer
                 var X, DPSI;  // float
                 var rBuffer;
@@ -794,15 +788,15 @@ define(function (require, exports, module) {
                         }
                     }
                 }
-                for (var c1 in QAC){
-                    if (!QP.hasOwnProperty(c1)) continue;
+                for (var c11 in QAC){
+                    if (!QAC.hasOwnProperty(c11)) continue;
 
-                    for (var c2 in QAC[c1]){
-                        if (!QAC[c1].hasOwnProperty(c2)) continue;
+                    for (var c12 in QAC[c11]){
+                        if (!QAC[c11].hasOwnProperty(c12)) continue;
 
-                        var QAClen = QAC[c1][c2].length;
-                        for (var c3 = 0; c3 < QAClen; c3++){
-                            QAC[c1][c2][c3] = 0;
+                        var QACLength = QAC[c11][c12].length;
+                        for (var c13 = 0; c13 < QACLength; c13++){
+                            QAC[c11][c12][c13] = 0;
                         }
                     }
                 }
@@ -835,7 +829,7 @@ define(function (require, exports, module) {
                     N = 0;
 
                     while (true){
-                        // TODO what is for original -> X>1.01*XDESTR (why exactly 1.01?)
+                        // SOLVED what is for original -> X>1.01*XDESTR (why exactly 1.01?). It's done because to have extra bounds
                         if (X > 1.01 * XDESTR) break;
                         K = Math.round(X / DX);
                         if (T < 0){
@@ -872,15 +866,15 @@ define(function (require, exports, module) {
                 var needRealValues = false;
                 if (needRealValues){
                     var realValuesConst = RC2 * C2 * 1e-05 / 0.981;
-                    for (var c7 in QP){
-                        if (!QP.hasOwnProperty(c7)) continue;
+                    for (var c8 in QP){
+                        if (!QP.hasOwnProperty(c8)) continue;
 
-                        for (var c8 in QP[c7]){
-                            if (!QP[c7].hasOwnProperty(c8)) continue;
+                        for (var c9 in QP[c8]){
+                            if (!QP[c8].hasOwnProperty(c9)) continue;
 
-                            var recQPlen = QP[c7][c8].length;
-                            for (var c9 = 0; c9 < recQPlen; c9++){
-                                QP[c7][c8][c9] = QP[c7][c8][c9] * realValuesConst;
+                            var recQPLength = QP[c8][c9].length;
+                            for (var c10 = 0; c10 < recQPLength; c10++){
+                                QP[c8][c9][c10] = QP[c8][c9][c10] * realValuesConst;
                             }
                         }
                     }
@@ -959,6 +953,8 @@ define(function (require, exports, module) {
                 //COUNT = COUNT + 1;
 
                 jOutput();
+
+                console.warn("countout tick:", (Date.now() - countoutStart) + " ms");
             }
 
             function INITLOAD(T){

@@ -71,8 +71,16 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var doCheckTime = true;
         var checkInterval = 1000;
         function checkTime(){
-            var str = data.currentT.toFixed(2) + " s";
-            str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
+            var str = "";
+            if (data.currentT < data.TM) {
+                str += data.currentT.toFixed(2) + " s";
+                str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
+            } else if (data.currentT < 0) {
+                str += " (0%)";
+            } else {
+                str += data.TM.toFixed(2) + " s";
+                str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";
+            }
             if (data.status.duration) str += "; " + data.status.duration.toFixed(2) + " ms left";
             domCurrentTime.innerHTML = str;
 

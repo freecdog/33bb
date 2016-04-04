@@ -270,7 +270,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 1,
+                        TM: 8,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -278,8 +278,8 @@ define(function (require, exports, module) {
                         printPoints: [ 0,15,30,45,60,75,90 ],
                         OMG: 0.98,
                         BET: 0.7,
-                        STEP: 0.05,
-                        STEPX: 0.05,
+                        STEP: 0.1,
+                        STEPX: 0.1,
                         DELTA: 1,
 
                         rtetN: 2,
@@ -600,6 +600,9 @@ define(function (require, exports, module) {
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
             //WRITE(*,'()');
             console.log("S =", S, "L =", L);
+            // TODO meters? XDESTR is given in non-dimensional scale, while rtetB in meters (probably meters?)
+            data.TMrecommended = 2 * XDESTR + (2 * data.rtetB) / data.geomprocL;
+            console.log("Recommended time for calculations is", data.TMrecommended, " plus a little extra to be sure");
 
             JC = 0.25 * JC / (Math.pow(L, 4));
             ZC = MOM.divide(new Complex(S, 0));
