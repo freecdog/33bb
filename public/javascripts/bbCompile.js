@@ -61,11 +61,11 @@ define(function (require, exports, module) {
             var initTime = 0;
 
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
-            var schemeIndex = 0;
+            var schemeIndex = 2;
             var mem = data.memOut[schemeIndex];
             console.log(data);
 
-            var visualisationSchemeIndex = 0;
+            var visualisationSchemeIndex = 2;
 
             // converting TP to correct array of angles (indexed from 0)
             var angles = [];
@@ -87,7 +87,8 @@ define(function (require, exports, module) {
             var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
             countMinMax();
 
-            var timeStepsCount = Math.round(data.TM/data.STEP);
+            //var timeStepsCount = Math.round(data.TM/data.STEP);
+            var timeStepsCount = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP);
 
             // adding attributes with empty arrays, so properties would be available
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
@@ -106,12 +107,14 @@ define(function (require, exports, module) {
             // converts Num from diap (ds to df) to diap (dmin to center value, center value to dmax). 3 colored diap
             function ctd3(num, ds, dc, df, dmin, dcenter, dmax){
                 if (!(ds < dc) || !(dc < df)) {
-                    console.error("something wrong:", ds, " < ", dc, " < ", df);
-                    return 0;
+                    //console.warn("something wrong:", ds, " < ", dc, " < ", df);
+                    //return 0;
+                    //ans = ctd(num, ds, dc, dmin, dcenter, false);
                 }
                 if (!(dmin < dcenter) || !(dcenter < dmax)) {
-                    console.error("something wrong:", dmin, "<", centerValue, "<", dmax);
-                    return 0;
+                    //console.warn("something wrong:", dmin, "<", centerValue, "<", dmax);
+                    //return 0;
+                    //ans = ctd(num, ds, dc, dmin, dcenter, false);
                 }
                 var ans;
                 if (num < dc){
@@ -145,14 +148,31 @@ define(function (require, exports, module) {
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                         var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
-                        p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                        p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+
+                        //// zero degree angle is on the right
+                        //p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        //p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        //p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        //p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        //p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        //p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        //p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        //p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+
+                        // zero degree angle is on the top
+                        p1x = r2 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        p1y = r2 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        p2x = r1 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        p2y = r1 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        p3x = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p3y = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        p4x = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p4y = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+
+                        //if (c0 == 5 && c1 == 2) {
+                        //    console.warn(r1, r2, angles[c1]);
+                        //    console.warn(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y);
+                        //}
 
                         // 1st triangle
                         vertexPositions.push( [p1x, p1y, defZ] );
@@ -195,7 +215,7 @@ define(function (require, exports, module) {
                 geometry.computeBoundingSphere();
             }
             function initColorVertices(currentTime){
-                console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
+                if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
@@ -306,9 +326,9 @@ define(function (require, exports, module) {
                 } else {
                     if (visualisationSchemeIndex == 0) return getRainbowColor(value);
                     else if (visualisationSchemeIndex == 3) return getGrayColor(value);
-                    else if (visualisationSchemeIndex == 4) return getRedColor(value);
-                    else if (visualisationSchemeIndex == 5) return getGreenColor(value);
-                    else if (visualisationSchemeIndex == 6) return getBlueColor(value);
+                    else if (visualisationSchemeIndex == 4) return getRedBlackColor(value);
+                    else if (visualisationSchemeIndex == 5) return getGreenBlackColor(value);
+                    else if (visualisationSchemeIndex == 6) return getBlueBlackColor(value);
                 }
                 //return getGreenColor(value);
                 //return getRainbowColor(value);
@@ -319,15 +339,15 @@ define(function (require, exports, module) {
                 var SRC_r = value, SRC_g = value, SRC_b = value;
                 return [SRC_r, SRC_g, SRC_b];
             }
-            function getRedColor(value){
+            function getRedBlackColor(value){
                 var SRC_r = value, SRC_g = 0, SRC_b = 0;
                 return [SRC_r, SRC_g, SRC_b];
             }
-            function getGreenColor(value){
+            function getGreenBlackColor(value){
                 var SRC_r = 0, SRC_g = value, SRC_b = 0;
                 return [SRC_r, SRC_g, SRC_b];
             }
-            function getBlueColor(value){
+            function getBlueBlackColor(value){
                 var SRC_r = 0, SRC_g = 0, SRC_b = value;
                 return [SRC_r, SRC_g, SRC_b];
             }

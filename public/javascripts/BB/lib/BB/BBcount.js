@@ -803,7 +803,10 @@ define(function (require, exports, module) {
 
                 // jmemOut memory and cpu optimization
                 var memOut = data.memOut;
-                var moT = Math.round(T / data.STEP);
+                var moT;
+                var maxTimeSteps = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP)+1;
+                if (T < 0) moT = Math.round( (data.T0 - Math.abs(T)) / data.STEP);
+                else moT = Math.round(data.T0 / data.STEP) + Math.round(T / data.STEP);
                 console.log("out for T = ", T.toFixedDef(), "; index = ", moT);
 
                 // JNT = COUNT; // not used
@@ -911,9 +914,10 @@ define(function (require, exports, module) {
 
                                 // jmemOut store
                                 // TODO probably I should feel memOut in the end, when all data are calculated
-                                if (T >= 0) {
-                                    memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
-                                }
+                                //if (T >= 0) {
+                                //    memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
+                                //}
+                                memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
                             }
                             st += "\n";
                             rBuffer = new Buffer(st);
@@ -934,9 +938,10 @@ define(function (require, exports, module) {
                                 st += "   ";
 
                                 // jmemOut store
-                                if (T >= 0) {
-                                    memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
-                                }
+                                //if (T >= 0) {
+                                //    memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
+                                //}
+                                memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
                             }
                             st += "\n";
                             rBuffer = new Buffer(st);
