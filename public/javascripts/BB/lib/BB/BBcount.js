@@ -261,6 +261,7 @@ define(function (require, exports, module) {
                     }
                 }
             }
+            data.ACC = ACC;
 
             G = MatMult.createArray(genSize +1, NBX +1, NFI +1);
             delete G[0];
@@ -283,6 +284,7 @@ define(function (require, exports, module) {
                     }
                 }
             }
+            data.G = G;
 
             var cntPath = 'BBdat/_Cnt.dat'; // looks like path depends on app.js for server side
             //noinspection JSUnresolvedFunction

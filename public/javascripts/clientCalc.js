@@ -73,7 +73,7 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         function checkTime(){
             var str = "";
             if (data.currentT < data.TM) {
-                str += data.currentT.toFixed(2) + " s";
+                str += data.currentT.toFixed(2) + " of " + data.TM.toFixed(2) + " s";
                 str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
             } else if (data.currentT < 0) {
                 str += " (0%)";

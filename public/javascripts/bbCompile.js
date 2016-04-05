@@ -74,6 +74,7 @@ define(function (require, exports, module) {
                     angles.push(data.TP[cang]);
                 }
             }
+            console.log("angles:", angles);
             var axisX = 2, axisY = 2;   // length of axises
             var axisX2 = axisX / 2, axisY2 = axisY / 2;
             var defZ = 1.0;
@@ -126,28 +127,59 @@ define(function (require, exports, module) {
             }
             //console.warn( 'value:', ctd3(0.1, cmin, 0, cmax, -1, 0, 1),'min:', cmin, 'max:', cmax);
 
+            function findNearestCavFormAngle(angle){
+                var minDiff = Number.MAX_VALUE;
+                var minIndex = -1;
+                for (var c0 = 0; c0 < data.cavform.length; c0++){
+                    if (Math.abs(data.cavform[c0].TETA - angle) < minDiff) {
+                        minDiff = Math.abs(data.cavform[c0] - angle);
+                        minIndex = c0;
+                    }
+                }
+                if (minIndex != -1) return data.cavform[minIndex];
+                else {
+                    console.error("no nearest angle for this angle:", angle);
+                }
+            }
             function deg2rad(angle){ return angle / 180 * Math.PI; }
             function initPositionVertices(){
                 vertexPositions = [];
 
-                // TODO we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
-                var objectRadius = data.rtetA;
-                var totalRadius = objectRadius + data.XDESTR;
-                var normalaizedObjectRadius = objectRadius / totalRadius;
+                // SOLVED we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
+                var maxRadius = data.cavform[0].radius;
+                for (var c2 = 1, cfLength = data.cavform.length; c2 < cfLength; c2++){
+                    maxRadius = Math.max(maxRadius, data.cavform[c2].radius);
+                }
+                console.log("maxRadius", maxRadius);
+
+                var r1, r2, r3, r4;
+                var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+                var objectRadius1, objectRadius2;
+                var totalRadius = maxRadius + data.XDESTR;
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
-                    //var r1 = c0 * data.STEPX;
-                    //var r2 = r1 + data.STEPX;
-                    var r1 = objectRadius + c0 * data.STEPX;
-                    var r2 = r1 + data.STEPX;
-
-                    // normalization of radiuses
-                    r1 = r1 / totalRadius;
-                    r2 = r2 / totalRadius;
-
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
-                        var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+                        //r1 = objectRadius + c0 * data.STEPX;
+                        //r2 = r1 + data.STEPX;
+                        if (!data.cavform[angles[c1]] || !data.cavform[angles[c1+1]]){
+                            // TODO findNearest works fine, but values are wrong, aren't they?
+                            objectRadius1 = findNearestCavFormAngle(angles[c1]).radius;
+                            objectRadius2 = findNearestCavFormAngle(angles[c1+1]).radius;
+                        } else {
+                            objectRadius1 = data.cavform[angles[c1]].radius;
+                            objectRadius2 = data.cavform[angles[c1+1]].radius;
+                        }
+                        r1 = objectRadius1 + c0 * data.STEPX;
+                        r2 = r1 + data.STEPX;
+                        r3 = objectRadius2 + c0 * data.STEPX;
+                        r4 = r3 + data.STEPX;
+
+                        // normalization of radiuses
+                        r1 = r1 / totalRadius;
+                        r2 = r2 / totalRadius;
+                        r3 = r3 / totalRadius;
+                        r4 = r4 / totalRadius;
 
                         //// zero degree angle is on the right
                         //p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
@@ -159,15 +191,25 @@ define(function (require, exports, module) {
                         //p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
                         //p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
 
+                        //// zero degree angle is on the top
+                        //p1x = r2 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        //p1y = r2 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        //p2x = r1 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
+                        //p2y = r1 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
+                        //p3x = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        //p3y = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        //p4x = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        //p4y = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+
                         // zero degree angle is on the top
                         p1x = r2 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
                         p1y = r2 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
                         p2x = r1 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
                         p2y = r1 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        p3x = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p3y = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                        p4x = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p4y = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        p3x = r4 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p3y = r4 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        p4x = r3 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
+                        p4y = r3 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
 
                         //if (c0 == 5 && c1 == 2) {
                         //    console.warn(r1, r2, angles[c1]);

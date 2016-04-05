@@ -274,8 +274,12 @@ define(function (require, exports, module) {
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
-                        NTP: 7,
-                        printPoints: [ 0,15,30,45,60,75,90 ],
+                        //NTP: 7,
+                        //printPoints: [ 0,15,30,45,60,75,90 ],
+                        //NTP: 13,
+                        //printPoints: [ 0,15,30,45,60,75,90, 105,120,135,150,165,180 ],
+                        NTP: 25,
+                        printPoints: [ 0,15,30,45,60,75,90, 105,120,135,150,165,180, 195,210,225,240,255,270, 285,300,315,330,345,360 ],
                         OMG: 0.98,
                         BET: 0.7,
                         STEP: 0.1,
@@ -556,6 +560,8 @@ define(function (require, exports, module) {
             MOM = new Complex(0.0,0.0);
             H = Math.PI/180;
             TETA = 0;
+            var cavform = [];
+            data.cavform = cavform;
 
             while(true){
                 if (TETA > 2 * Math.PI) break;
@@ -570,17 +576,31 @@ define(function (require, exports, module) {
                 MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
                 RT = RTET(TETA);
 
+                var cfTETA = TETA*180/Math.PI;
+                var cfCosATNTETA = Math.cos(FUNC2.ATN(TETA));
+                var cfSinATNTETA = Math.sin(FUNC2.ATN(TETA));
+                var cfCosATNTETAMinusALFA = Math.cos(FUNC2.ATN(TETA)-ALFA);
+                var cfSinATNTETAMinusALFA = Math.sin(FUNC2.ATN(TETA)-ALFA);
                 //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
                 recBuffer = new Buffer(
-                    (TETA*180/Math.PI).toFixedDef() + " " +
+                    (cfTETA).toFixedDef() + " " +
                     (RT).toFixedDef() + " " +
-                    (Math.cos(FUNC2.ATN(TETA))).toFixedDef() + " " +
-                    (Math.sin(FUNC2.ATN(TETA))).toFixedDef() + " " +
-                    (Math.cos(FUNC2.ATN(TETA)-ALFA)).toFixedDef() + " " +
-                    (Math.sin(FUNC2.ATN(TETA)-ALFA)).toFixedDef() +
+                    (cfCosATNTETA).toFixedDef() + " " +
+                    (cfSinATNTETA).toFixedDef() + " " +
+                    (cfCosATNTETAMinusALFA).toFixedDef() + " " +
+                    (cfSinATNTETAMinusALFA).toFixedDef() +
                     "\n" );
                 //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+
+                cavform.push({
+                    TETA: Math.round(cfTETA),
+                    radius: RT,
+                    cfCosATNTETA: cfCosATNTETA,
+                    cfSinATNTETA: cfSinATNTETA,
+                    cfCosATNTETAMinusALFA: cfCosATNTETAMinusALFA,
+                    cfSinATNTETAMinusALFA: cfSinATNTETAMinusALFA
+                });
 
                 TETA = TETA + H;
             }

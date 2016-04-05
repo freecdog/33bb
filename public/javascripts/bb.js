@@ -43,8 +43,8 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
                     bbCompile.start();
                 }
             } else {
-                alert(status.toString() + ", something goes wrong");
-                console.log(responseText);
+                //alert("GET status:" + status.toString() + ", something goes wrong in ajaxWrapper GET " + addressArr[0] + "//" + addressArr[2] + "/memout");
+                console.log("GET status:", status, responseText);
             }
         });
     });
