@@ -52,6 +52,8 @@ router.post('/', function(req, res){
         });
     }
 
+    // TODO try Blob(), "sending binary data" https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
+    //console.log("req.body.memout[1][1][1][1]:", req.body.memout[1][1][1][1]);
     writeJSONFile(path.join(__dirname, '..', 'public', 'dat', 'def01.json'), req.body, function(err){
         if (err != null) console.log('Some errors occurred:', err);
 

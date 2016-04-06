@@ -29,6 +29,8 @@ requirejs.config({
 });
 
 requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData) {
+    console.log("bb is starting");
+
     BB.BBstart.STARTPROC(function(){
         var d = (new BB.Datatone());
         //d.memOut = bulkedData;

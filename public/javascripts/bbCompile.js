@@ -132,7 +132,7 @@ define(function (require, exports, module) {
                 var minIndex = -1;
                 for (var c0 = 0; c0 < data.cavform.length; c0++){
                     if (Math.abs(data.cavform[c0].TETA - angle) < minDiff) {
-                        minDiff = Math.abs(data.cavform[c0] - angle);
+                        minDiff = Math.abs(data.cavform[c0].TETA - angle);
                         minIndex = c0;
                     }
                 }
@@ -164,6 +164,8 @@ define(function (require, exports, module) {
                         //r2 = r1 + data.STEPX;
                         if (!data.cavform[angles[c1]] || !data.cavform[angles[c1+1]]){
                             // TODO findNearest works fine, but values are wrong, aren't they?
+                            if (!data.cavform[angles[c1]]) console.warn("No angle", angles[c1]);
+                            if (!data.cavform[angles[c1+1]]) console.warn("No angle", angles[c1+1]);
                             objectRadius1 = findNearestCavFormAngle(angles[c1]).radius;
                             objectRadius2 = findNearestCavFormAngle(angles[c1+1]).radius;
                         } else {
@@ -415,6 +417,10 @@ define(function (require, exports, module) {
                     SRC_g = bright - power;
                     SRC_b = bright - power;
                 }
+
+                // amplify colors
+                if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
+                if (value < 0) SRC_b *= 4; if (SRC_b > 1) SRC_b = 1;
 
                 //console.log(value, [Math.round(SRC_r * 255), Math.round(SRC_g * 255), Math.round(SRC_b * 255)]);
                 return [SRC_r, SRC_g, SRC_b];
