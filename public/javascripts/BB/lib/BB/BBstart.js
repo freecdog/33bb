@@ -270,7 +270,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 12,
+                        TM: 15,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,

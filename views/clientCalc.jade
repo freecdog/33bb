@@ -37,11 +37,10 @@ html
                     h3 L = {{CalcCtrl.data.geomprocL}}
 
                 div(class="row")
-                    h3(class="text-warning") Fix calcs of FUNC2.RCURB(), even for T == 0 results are differed
                     h3(class="text-warning") memOut isn't source of data for now
                     h3(class="text-warning") Uncomment what you need otherwise loading takes about minute and a half (with $scope.$digest() twice faster)
 
-                div(class="row" )
+                //-div(class="row" )
                     a(class="btn btn-primary" ng-click="this.showS11 = !this.showS11") BBdat/2016.02/!S11.dat (expand/collapse)
                     table(ng-show="this.showS11" class="table table-striped table-hover")
                         tbody

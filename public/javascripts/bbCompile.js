@@ -89,6 +89,9 @@ define(function (require, exports, module) {
             countMinMax();
 
             //var timeStepsCount = Math.round(data.TM/data.STEP);
+            // TODO see how counted NBX
+            // NT = Math.round(TM/DT);
+            // NBX = NT + Math.round(XDESTR/DX) + 10;
             var timeStepsCount = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP);
 
             // adding attributes with empty arrays, so properties would be available
@@ -419,8 +422,8 @@ define(function (require, exports, module) {
                 }
 
                 // amplify colors
-                if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
-                if (value < 0) SRC_b *= 4; if (SRC_b > 1) SRC_b = 1;
+                //if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
+                //if (value < 0) SRC_b *= 4; if (SRC_b > 1) SRC_b = 1;
 
                 //console.log(value, [Math.round(SRC_r * 255), Math.round(SRC_g * 255), Math.round(SRC_b * 255)]);
                 return [SRC_r, SRC_g, SRC_b];
@@ -606,6 +609,8 @@ define(function (require, exports, module) {
                 };
 
                 this.changeTime = function(){
+                    console.log(controls.time, data);
+
                     initColorVertices( Math.round(controls.time) );
                 };
 

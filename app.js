@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var clientCalc = require('./routes/clientCalc');
+var calcTime = require('./routes/calcTime');
 var memoutRouter = require('./routes/memout');
 var restartServer = require('./routes/restartServer');
 
@@ -34,6 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/calc', clientCalc);
+app.use('/calcTime', calcTime);
 app.use('/memout', memoutRouter);
 app.use('/restartServer', restartServer);
 

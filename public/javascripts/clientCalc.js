@@ -84,6 +84,21 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
             if (data.status.duration) str += "; " + data.status.duration.toFixed(2) + " ms left";
             domCurrentTime.innerHTML = str;
 
+            if (data.currentT > 0 && Math.abs(parseInt(data.currentT) - data.currentT ) < 1e-6) {
+                var url = window.location.href;
+                var addressArr = url.split("/");
+                ajaxWrapper('POST', {time: parseInt(data.currentT)}, addressArr[0] + "//" + addressArr[2] + "/calcTime", function(status, responseText){
+                    if (status === 200 || status === 304){
+                        if (responseText != undefined){
+                            console.log("last time has been sent");
+                        }
+                    } else {
+                        //alert("GET status:" + status.toString() + ", something goes wrong in ajaxWrapper GET " + addressArr[0] + "//" + addressArr[2] + "/memout");
+                        console.log("GET status:", status, responseText);
+                    }
+                });
+            }
+
             if (data.currentT >= data.TM ) doCheckTime = false;
 
             if (doCheckTime){
