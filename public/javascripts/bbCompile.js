@@ -19,6 +19,8 @@ define(function (require, exports, module) {
         var bbCompile = {};
 
         function start(){
+            var startSelf = this;
+
             var BB = require('BB');
             var data = new BB.Datatone();
 
@@ -55,6 +57,8 @@ define(function (require, exports, module) {
             }
             renderer.domElement.style.bottom = '10px';
             document.body.appendChild( renderer.domElement );
+            // if you want init with no canvas uncomment next line
+            //setVisibility(renderer.domElement, false);
 
             var geometry = new THREE.BufferGeometry();
 
@@ -71,7 +75,7 @@ define(function (require, exports, module) {
             var angles = [];
             for (var cang in data.TP) {
                 if (data.TP.hasOwnProperty(cang)) {
-                    angles.push(data.TP[cang]);
+                    if (data.TP[cang] != null) angles.push(data.TP[cang]);
                 }
             }
             console.log("angles:", angles);
@@ -88,11 +92,22 @@ define(function (require, exports, module) {
             var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
             countMinMax();
 
+            var amplifyColors = false;
+            var amplifyCoef = 2;
+
             //var timeStepsCount = Math.round(data.TM/data.STEP);
-            // TODO see how counted NBX
+            // TODO see how counted NBX, it would be correct for G array, but for QP use STEP and STEPX
             // NT = Math.round(TM/DT);
             // NBX = NT + Math.round(XDESTR/DX) + 10;
+
+            // TODO probably need +1 and fix the memOut for TM
             var timeStepsCount = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP);
+
+            var stepsBeforeT0 = Math.round(data.XDESTR * 1.1 / data.STEPX);
+            var stepsAfterT0 = Math.round(data.TM/data.STEP);
+            var altTimeStepsCount = stepsBeforeT0 + stepsAfterT0;
+            timeStepsCount = altTimeStepsCount;
+            console.log("timeStepsCount:", timeStepsCount, "; altTimeStepsCount:", altTimeStepsCount);
 
             // adding attributes with empty arrays, so properties would be available
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
@@ -114,6 +129,7 @@ define(function (require, exports, module) {
                     //console.warn("something wrong:", ds, " < ", dc, " < ", df);
                     //return 0;
                     //ans = ctd(num, ds, dc, dmin, dcenter, false);
+                    if ( ((dc < df) == false) && num >= dc) return dcenter;
                 }
                 if (!(dmin < dcenter) || !(dcenter < dmax)) {
                     //console.warn("something wrong:", dmin, "<", centerValue, "<", dmax);
@@ -166,7 +182,7 @@ define(function (require, exports, module) {
                         //r1 = objectRadius + c0 * data.STEPX;
                         //r2 = r1 + data.STEPX;
                         if (!data.cavform[angles[c1]] || !data.cavform[angles[c1+1]]){
-                            // TODO findNearest works fine, but values are wrong, aren't they?
+                            // SOLVED findNearest works fine, but values are wrong, aren't they? Seems like values are good now
                             if (!data.cavform[angles[c1]]) console.warn("No angle", angles[c1]);
                             if (!data.cavform[angles[c1+1]]) console.warn("No angle", angles[c1+1]);
                             objectRadius1 = findNearestCavFormAngle(angles[c1]).radius;
@@ -409,6 +425,15 @@ define(function (require, exports, module) {
                 var bright = 1;
                 var power;
 
+                // amplify colors
+                if (amplifyColors){
+                    value *= amplifyCoef;
+                    if (value < borB) value = borB;
+                    if (value > borR) value = borR;
+                    //if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
+                    //if (value < 0) SRC_b *= 4; if (SRC_b > 1) SRC_b = 1;
+                }
+
                 if (value < 0){
                     power = bright * (value / borB);
                     SRC_r = bright - power;
@@ -420,10 +445,6 @@ define(function (require, exports, module) {
                     SRC_g = bright - power;
                     SRC_b = bright - power;
                 }
-
-                // amplify colors
-                //if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
-                //if (value < 0) SRC_b *= 4; if (SRC_b > 1) SRC_b = 1;
 
                 //console.log(value, [Math.round(SRC_r * 255), Math.round(SRC_g * 255), Math.round(SRC_b * 255)]);
                 return [SRC_r, SRC_g, SRC_b];
@@ -535,7 +556,7 @@ define(function (require, exports, module) {
 
             // GUI
             var controls = new function () {
-                this.time = initTime;
+                this.timeStep = initTime;
                 this.schemeIndex = schemeIndex;
                 this.autoPlay = false;
                 this.invertColors = useInvertationColors;
@@ -543,6 +564,10 @@ define(function (require, exports, module) {
                 this.visualisationSchemeIndex = visualisationSchemeIndex;
                 this.autoUpdateTimer = 0;
                 this.autoUpdateInterval = 10;
+                this.canvasVisible = true;
+                this.realTime = (-data.XDESTR * 1.1).toFixed(2);
+                this.amplifyColors = amplifyColors;
+                this.amplifyCoef = amplifyCoef;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -570,24 +595,28 @@ define(function (require, exports, module) {
                 this.autoUpdate = function(){
                     if (controls.autoPlay){
                         //onsole.log(Math.cos( (new Date()).getTime() ));
-                        //controls.time = Math.cos( (new Date()).getTime() );
+                        //controls.timeStep = Math.cos( (new Date()).getTime() );
                         //controls.changeTime();
 
                         //controls.autoUpdate();
                         requestAnimationFrame(controls.autoUpdate);
 
-                        //controls.time = Math.cos( (new Date()).getTime()/1000 )*(timeStepsCount/2) + timeStepsCount/2;
+                        //controls.timeStep = Math.cos( (new Date()).getTime()/1000 )*(timeStepsCount/2) + timeStepsCount/2;
 
                         //controls.updateGUIdisplays();
-                        controls.updateGUIwithName('time');
+                        controls.updateGUIwithName('timeStep');
 
                         var currentTime = Date.now();
                         if (currentTime - controls.autoUpdateTimer > controls.autoUpdateInterval) {
                             controls.autoUpdateTimer = currentTime;
 
-                            controls.time += 1;
-                            if (controls.time >= timeStepsCount) controls.time = 0;
-
+                            controls.timeStep += 1;
+                            if (controls.timeStep >= timeStepsCount) {
+                                //controls.timeStep -= 1;
+                                //controls.autoPlay = false;
+                                //controls.updateGUIwithName('autoPlay');
+                                controls.timeStep = 0;
+                            }
                             controls.changeTime();
                         }
 
@@ -609,9 +638,20 @@ define(function (require, exports, module) {
                 };
 
                 this.changeTime = function(){
-                    console.log(controls.time, data);
+                    //var altTimeStepsCount = Math.round(data.XDESTR*1.1/data.STEPX) + Math.round(data.TM/data.STEP);
+                    var realTime = 0;
 
-                    initColorVertices( Math.round(controls.time) );
+                    if (controls.timeStep < stepsBeforeT0){
+                        realTime = controls.timeStep * data.STEPX - data.XDESTR*1.1;
+                    } else {
+                        realTime = ((controls.timeStep - stepsBeforeT0) * data.STEP);
+                    }
+                    realTime = realTime.toFixed(2);
+                    //console.log(controls.timeStep, realTime, stepsBeforeT0, stepsAfterT0, stepsBeforeT0 + stepsAfterT0);
+                    controls.realTime = realTime;
+                    controls.updateGUIwithName('realTime');
+
+                    initColorVertices( Math.round(controls.timeStep) );
                 };
 
                 this.changeMem = function(){
@@ -626,6 +666,22 @@ define(function (require, exports, module) {
                     visualisationSchemeIndex = controls.visualisationSchemeIndex;
                     controls.changeTime();
                 };
+
+                this.changeCanvasVisible = function(){
+                    setVisibility(renderer.domElement, controls.canvasVisible);
+                };
+
+                this.changeAmplifyOfColors = function(){
+                    amplifyColors = controls.amplifyColors;
+                    controls.changeTime();
+                };
+
+                this.changeAmplifyValue = function(){
+                    if (controls.amplifyColors){
+                        amplifyCoef = controls.amplifyCoef;
+                        controls.changeTime();
+                    }
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -635,7 +691,7 @@ define(function (require, exports, module) {
             document.body.appendChild(gui.domElement);
 
             gui.add(controls, 'autoPlay').onChange(controls.autoUpdate);
-            gui.add(controls, 'time').min(0).max(timeStepsCount-1).step(1).onChange(controls.changeTime);
+            gui.add(controls, 'timeStep').min(0).max(timeStepsCount-1).step(1).onChange(controls.changeTime);
             gui.add(controls, 'schemeIndex', {
                 'V_1.dat': 0,
                 'V_2.dat': 1,
@@ -643,8 +699,8 @@ define(function (require, exports, module) {
                 'S22.dat': 3,
                 'S12.dat': 4
             }).onChange(controls.changeMem);
-            gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
-            gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
+            //gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
+            //gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
             gui.add(controls, 'visualisationSchemeIndex', {
                 'Rainbow': 0,
                 'HSV': 1,
@@ -655,6 +711,10 @@ define(function (require, exports, module) {
                 'Blue': 6
             }).onChange(controls.changeVisualisationScheme);
             gui.add(controls, 'autoUpdateInterval').min(10).max(1000).step(10);
+            gui.add(controls, 'canvasVisible').onChange(controls.changeCanvasVisible);
+            gui.add(controls, 'realTime');
+            gui.add(controls, 'amplifyColors').onChange(controls.changeAmplifyOfColors);
+            gui.add(controls, 'amplifyCoef').min(0.5).max(4).step(0.1).onChange(controls.changeAmplifyValue);
 
             function initStats() {
                 var stats = new Stats();
@@ -667,6 +727,18 @@ define(function (require, exports, module) {
                 document.body.appendChild(stats.domElement);
 
                 return stats;
+            }
+
+            function setVisibility(object, state){
+                //if (!object) { console.error("no object for visibility"); return; }
+                //if (state === undefined || state === null) { console.error("no visibility state"); return; }
+                //if (!object.style) { console.error("no style in object"); return; }
+                // TODO fifefox says that style has no property "visibility", why so?
+                //if (!object.style.hasOwnProperty("visibility")) { console.error("no style.visibility in object"); return; }
+
+                if (state === true) object.style.visibility = "visible";
+                else if (state === false) object.style.visibility = "hidden";
+                else console.error("state neither true nor false, state:", state);
             }
 
         }

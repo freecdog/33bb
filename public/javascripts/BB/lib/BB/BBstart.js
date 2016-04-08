@@ -159,8 +159,8 @@ define(function (require, exports, module) {
                 }
             }
 
+            var inputData = {};
             function loadData(source){
-                var inputData = {};
 
                 if (source == 'json'){
                     loadFromJSONFile(inputData, 'public/dat/BBinput.json');
@@ -359,6 +359,8 @@ define(function (require, exports, module) {
 
             }
             loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
+            data.inputData = inputData;
+
             // TODO I need simple configurator for client side.
             // At first launch, client will take configuration from server BBinput.json
             // and save it to localStorage, after will take config from localStorage.

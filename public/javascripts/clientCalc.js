@@ -30,9 +30,30 @@ requirejs.config({
 requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
     var data = (new BB.Datatone());
     BB.BBup.run(function(){
+        var dataToSend = {};
+        //dataToSend.memOut = data.memOut;
+        //dataToSend.G = data.G;
+        //dataToSend.inputData = data.inputData;
+        // to prevent data copy, using black list for params I don't want to send to server
+        var blackList = ["G", "ACC", "files", "fds1", "fds2", "cavform"];
+        for (var param in data){
+            if (!data.hasOwnProperty(param)) continue;
+            var allowToSend = true;
+            for (var c0 = 0; c0 < blackList.length; c0++){
+                if (param == blackList[c0]){
+                    allowToSend = false;
+                    break;
+                }
+            }
+            if (allowToSend){
+                dataToSend[param] = data[param];
+            }
+        }
+
         var url = window.location.href;
         var addressArr = url.split("/");
-        ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
+        //ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
+        ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
             console.log("memOut has been post to", addressArr[2], "status code:", status, "server message:", responseText);
 
             window.connectToApp(data);
@@ -72,11 +93,12 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var checkInterval = 1000;
         function checkTime(){
             var str = "";
-            if (data.currentT < data.TM) {
+            if (data.currentT < 0){
+                str += "preparing...";
+                str += " (" + (1.1 * data.XDESTR + data.currentT).toFixed(2) + " of " + (1.1 * data.XDESTR).toFixed(2) +  ")";
+            } else if (data.currentT < data.TM) {
                 str += data.currentT.toFixed(2) + " of " + data.TM.toFixed(2) + " s";
                 str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
-            } else if (data.currentT < 0) {
-                str += " (0%)";
             } else {
                 str += data.TM.toFixed(2) + " s";
                 str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";

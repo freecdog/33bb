@@ -41,7 +41,9 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
         ajaxWrapper('GET', null, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
             if (status === 200 || status === 304){
                 if (responseText != undefined){
-                    d.memOut = JSON.parse(responseText);
+                    var responseObject = JSON.parse(responseText);
+                    //d.memOut = responseObject.memOut;
+                    angular.extend(d, responseObject);
                     bbCompile.start();
                 }
             } else {
