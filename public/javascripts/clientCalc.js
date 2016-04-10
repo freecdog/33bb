@@ -91,6 +91,10 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
 
         var doCheckTime = true;
         var checkInterval = 1000;
+        var lastDiff = 0;
+        var lastT = 0;
+        var estimatedT = 0;
+        var maximalT = 0;
         function checkTime(){
             var str = "";
             if (data.currentT < 0){
@@ -99,6 +103,18 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
             } else if (data.currentT < data.TM) {
                 str += data.currentT.toFixed(2) + " of " + data.TM.toFixed(2) + " s";
                 str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
+
+                if (lastT != data.currentT){
+                    if (lastDiff != 0) {
+                        var a1 = Date.now() - lastDiff;
+                        var n = (data.TM - data.currentT) / data.DT;
+                        estimatedT = n * (a1 + a1/2)/2; // sum of arithmetic progression
+                        if (maximalT == 0) maximalT = estimatedT;
+                    }
+                    lastDiff = Date.now();
+                    lastT = data.currentT;
+                }
+                str += " [" + ((Date.now() - data.status.startTime)/1000).toFixed(0) + "s of estimated total " + (maximalT/1000).toFixed(0) + "s" + " (or " + ((Date.now() - data.status.startTime + estimatedT)/1000).toFixed(0) + "s)" + "]";
             } else {
                 str += data.TM.toFixed(2) + " s";
                 str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";

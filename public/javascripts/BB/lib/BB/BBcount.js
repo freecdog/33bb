@@ -341,7 +341,7 @@ define(function (require, exports, module) {
                     return calcNext;
                 },
                 function(callback){
-                    var timeAtStart = new Date();
+                    var timeAtStart = Date.now();
 
                     N++;
                     ////if (T > TM) break;
@@ -351,7 +351,7 @@ define(function (require, exports, module) {
                     }
                     T1 = T + DT;
                     WT = T > (TOUT - (DT/4));
-                    console.log(" T = ", T.toFixedDef(), ";", "WT", WT, "; TOUT-DT/4", TOUT.toFixedDef(), DT, DT/4);
+                    //console.log(" T = ", T.toFixedDef(), ";", "WT", WT, "; TOUT-DT/4", TOUT.toFixedDef(), DT, DT/4);
                     if (WT) TOUT = TOUT + STEP;
                     // НАЧАЛЬНАЯ ЗАГРУЗКА
                     if (compareWithEps(T, 0)) INITLOAD(T);
@@ -399,28 +399,28 @@ define(function (require, exports, module) {
                                   //  AUX[c1][c2] = [];
                             // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
                             for (var c8 in AUX){
-                                if (!AUX.hasOwnProperty(c8)) continue;
+                                //if (!AUX.hasOwnProperty(c8)) continue;
 
                                 for (var c9 in AUX[c8]){
-                                    if (!AUX[c8].hasOwnProperty(c9)) continue;
+                                    //if (!AUX[c8].hasOwnProperty(c9)) continue;
 
                                     AUX[c8][c9][IK] = 0;
                                 }
                             }
                             for (var c10 in G) {
-                                if (!G.hasOwnProperty(c10)) continue;
+                                //if (!G.hasOwnProperty(c10)) continue;
 
                                 GA[c10 -1][-1] = G[c10][0][I];
                             }
                             for (var c11 in G) {
-                                if (!G.hasOwnProperty(c11)) continue;
+                                //if (!G.hasOwnProperty(c11)) continue;
 
                                 GA[c11 -1][0] = G[c11][1][I];
                             }
                             for (J = 1; J <= NX; J++){
                                 X = X + DX;
                                 for (var c12 in G) {
-                                    if (!G.hasOwnProperty(c12)) continue;
+                                    //if (!G.hasOwnProperty(c12)) continue;
 
                                     GA[c12 -1][1] = G[c12][J+1][I];
                                 }
@@ -448,7 +448,7 @@ define(function (require, exports, module) {
 
                                 var recG = new Array(genSize);
                                 for (var c13 in G) {
-                                    if (!G.hasOwnProperty(c13)) continue;
+                                    //if (!G.hasOwnProperty(c13)) continue;
 
                                     recG[c13-1] = G[c13][J][I-1];
                                 }
@@ -458,7 +458,7 @@ define(function (require, exports, module) {
                                 W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
 
                                 for (var c14 in G) {
-                                    if (!G.hasOwnProperty(c14)) continue;
+                                    //if (!G.hasOwnProperty(c14)) continue;
 
                                     recG[c14-1] = G[c14][J][I+1];
                                 }
@@ -471,12 +471,12 @@ define(function (require, exports, module) {
                                 LX = matrix.inverse(LX);
                                 W = matrix.multiply(LX, W);
                                 for (var c15 in AUX) {
-                                    if (!AUX.hasOwnProperty(c15)) continue;
+                                    //if (!AUX.hasOwnProperty(c15)) continue;
 
                                     AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
                                 }
                                 for (var c16 in GA) {
-                                    if (!GA.hasOwnProperty(c16)) continue;
+                                    //if (!GA.hasOwnProperty(c16)) continue;
 
                                     GA[c16][-1] = GA[c16][0];
                                     GA[c16][0] = GA[c16][1];
@@ -505,14 +505,14 @@ define(function (require, exports, module) {
                             U = matrix.multiply(FU, U);
                             var recAUX = new Array(genSize);
                             for (var c17 in AUX) {
-                                if (!AUX.hasOwnProperty(c17)) continue;
+                                //if (!AUX.hasOwnProperty(c17)) continue;
 
                                 recAUX[c17-1] = AUX[c17][1][IK];
                             }
                             W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                             var recWpU = matrix.addition(W, U);
                             for (var c18 in AUX) {
-                                if (!AUX.hasOwnProperty(c18)) continue;
+                                //if (!AUX.hasOwnProperty(c18)) continue;
 
                                 AUX[c18][0][IK] = recWpU[c18 -1][0];
                             } // recWpU[c18 -1]
@@ -521,23 +521,22 @@ define(function (require, exports, module) {
                                 // ACC(:,:,I-SN)=(AUX(1:2,:,IS)-G(1:2,:,I-SN))/DT;
                                 for (var c27 = 1; c27 <= 2; c27++){
                                     for (var c28 in AUX[c27]){
-                                        if (!AUX[c27].hasOwnProperty(c28)) continue;
+                                        //if (!AUX[c27].hasOwnProperty(c28)) continue;
 
                                         ACC[c27][c28][I-SN] = (AUX[c27][c28][IS] - G[c27][c28][I-SN]) / DT;
                                     }
                                 }
                                 // G(:,:,I-SN)=AUX(:,:,IS);
                                 for (var c19 in G){
-                                    if (!G.hasOwnProperty(c19)) continue;
+                                    //if (!G.hasOwnProperty(c19)) continue;
 
                                     for (var c20 in G[c19]){
-                                        if (!G[c19].hasOwnProperty(c20)) continue;
+                                        //if (!G[c19].hasOwnProperty(c20)) continue;
 
                                         G[c19][c20][I-SN] = AUX[c19][c20][IS];
                                     }
                                 }
                             }
-
                         }
 
                         // 100, goto order to this place
@@ -582,7 +581,7 @@ define(function (require, exports, module) {
                         // ACC(:,:,I+SN)=(AUX(1:2,:,IS)-G(1:2,:,I+SN))/DT;
                         for (var c29 = 1; c29 <= 2; c29++){
                             for (var c30 in AUX[c29]){
-                                if (!AUX[c29].hasOwnProperty(c30)) continue;
+                                //if (!AUX[c29].hasOwnProperty(c30)) continue;
 
                                 ACC[c29][c30][I+SN] = (AUX[c29][c30][IS] - G[c29][c30][I+SN]) / DT;
                             }
@@ -590,27 +589,27 @@ define(function (require, exports, module) {
                         // ACC(:,:,I)=(AUX(1:2,:,-(IS+IK))-G(1:2,:,I))/DT;
                         for (var c31 = 1; c31 <= 2; c31++){
                             for (var c32 in AUX[c31]){
-                                if (!AUX[c31].hasOwnProperty(c32)) continue;
+                                //if (!AUX[c31].hasOwnProperty(c32)) continue;
 
                                 ACC[c31][c32][I+SN] = (AUX[c31][c32][-(IS+IK)] - G[c31][c32][I]) / DT;
                             }
                         }
                         // G(:,:,I+SN)=AUX(:,:,IS);
                         for (var c33 in G){
-                            if (!G.hasOwnProperty(c33)) continue;
+                            //if (!G.hasOwnProperty(c33)) continue;
 
                             for (var c34 in G[c33]){
-                                if (!G[c33].hasOwnProperty(c34)) continue;
+                                //if (!G[c33].hasOwnProperty(c34)) continue;
 
                                 G[c33][c34][I+SN] = AUX[c33][c34][IS];
                             }
                         }
                         // G(:,:,I)=AUX(:,:,-(IS+IK));
                         for (var c35 in G){
-                            if (!G.hasOwnProperty(c35)) continue;
+                            //if (!G.hasOwnProperty(c35)) continue;
 
                             for (var c36 in G[c35]){
-                                if (!G[c35].hasOwnProperty(c36)) continue;
+                                //if (!G[c35].hasOwnProperty(c36)) continue;
 
                                 G[c35][c36][I] = AUX[c35][c36][-(IS+IK)];
                             }
@@ -618,20 +617,20 @@ define(function (require, exports, module) {
                         //          !ДООПРЕДЕЛЕЕНИЕ ВЕКТОРОВ G(:,J,0),G(:,J,NFI)
                         // G(:,:,NFI)=G(:,:,1);
                         for (var c37 in G){
-                            if (!G.hasOwnProperty(c37)) continue;
+                            //if (!G.hasOwnProperty(c37)) continue;
 
                             for (var c38 in G[c37]){
-                                if (!G[c37].hasOwnProperty(c38)) continue;
+                                //if (!G[c37].hasOwnProperty(c38)) continue;
 
                                 G[c37][c38][NFI] = G[c37][c38][1];
                             }
                         }
                         // G(:,:,0)=G(:,:,NFI-1);
                         for (var c39 in G){
-                            if (!G.hasOwnProperty(c39)) continue;
+                            //if (!G.hasOwnProperty(c39)) continue;
 
                             for (var c40 in G[c39]){
-                                if (!G[c39].hasOwnProperty(c40)) continue;
+                                //if (!G[c39].hasOwnProperty(c40)) continue;
 
                                 G[c39][c40][0] = G[c39][c40][NFI-1];
                             }
@@ -639,7 +638,7 @@ define(function (require, exports, module) {
                         // ACC(:,:,NFI)=ACC(:,:,1);
                         for (var c41 = 1; c41 <= 2; c41++){
                             for (var c42 in ACC[c41]){
-                                if (!ACC[c41].hasOwnProperty(c42)) continue;
+                                //if (!ACC[c41].hasOwnProperty(c42)) continue;
 
                                 ACC[c41][c42][NFI] = ACC[c41][c42][1];
                             }
@@ -647,7 +646,7 @@ define(function (require, exports, module) {
                         // ACC(:,:,0)=ACC(:,:,1);
                         for (var c43 = 1; c43 <= 2; c43++){
                             for (var c44 in ACC[c43]){
-                                if (!ACC[c43].hasOwnProperty(c44)) continue;
+                                //if (!ACC[c43].hasOwnProperty(c44)) continue;
 
                                 ACC[c43][c44][0] = ACC[c43][c44][1];
                             }
@@ -700,7 +699,7 @@ define(function (require, exports, module) {
                     data.currentT = T;
 
                     jStepsCnt++;
-                    if (T >= 0) console.log(jStepsCnt, ")",  (new Date())-timeAtStart, "ms to count");
+                    if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()");
 
                     //callback();
                     // It should be a joke, but setTimeout works faster or for the same time! How come?
@@ -809,7 +808,7 @@ define(function (require, exports, module) {
                 var maxTimeSteps = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP)+1;
                 if (T < 0) moT = Math.round( (data.T0 - Math.abs(T)) / data.STEP);
                 else moT = Math.round(data.T0 / data.STEP) + Math.round(T / data.STEP);
-                console.log("out for T = ", T.toFixedDef(), "; index = ", moT);
+                console.log("countout for T =", T.toFixedDef(), "; index = ", moT);
 
                 // JNT = COUNT; // not used
                 // TETA = TET0; // not used
@@ -953,7 +952,7 @@ define(function (require, exports, module) {
 
                 //jOutput();
 
-                console.warn("countout tick:", (Date.now() - countoutStart) + " ms");
+                //console.warn("countout tick:", (Date.now() - countoutStart) + " ms");
             }
 
             function INITLOAD(T){

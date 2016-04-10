@@ -239,6 +239,7 @@ define(function (require, exports, module) {
                 else {
                     // default config
                     inputData = {
+                        // TODO ALFA==15 leads to an error
                         ALFA: 0,
                         SPLIT: false,
                         RZ: 2.55E-02,
@@ -786,13 +787,18 @@ define(function (require, exports, module) {
             // TODO there are small differs in FAR but not too big, I think. Reasons are RCURB and RTET functions
             I = 0;
             J = JTP;
-            while (true){
+            var firstStepITP = true;
+            while (firstStepITP || J != JTP){
+                firstStepITP = false;
+
                 if (J == NTP+2) {
                     J = 1;
                     if (J == JTP) break;
                 }
                 TET = Math.PI * TP[J]/180;
                 for (M = I; M <= NFI + 1; M++){
+                    // TODO there is still bug (ALFA==15), TAR[90] has value 0 which is less than TET so no angle for ITP[10]
+                    // Harry's solution solve this well, should take a look on it
                     if (TET <= TAR[M]){
                         I = M + 1;
                         ITP[J] = M;
@@ -800,8 +806,23 @@ define(function (require, exports, module) {
                     }
                 }
                 J++;
-                if (J == JTP) break;
             }
+            //while (true){
+            //    if (J == NTP+2) {
+            //        J = 1;
+            //        if (J == JTP) break;
+            //    }
+            //    TET = Math.PI * TP[J]/180;
+            //    for (M = I; M <= NFI + 1; M++){
+            //        if (TET <= TAR[M]){
+            //            I = M + 1;
+            //            ITP[J] = M;
+            //            break;
+            //        }
+            //    }
+            //    J++;
+            //    if (J == JTP) break;
+            //}
             for (J = 1; J <= JTP-1; J++){
                 TP[J] = TP[J] - 360;
             }
