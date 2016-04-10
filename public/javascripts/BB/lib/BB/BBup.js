@@ -32,7 +32,7 @@ define(function (require, exports, module) {
             data.status.startTime = Date.now();
             data.status.active = true;
 
-            BBstart.STARTPROC(function(){
+            BBstart.STARTPROC({}, function(){
                 BBcount.COUNTPROC(function(){
                     data.status.active = false;
                     data.status.finishTime = Date.now();

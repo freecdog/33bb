@@ -278,7 +278,7 @@ define(function (require, exports, module) {
                 geometry.computeBoundingSphere();
             }
             function initColorVertices(currentTime){
-                if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
+                //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){

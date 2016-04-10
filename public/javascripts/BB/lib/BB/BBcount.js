@@ -724,7 +724,7 @@ define(function (require, exports, module) {
                         fs.closeSync(fds2[I]);
                     }
 
-                    jOutput();
+                    //jOutput();
 
                     console.log("COUNTPROC has end work", (new Date()) - countProcProfiler, "ms to complete COUNTPROC");
 
@@ -914,11 +914,6 @@ define(function (require, exports, module) {
                                 st += (QP[M][I][qpj]).toExponential(5).toFixedLen(12); //.toFixedDef();
                                 st += "   ";
 
-                                // jmemOut store
-                                // TODO probably I should feel memOut in the end, when all data are calculated
-                                //if (T >= 0) {
-                                //    memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
-                                //}
                                 memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
                             }
                             st += "\n";
@@ -927,7 +922,7 @@ define(function (require, exports, module) {
                             fs.writeSync(fds1[M+2-1], rBuffer, 0, rBuffer.length, null);    // +2 because ACC1, ACC2 were added
 
                             // jOutputBlock, recording
-                            outBuf[M-1][I].push(rBuffer);
+                            //outBuf[M-1][I].push(rBuffer);
                         }
                     }
                     if (I <= NTP) {
@@ -939,11 +934,8 @@ define(function (require, exports, module) {
                                 st += (QP[M][qpn][I+1]).toExponential(5).toFixedLen(12); //.toFixedDef();
                                 st += "   ";
 
-                                // jmemOut store
-                                //if (T >= 0) {
-                                //    memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
-                                //}
-                                memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
+                                // no need to use another representation of QP (actually G)
+                                //memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
                             }
                             st += "\n";
                             rBuffer = new Buffer(st);
@@ -951,7 +943,7 @@ define(function (require, exports, module) {
                             fs.writeSync(fds2[M-1], rBuffer, 0, rBuffer.length, null);
 
                             // jOutputBlock, recording
-                            outBuf[M-1+5][I].push(rBuffer);
+                            //outBuf[M-1+5][I].push(rBuffer);
                         }
                     }
                     //JNT = JNT + NTIME;
@@ -959,7 +951,7 @@ define(function (require, exports, module) {
 
                 //COUNT = COUNT + 1;
 
-                jOutput();
+                //jOutput();
 
                 console.warn("countout tick:", (Date.now() - countoutStart) + " ms");
             }

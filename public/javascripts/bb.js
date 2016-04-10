@@ -31,26 +31,35 @@ requirejs.config({
 requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData) {
     console.log("bb is starting");
 
-    BB.BBstart.STARTPROC(function(){
-        var d = (new BB.Datatone());
-        //d.memOut = bulkedData;
-        //bbCompile.start();
+    //data.memOut = bulkedData;
+    //bbCompile.start();
 
-        var url = window.location.href;
-        var addressArr = url.split("/");
-        ajaxWrapper('GET', null, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
-            if (status === 200 || status === 304){
-                if (responseText != undefined){
-                    var responseObject = JSON.parse(responseText);
-                    //d.memOut = responseObject.memOut;
-                    angular.extend(d, responseObject);
+    var data = (new BB.Datatone());
+
+    var url = window.location.href;
+    var addressArr = url.split("/");
+    ajaxWrapper('GET', null, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
+        if (status === 200 || status === 304){
+            if (responseText != undefined){
+                var responseObject = JSON.parse(responseText);
+                //data.memOut = responseObject.memOut;
+                //angular.extend(data, responseObject);
+
+                var params = {
+                    userInput: true,
+                    userData: responseObject.inputData
+                };
+                BB.BBstart.STARTPROC(params, function(){
+                    data.memOut = responseObject.memOut;
+
                     bbCompile.start();
-                }
-            } else {
-                //alert("GET status:" + status.toString() + ", something goes wrong in ajaxWrapper GET " + addressArr[0] + "//" + addressArr[2] + "/memout");
-                console.log("GET status:", status, responseText);
+                });
+
             }
-        });
+        } else {
+            //alert("GET status:" + status.toString() + ", something goes wrong in ajaxWrapper GET " + addressArr[0] + "//" + addressArr[2] + "/memout");
+            console.log("GET status:", status, responseText);
+        }
     });
 
     function ajaxWrapper(mode, theJson, toUrl, callback){

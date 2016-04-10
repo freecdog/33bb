@@ -88,10 +88,11 @@ define(function (require, exports, module) {
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
-        function STARTPROC(callback){
+        function STARTPROC(params, callback){
             var startProcProfiler = new Date();
             console.log("STARTPROC has start work");
 
+            params = params || {};
             callback = callback || function(){};
 
             BB = require('../BB');
@@ -299,6 +300,16 @@ define(function (require, exports, module) {
 
                     };
 
+                }
+
+                // apply user input config
+                if (params.userInput) {
+                    if (params.userData !== undefined && params.userData !== null){
+                        for (var param in params.userData){
+                            if (!params.userData.hasOwnProperty(param)) continue;
+                            inputData[param] = params.userData[param];
+                        }
+                    }
                 }
 
                 ALFA = inputData.ALFA;
@@ -515,7 +526,7 @@ define(function (require, exports, module) {
             // Tmax / step + 1 , time steps
             // .max(NTP+1, NXDST) max of angle and coord steps
             // [] last one should be filled by values
-            data.memOut = MatMult.createArray(10, Math.round(T0/STEP) + Math.round(TM / STEP)+1,  Math.max(NTP+1, NXDST) +1, 1);   // clear memory output before new iteration
+            data.memOut = MatMult.createArray(5, Math.round(T0/STEP) + Math.round(TM / STEP)+1,  Math.max(NTP+1, NXDST) +1, 1);   // clear memory output before new iteration
             for (var moi in data.memOut){
                 if (!data.memOut.hasOwnProperty(moi)) continue;
 
@@ -1107,10 +1118,6 @@ define(function (require, exports, module) {
                 //fs.closeSync(fds2[I-16]);
             }
 
-            //var BB = require('../BB');
-            var Datatone = BB.Datatone;
-
-            data = new Datatone();
             data.fds1 = fds1;
             data.fds2 = fds2;
         }

@@ -54,7 +54,7 @@ requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
         var addressArr = url.split("/");
         //ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
         ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
-            console.log("memOut has been post to", addressArr[2], "status code:", status, "server message:", responseText);
+            console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
 
             window.connectToApp(data);
         });
