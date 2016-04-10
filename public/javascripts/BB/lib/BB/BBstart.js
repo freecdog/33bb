@@ -243,7 +243,7 @@ define(function (require, exports, module) {
                         ALFA: 0,
                         SPLIT: false,
                         RZ: 2.55E-02,
-                        X: 10,
+                        X: 10,  // X only matters when EPUR == 1 or SPLIT == true
                         RO2: 2.7E03,
                         C2: 5.8E03,
                         GAPOIS: false,
@@ -272,7 +272,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 15,
+                        TM: 30,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
