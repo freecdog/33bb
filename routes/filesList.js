@@ -16,7 +16,7 @@ router.get('/', function(req, res){
     var sharedFolder = "./public/dat";
     sharedFolder = path.join('X:', 'pro', 'nodejs', '33bb', 'public', 'dat');
 
-    var exclusions = ['BBinput.json', 'def01.json'];
+    var exclusions = ['BBinput.json'];
 
     var fsStartTime = Date.now();
     readFolderRecursive(sharedFolder, 0, exclusions, function(err, data){

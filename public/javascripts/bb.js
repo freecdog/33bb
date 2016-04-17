@@ -117,10 +117,12 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
     function createAnchor(url){
         var divObject = document.createElement("DIV");
         var aObject = document.createElement("A");
-        var textOfA = document.createTextNode(url);
+        var h3Object = document.createElement("H4");
+        var textObj = document.createTextNode(url.substr(url.lastIndexOf('/'), url.length - url.lastIndexOf('/')));
         //aObject.setAttribute("href", url);
         divObject.appendChild(aObject);
-        aObject.appendChild(textOfA);
+        aObject.appendChild(h3Object);
+        h3Object.appendChild(textObj);
         aObject.onclick = function(e){
             //console.log("asd", e);
             setLoading(true);
