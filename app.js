@@ -9,6 +9,7 @@ var routes = require('./routes/index');
 var clientCalc = require('./routes/clientCalc');
 var calcTime = require('./routes/calcTime');
 var memoutRouter = require('./routes/memout');
+var filesList = require('./routes/filesList');
 var restartServer = require('./routes/restartServer');
 
 var crypto = require('crypto');
@@ -38,6 +39,7 @@ app.use('/calc', clientCalc);
 app.use('/calcTime', calcTime);
 app.use('/memout', memoutRouter);
 app.use('/restartServer', restartServer);
+app.use('/filesList', filesList);
 
 app.getHash = function(password){
     var hash = crypto.createHash('sha512');

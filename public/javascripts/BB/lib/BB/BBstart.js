@@ -251,7 +251,7 @@ define(function (require, exports, module) {
                         GAMMA: 0.6,
                         XDESTR: 4.0,
 
-                        EPUR: 2,
+                        EPUR: 0,
 
                         waveShapes: [
                             {
@@ -268,7 +268,7 @@ define(function (require, exports, module) {
                             }
                         ],
 
-                        INDEX: 0,
+                        INDEX: 1,
                         FRIC: 0,
                         M0: 1.5,
 
@@ -290,11 +290,11 @@ define(function (require, exports, module) {
                         STEPX: 0.1,
                         DELTA: 1,
 
-                        rtetN: 2,
+                        rtetN: 5,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
                         rtetA: 2.05,
-                        rtetB: 4.05,
+                        rtetB: 2.05,
                         rtetC: 4.5,
                         rtetVortex: 0,
                         rtetNoEdge: true

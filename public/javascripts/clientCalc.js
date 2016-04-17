@@ -27,7 +27,9 @@ requirejs.config({
     }
 });
 
-requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
+requirejs(['BB'], function(BB) {
+//requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
+//requirejs(['BB', document, window], function(BB, document, window) {
     var data = (new BB.Datatone());
     BB.BBup.run(function(){
         var dataToSend = {};
