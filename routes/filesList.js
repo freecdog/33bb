@@ -14,7 +14,7 @@ var async = require('async');
 // SOLVED cut names of paths (avascript, ootstrap etc). It was only in browser view, because of \B \d special symbols
 router.get('/', function(req, res){
     var sharedFolder = "./public/dat";
-    sharedFolder = path.join('X:', 'pro', 'nodejs', '33bb', 'public', 'dat');
+    //sharedFolder = path.join('X:', 'pro', 'nodejs', '33bb', 'public', 'dat');
 
     var exclusions = ['BBinput.json'];
 
