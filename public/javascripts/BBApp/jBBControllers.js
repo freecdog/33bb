@@ -21,13 +21,13 @@
 
         var isLoading = true;
         function getLoading(){
-            console.log("asking loading", isLoading);
+            //console.log("asking loading", isLoading);
             return isLoading;
         }
         this.getLoading = getLoading;
 
         function setLoading(state){
-            console.log("change state to:", state);
+            //console.log("change state to:", state);
             isLoading = state;
             $scope.$digest();
         }

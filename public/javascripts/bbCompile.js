@@ -48,7 +48,11 @@ define(function (require, exports, module) {
             renderer.setClearColor( 0x000000, 0);
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
-            renderer.setSize( Math.min(window.innerWidth, window.innerHeight)-50, Math.min(window.innerWidth, window.innerHeight)-50 );
+            var rendererSize = {
+                width: Math.min(window.innerWidth, window.innerHeight)-50,
+                height: Math.min(window.innerWidth, window.innerHeight)-50
+            };
+            renderer.setSize(rendererSize.width, rendererSize.height);
             renderer.domElement.style.position = 'absolute';
             if ( window.innerWidth / window.innerHeight < 1 ) {
                 renderer.domElement.style.right = '50px';
@@ -59,6 +63,32 @@ define(function (require, exports, module) {
             document.body.appendChild( renderer.domElement );
             // if you want init with no canvas uncomment next line
             //setVisibility(renderer.domElement, false);
+
+            var axisHelper = new THREE.AxisHelper( 5 );
+            scene.add( axisHelper );
+
+            var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
+            document.body.appendChild(zeroDegreeText);
+            var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
+            document.body.appendChild(ninetyDegreeText);
+
+            function createText(text, left, top, width, height){
+                left = left || 0;
+                top = top || 0;
+                width = width || 100;
+                height = height || 100;
+                var generatedText = document.createElement('div');
+                generatedText.style.position = 'absolute';
+                //generatedText.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+                generatedText.style.width = width + 'px';
+                generatedText.style.height = height + 'px';
+                //generatedText.style.backgroundColor = "blue";
+                generatedText.innerHTML = text;
+                generatedText.style.left = left + 'px';
+                generatedText.style.top = top + 'px';
+
+                return generatedText;
+            }
 
             var geometry = new THREE.BufferGeometry();
 
@@ -175,6 +205,7 @@ define(function (require, exports, module) {
                 var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
                 var objectRadius1, objectRadius2;
                 var totalRadius = maxRadius + data.XDESTR;
+                totalRadius *= 1.05; // to show axis
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
