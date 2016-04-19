@@ -248,7 +248,7 @@ define(function (require, exports, module) {
                         X: 10,  // X only matters when EPUR == 1 or SPLIT == true
                         RO2: 2.7E03,    // TODO what material is it?
                         C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
-                        GAPOIS: false,
+                        GAPOIS: false,  // TODO what is it and POIS, GAMMA and B variables?
                         POIS: 0.35,
                         GAMMA: 0.6,
                         XDESTR: 4.0,

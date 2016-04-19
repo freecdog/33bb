@@ -44,6 +44,8 @@ define(function (require, exports, module) {
             var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000); //PerspectiveCamera( 75, 400.0 / 300.0, 0.1, 1000 );
             camera.position.z = 10;
 
+            var showCanvas = true;
+
             var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
             renderer.setClearColor( 0x000000, 0);
             //renderer.setSize( 380-100, 300 );
@@ -61,8 +63,7 @@ define(function (require, exports, module) {
             }
             renderer.domElement.style.bottom = '10px';
             document.body.appendChild( renderer.domElement );
-            // if you want init with no canvas uncomment next line
-            //setVisibility(renderer.domElement, false);
+            setVisibility(renderer.domElement, showCanvas);
 
             var axisHelper = new THREE.AxisHelper( 5 );
             scene.add( axisHelper );
@@ -176,6 +177,66 @@ define(function (require, exports, module) {
             }
             //console.warn( 'value:', ctd3(0.1, cmin, 0, cmax, -1, 0, 1),'min:', cmin, 'max:', cmax);
 
+            function calcDistance(point1, point2){
+                var r1 = point1.radius;
+                var phi1 = point1.angle;
+                var r2 = point2.radius;
+                var phi2 = point2.angle;
+
+                var dist = Math.sqrt( r1*r1 + r2*r2 - 2*r1*r2*Math.cos( deg2rad(phi2-phi1) ) );
+
+                return dist;
+            }
+            function findNearestFourPointsToPoint(point){
+                point = point || {radius: 0, angle: 0}; // angle in degree
+                var nearestPoints = [
+                    {radiusStepIndex: -1, angleStepIndex: -1, distance: Number.MAX_VALUE},
+                    {radiusStepIndex: -1, angleStepIndex: -1, distance: Number.MAX_VALUE},
+                    {radiusStepIndex: -1, angleStepIndex: -1, distance: Number.MAX_VALUE},
+                    {radiusStepIndex: -1, angleStepIndex: -1, distance: Number.MAX_VALUE}
+                ];
+                for (var c0 = 0; c0 < nearestPoints.length; c0++) {
+                    for (var c1 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c1 < c0len; c1++) {
+                        for (var c2 = 0, c1len = angles.length - 1; c2 < c1len; c2++) {
+                            //mem[time][radius][angle]\
+                            var skipThis = false;
+                            for (var c3 = 0; c3 < c0; c3++){
+                                if (nearestPoints[c3].radiusStepIndex == c1 && nearestPoints[c3].angleStepIndex == c2) {
+                                    skipThis = true;
+                                    break;
+                                }
+                            }
+                            if (skipThis) continue;
+
+                            var objectRadius1 = data.cavform[angles[c2]].radius;
+                            var r1 = objectRadius1 + c1 * data.STEPX;
+                            var currentPoint = {radius: r1, angle: angles[c2]};
+
+                            var distance = calcDistance(point, currentPoint);
+                            if (nearestPoints[c0].distance > distance){
+                                nearestPoints[c0].distance = distance;
+                                nearestPoints[c0].radius = currentPoint.radius;
+                                nearestPoints[c0].angle = currentPoint.angle;
+                                nearestPoints[c0].radiusStepIndex = c1;
+                                nearestPoints[c0].angleStepIndex = c2;
+                            }
+                        }
+                    }
+                }
+                return nearestPoints;
+            }
+            var showControlPoints = false;
+            var controlPoints = [
+                //{ radius: data.XDESTR + data.rtetA, angle: 0 },
+                //{ radius: data.XDESTR + data.rtetB, angle: 90 },
+                { radius: 5, angle: 30 }
+            ];
+            var nearestPoints = findNearestFourPointsToPoint(controlPoints[0]);
+            console.log("wrong values, nearest", controlPoints[0], nearestPoints);
+            for (var npi = 0; npi < nearestPoints.length; npi++){
+                controlPoints.push(nearestPoints[npi]);
+            }
+
             function findNearestCavFormAngle(angle){
                 var minDiff = Number.MAX_VALUE;
                 var minIndex = -1;
@@ -191,9 +252,9 @@ define(function (require, exports, module) {
                 }
             }
             function deg2rad(angle){ return angle / 180 * Math.PI; }
-            function initPositionVertices(){
-                vertexPositions = [];
 
+            var totalRadius = 1;
+            function calcTotalRadius(){
                 // SOLVED we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
                 var maxRadius = data.cavform[0].radius;
                 for (var c2 = 1, cfLength = data.cavform.length; c2 < cfLength; c2++){
@@ -201,26 +262,31 @@ define(function (require, exports, module) {
                 }
                 console.log("maxRadius", maxRadius);
 
+                return (maxRadius + data.XDESTR) * 1.05; // *1.05 to show axis
+            }
+            function initPositionVertices(){
+                vertexPositions = [];
+
                 var r1, r2, r3, r4;
                 var p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
                 var objectRadius1, objectRadius2;
-                var totalRadius = maxRadius + data.XDESTR;
-                totalRadius *= 1.05; // to show axis
+                totalRadius = calcTotalRadius();
 
                 for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
-                        //r1 = objectRadius + c0 * data.STEPX;
-                        //r2 = r1 + data.STEPX;
-                        if (!data.cavform[angles[c1]] || !data.cavform[angles[c1+1]]){
+                        var currentAngle = angles[c1];
+                        var nextAngle = angles[c1+1];
+
+                        if (!data.cavform[currentAngle] || !data.cavform[nextAngle]){
                             // SOLVED findNearest works fine, but values are wrong, aren't they? Seems like values are good now
-                            if (!data.cavform[angles[c1]]) console.warn("No angle", angles[c1]);
-                            if (!data.cavform[angles[c1+1]]) console.warn("No angle", angles[c1+1]);
-                            objectRadius1 = findNearestCavFormAngle(angles[c1]).radius;
-                            objectRadius2 = findNearestCavFormAngle(angles[c1+1]).radius;
+                            if (!data.cavform[currentAngle]) console.warn("No angle", currentAngle);
+                            if (!data.cavform[nextAngle]) console.warn("No angle", nextAngle);
+                            objectRadius1 = findNearestCavFormAngle(currentAngle).radius;
+                            objectRadius2 = findNearestCavFormAngle(nextAngle).radius;
                         } else {
-                            objectRadius1 = data.cavform[angles[c1]].radius;
-                            objectRadius2 = data.cavform[angles[c1+1]].radius;
+                            objectRadius1 = data.cavform[currentAngle].radius;
+                            objectRadius2 = data.cavform[nextAngle].radius;
                         }
                         r1 = objectRadius1 + c0 * data.STEPX;
                         r2 = r1 + data.STEPX;
@@ -234,37 +300,37 @@ define(function (require, exports, module) {
                         r4 = r4 / totalRadius;
 
                         //// zero degree angle is on the right
-                        //p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        //p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        //p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        //p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        //p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        //p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                        //p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        //p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        //p1x = r2 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
+                        //p1y = r2 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
+                        //p2x = r1 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
+                        //p2y = r1 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
+                        //p3x = r2 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
+                        //p3y = r2 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
+                        //p4x = r1 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
+                        //p4y = r1 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
 
                         //// zero degree angle is on the top
-                        //p1x = r2 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        //p1y = r2 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        //p2x = r1 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        //p2y = r1 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        //p3x = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        //p3y = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                        //p4x = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        //p4y = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        //p1x = r2 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
+                        //p1y = r2 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
+                        //p2x = r1 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
+                        //p2y = r1 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
+                        //p3x = r2 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
+                        //p3y = r2 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
+                        //p4x = r1 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
+                        //p4y = r1 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
 
                         // zero degree angle is on the top
-                        p1x = r2 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        p1y = r2 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        p2x = r1 * Math.sin( deg2rad(angles[c1]) ) * axisX - axisX2;
-                        p2y = r1 * Math.cos( deg2rad(angles[c1]) ) * axisY - axisY2;
-                        p3x = r4 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p3y = r4 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                        p4x = r3 * Math.sin( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                        p4y = r3 * Math.cos( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                        p1x = r2 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
+                        p1y = r2 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
+                        p2x = r1 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
+                        p2y = r1 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
+                        p3x = r4 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
+                        p3y = r4 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
+                        p4x = r3 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
+                        p4y = r3 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
 
                         //if (c0 == 5 && c1 == 2) {
-                        //    console.warn(r1, r2, angles[c1]);
+                        //    console.warn(r1, r2, currentAngle);
                         //    console.warn(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y);
                         //}
 
@@ -280,14 +346,14 @@ define(function (require, exports, module) {
 
                         // duplicate
                         if (useDuplicate){
-                            p1x = r2 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                            p1y = r2 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                            p2x = r1 * Math.cos( deg2rad(angles[c1]) ) * axisX - axisX2;
-                            p2y = r1 * Math.sin( deg2rad(angles[c1]) ) * axisY - axisY2;
-                            p3x = r2 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                            p3y = r2 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
-                            p4x = r1 * Math.cos( deg2rad(angles[c1+1]) ) * axisX - axisX2;
-                            p4y = r1 * Math.sin( deg2rad(angles[c1+1]) ) * axisY - axisY2;
+                            p1x = r2 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
+                            p1y = r2 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
+                            p2x = r1 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
+                            p2y = r1 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
+                            p3x = r2 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
+                            p3y = r2 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
+                            p4x = r1 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
+                            p4y = r1 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
                             vertexPositions.push( [p1x, 1-p1y -1, defZ] );
                             vertexPositions.push( [p2x, 1-p2y -1, defZ] );
                             vertexPositions.push( [p3x, 1-p3y -1, defZ] );
@@ -389,11 +455,25 @@ define(function (require, exports, module) {
                 vertexColors: THREE.VertexColors,
                 side: THREE.DoubleSide  // if there is only front side it may be rotated with backside (and become invisible)
             } );
+            // Almost triangle only view (for real, every second triangle is colored
+            //material = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 1 } );
 
             // TODO triangle strip? how it could change colors initialization? But probably it aren't too much necessary
             // because there are not too much triangles (default case: 10 * 12 * 2 = 240 triangles)
             var mesh = new THREE.Mesh( geometry, material );
             scene.add(mesh);
+
+            var geometryControlPoints = new THREE.Geometry();
+            for (var pointIndex in controlPoints){
+                var controlPoint = controlPoints[pointIndex];
+                var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
+                var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
+                geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
+            }
+            var dotMaterial = new THREE.PointCloudMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
+            var controlDots = new THREE.PointCloud( geometryControlPoints, dotMaterial );
+            scene.add( controlDots );
+            controlDots.visible = showControlPoints;
 
             animate();
 
@@ -595,10 +675,11 @@ define(function (require, exports, module) {
                 this.visualisationSchemeIndex = visualisationSchemeIndex;
                 this.autoUpdateTimer = 0;
                 this.autoUpdateInterval = 10;
-                this.canvasVisible = true;
+                this.canvasVisible = showCanvas;
                 this.realTime = (-data.XDESTR * 1.1).toFixed(2);
                 this.amplifyColors = amplifyColors;
                 this.amplifyCoef = amplifyCoef;
+                this.showControlPoints = showControlPoints;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -713,6 +794,10 @@ define(function (require, exports, module) {
                         controls.changeTime();
                     }
                 };
+
+                this.changeControlPoints = function(){
+                    controlDots.visible = controls.showControlPoints;
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -746,6 +831,7 @@ define(function (require, exports, module) {
             gui.add(controls, 'realTime');
             gui.add(controls, 'amplifyColors').onChange(controls.changeAmplifyOfColors);
             gui.add(controls, 'amplifyCoef').min(0.5).max(4).step(0.1).onChange(controls.changeAmplifyValue);
+            gui.add(controls, 'showControlPoints').onChange(controls.changeControlPoints);
 
             function initStats() {
                 var stats = new Stats();
