@@ -274,7 +274,7 @@ define(function (require, exports, module) {
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 5,
+                        TM: 1,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -292,11 +292,11 @@ define(function (require, exports, module) {
                         STEPX: 0.1,
                         DELTA: 1,
 
-                        rtetN: 5,
+                        rtetN: 4,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
                         rtetA: 2.05,    // vertical
-                        rtetB: 2.05,    // horizontal
+                        rtetB: 4.05,    // horizontal
                         rtetC: 4.5,
                         rtetVortex: 0,
                         rtetNoEdge: true,
