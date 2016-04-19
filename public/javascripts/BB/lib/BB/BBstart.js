@@ -88,6 +88,8 @@ define(function (require, exports, module) {
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
+        var needRealValues;
+
         function STARTPROC(params, callback){
             var startProcProfiler = new Date();
             console.log("STARTPROC has start work");
@@ -293,11 +295,13 @@ define(function (require, exports, module) {
                         rtetN: 5,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
-                        rtetA: 2.05,
-                        rtetB: 2.05,
+                        rtetA: 2.05,    // vertical
+                        rtetB: 2.05,    // horizontal
                         rtetC: 4.5,
                         rtetVortex: 0,
-                        rtetNoEdge: true
+                        rtetNoEdge: true,
+
+                        needRealValues: true
 
                     };
 
@@ -369,6 +373,7 @@ define(function (require, exports, module) {
                 rtetVortex = inputData.rtetVortex;
                 rtetNoEdge = inputData.rtetNoEdge;
 
+                needRealValues = inputData.needRealValues;
             }
             loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
             data.inputData = inputData;
@@ -406,12 +411,16 @@ define(function (require, exports, module) {
                 ALEF = BETTA / Math.tan(BETTA * TH);
                 TPLUS = Math.PI / BETTA;
             } else if (EPUR == 2) {
-                 S0 = 1; // S0=9.6*1E06/(C2*RC2);
-                 BETTA = 900;
-                 A1 = 7.917;
-                 A2 = 48.611;
-                 A2 = A1 * A1 / A2;
-                 A1 = 1E03 / A1;
+                if (needRealValues){
+                    S0=9.6*1E06/(C2*RC2);
+                } else {
+                    S0 = 1;
+                }
+                BETTA = 900;
+                A1 = 7.917;
+                A2 = 48.611;
+                A2 = A1 * A1 / A2;
+                A1 = 1E03 / A1;
 
                 // This 3 commented strings were from another version of BB
                 //S0 = 0.19836 * 1E12 / (C2 * RC2);
@@ -421,7 +430,11 @@ define(function (require, exports, module) {
                 console.error('unknown EPUR value');
             }
 
-            console.log('S0 =', S0);
+            if (needRealValues){
+                console.log('S0 =', S0 *C2*RC2*1E-06);
+            } else {
+                console.log('S0 =', S0);
+            }
             if (SPLIT) {
                 RC0 = RO0 * C0;
                 KAP1 = (RC1 - RC0) / (RC1 + RC0);
@@ -521,6 +534,7 @@ define(function (require, exports, module) {
             data.TP = TP;
             data.RC2 = RC2;
             data.S0 = S0;
+            data.RO2 = RO2;
 
             // jmemOut init
             // 10 files

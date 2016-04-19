@@ -164,7 +164,9 @@ define(function (require, exports, module) {
                 C2 = data.C2,
                 fds1 = data.fds1,
                 fds2 = data.fds2,
-                RC2 = data.RC2;
+                RC2 = data.RC2,
+                RO2 = data.RO2,
+                needRealValues = data.needRealValues;
 
             // jOutputBlock, init
             var outBuf = MatMult.createArray(10, Math.max(NTP+1, NXDST) +1, 1);
@@ -844,7 +846,11 @@ define(function (require, exports, module) {
                                 if (!QP.hasOwnProperty(c4)) continue;
 
                                 // TODO, hmm, why not UFI(:) ???? original: QP(:,N,J)=PSI*UFI
-                                QP[c4][N][J] = PSI * UFI[c4 -1];    // original *C2
+                                if (needRealValues) {
+                                    QP[c4][N][J] = PSI * UFI[c4 - 1] *C2;
+                                } else {
+                                    QP[c4][N][J] = PSI * UFI[c4 - 1];
+                                }
                             }
                             for (var c6 = 1; c6 <= 2; c6++){
                                 QAC[c6][N][J] = DPSI * UFI[c6] *C2*C2/L; // QAC(:,N,J)=DPSI*UFI(1:2)*C2*C2/L;
@@ -853,7 +859,11 @@ define(function (require, exports, module) {
                             for (var c5 in QP){
                                 if (!QP.hasOwnProperty(c5)) continue;
 
-                                QP[c5][N][J] = G[c5][K][I]; // original *C2
+                                if (needRealValues) {
+                                    QP[c5][N][J] = G[c5][K][I] *C2;
+                                } else {
+                                    QP[c5][N][J] = G[c5][K][I];
+                                }
                             }
                             for (var c7 = 1; c7 <= 2; c7++){
                                 QAC[c7][N][J] = ACC[c7][K][I] *C2*C2/L;
@@ -867,9 +877,10 @@ define(function (require, exports, module) {
                 // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-05/0.981;
                 // this string uncommented when it is need to get real measurements
                 // last version is QP(3:5,:,:)=QP(3:5,:,:)   !*RC2*C2*1E-05/0.981;    (RC2 not RO2)
-                var needRealValues = false;
+                // very last version, letter from Harry 2016.04.19, there should be RO2
                 if (needRealValues){
-                    var realValuesConst = RC2 * C2 * 1e-05 / 0.981;
+                    //var realValuesConst = RC2 * C2 * 1e-05 / 0.981; // as it mentioned above it is oldversion
+                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;
                     for (var c8 in QP){
                         if (!QP.hasOwnProperty(c8)) continue;
 
