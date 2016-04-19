@@ -244,16 +244,16 @@ define(function (require, exports, module) {
                         // TODO ALFA==15 leads to an error
                         ALFA: 0,
                         SPLIT: false,
-                        RZ: 2.55E-02,
+                        RZ: 2.55E-02,   // TODO what is it?
                         X: 10,  // X only matters when EPUR == 1 or SPLIT == true
-                        RO2: 2.7E03,
-                        C2: 5.8E03,
+                        RO2: 2.7E03,    // TODO what material is it?
+                        C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
                         GAPOIS: false,
                         POIS: 0.35,
                         GAMMA: 0.6,
                         XDESTR: 4.0,
 
-                        EPUR: 0,
+                        EPUR: 2,
 
                         waveShapes: [
                             {
@@ -270,11 +270,11 @@ define(function (require, exports, module) {
                             }
                         ],
 
-                        INDEX: 1,
+                        INDEX: 0,
                         FRIC: 0,
                         M0: 1.5,
 
-                        TM: 30,
+                        TM: 5,
                         DT: 0.05,
                         DFI: 5.0,
                         DX: 0.05,
@@ -430,6 +430,7 @@ define(function (require, exports, module) {
                 console.error('unknown EPUR value');
             }
 
+            // TODO ask Harry about S0. FF(S0), TENS(FF), WAVEEPURE(TENS); INITLOAD(TENS), COUNTOUT(TENS).
             if (needRealValues){
                 console.log('S0 =', S0 *C2*RC2*1E-06);
             } else {
@@ -1053,7 +1054,7 @@ define(function (require, exports, module) {
             if (EPUR == 1) {
                 while (true){
                     if (T > TPLUS) break;
-                    recBuffer = new Buffer(T.toFixedDef() + ' ' + (-C2*C2*RO2*TENS(T)*1E-06).toFixedDef() + '\n');
+                    recBuffer = new Buffer(T.toFixedDef() + ' ' + (-C2*C2*RO2*TENS(T)*1E-05/0.981).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                     T = T + TPLUS/50;
@@ -1061,7 +1062,12 @@ define(function (require, exports, module) {
             } else if (EPUR == 2) {
                 while (true) {
                     if (T > TMAX) break;
-                    recBuffer = new Buffer(T.toFixedDef() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toFixedDef() + '\n');
+                    // WRITE(50,'(5X,E10.4,3X,E11.4)') T,TENS(LC*T)    !C2*C2*RO2*TENS(LC*T)*1E-06
+                    if (needRealValues){
+                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-06).toFixedDef() + '\n');
+                    } else {
+                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (TENS(LC*T)).toFixedDef() + '\n');
+                    }
                     //noinspection JSUnresolvedFunction
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
                     T = T + TMAX/1000;
