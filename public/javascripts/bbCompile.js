@@ -231,11 +231,18 @@ define(function (require, exports, module) {
                 //{ radius: data.XDESTR + data.rtetB, angle: 90 },
                 { radius: 5, angle: 30 }
             ];
-            var nearestPoints = findNearestFourPointsToPoint(controlPoints[0]);
-            console.log("wrong values, nearest", controlPoints[0], nearestPoints);
-            for (var npi = 0; npi < nearestPoints.length; npi++){
-                controlPoints.push(nearestPoints[npi]);
+            for (var npi = 0; npi < 10; npi++){
+                var testPoint = {
+                    radius: Math.max(data.rtetA, data.rtetB) + data.XDESTR * Math.random(),
+                    angle: 360 * Math.random()
+                };
+                controlPoints.push(testPoint);
             }
+            var nearestPoints = [];
+            for (var currentControlPoint in controlPoints){
+                nearestPoints.push(findNearestFourPointsToPoint(controlPoints[currentControlPoint]));
+            }
+            console.log("controlPoints", controlPoints, "nearestPoints", nearestPoints);
 
             function findNearestCavFormAngle(angle){
                 var minDiff = Number.MAX_VALUE;
@@ -463,6 +470,20 @@ define(function (require, exports, module) {
             var mesh = new THREE.Mesh( geometry, material );
             scene.add(mesh);
 
+            var geometryNearestPoints = new THREE.Geometry();
+            for (var nearestIndex in nearestPoints){
+                for (var nearestPointIndex in nearestPoints[nearestIndex]){
+                    var nearestPoint = nearestPoints[nearestIndex][nearestPointIndex];
+                    var nearestPointX = nearestPoint.radius/totalRadius * Math.sin(deg2rad(nearestPoint.angle)) * axisX - axisX2;
+                    var nearestPointY = nearestPoint.radius/totalRadius * Math.cos(deg2rad(nearestPoint.angle)) * axisY - axisY2;
+                    geometryNearestPoints.vertices.push(new THREE.Vector3(nearestPointX, nearestPointY, defZ));
+                }
+            }
+            var nearestPointMaterial = new THREE.PointCloudMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
+            var nearestPointsDots = new THREE.PointCloud( geometryNearestPoints, nearestPointMaterial );
+            scene.add( nearestPointsDots );
+            nearestPointsDots.visible = showControlPoints;
+
             var geometryControlPoints = new THREE.Geometry();
             for (var pointIndex in controlPoints){
                 var controlPoint = controlPoints[pointIndex];
@@ -470,10 +491,10 @@ define(function (require, exports, module) {
                 var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
                 geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
             }
-            var dotMaterial = new THREE.PointCloudMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
-            var controlDots = new THREE.PointCloud( geometryControlPoints, dotMaterial );
-            scene.add( controlDots );
-            controlDots.visible = showControlPoints;
+            var controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 5, sizeAttenuation: false } );
+            var controlPointsDots = new THREE.PointCloud( geometryControlPoints, controlPointMaterial );
+            scene.add( controlPointsDots );
+            controlPointsDots.visible = showControlPoints;
 
             animate();
 
@@ -796,7 +817,8 @@ define(function (require, exports, module) {
                 };
 
                 this.changeControlPoints = function(){
-                    controlDots.visible = controls.showControlPoints;
+                    controlPointsDots.visible = controls.showControlPoints;
+                    nearestPointsDots.visible = controls.showControlPoints;
                 };
             };
 
