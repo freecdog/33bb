@@ -121,7 +121,7 @@ requirejs(['BB'], function(BB) {
                 str += data.TM.toFixed(2) + " s";
                 str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";
             }
-            if (data.status.duration) str += "; " + data.status.duration.toFixed(2) + " ms left";
+            if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min left";
             domCurrentTime.innerHTML = str;
 
             if (data.currentT > 0 && Math.abs(parseInt(data.currentT) - data.currentT ) < 1e-6) {

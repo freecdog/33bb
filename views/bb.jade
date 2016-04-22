@@ -84,6 +84,9 @@ html
                                             td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
                                                 span &nbsp;
 
+        div(ng-controller="jBBDataController as BBDataCtrl")
+            div {{BBDataCtrl.recentText}}
+
         //-
             | test
             p

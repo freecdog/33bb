@@ -76,8 +76,8 @@ define(function (require, exports, module) {
             function createText(text, left, top, width, height){
                 left = left || 0;
                 top = top || 0;
-                width = width || 100;
-                height = height || 100;
+                width = width || 23;
+                height = height || 17;
                 var generatedText = document.createElement('div');
                 generatedText.style.position = 'absolute';
                 //generatedText.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
@@ -206,6 +206,7 @@ define(function (require, exports, module) {
                                     break;
                                 }
                             }
+                            if (!data.cavform[angles[c2]]) skipThis = true;
                             if (skipThis) continue;
 
                             var objectRadius1 = data.cavform[angles[c2]].radius;
