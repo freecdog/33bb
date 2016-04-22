@@ -19,6 +19,71 @@ html
         div(id="progressBarHolder" class="progress progress-striped active" ng-show="BBCtrl.getLoading()")
             div(id="progressBar" class="progress-bar" style="width:45%")
         div(id="anchorsHolder" ng-hide="BBCtrl.getDrawning()")
+        div(ng-controller="jBBControlPointsController as controlPointsCtrl")
+            div(ng-show="controlPointsCtrl.visible")
+
+                section(class="tab")
+                    ul(class="nav nav-tabs")
+                        li(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-class="{active: controlPointsCtrl.isSet($index)}" )
+                            a(href ng-click="controlPointsCtrl.setTab($index)") {{tabName}}
+
+                    //-div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
+                        div(id="data{{tabName}}")
+                            table(class="table table-striped table-hover")
+                                tbody
+                                    thead
+                                        th
+                                            span T \ Points
+                                        th
+                                            span Point1
+
+                                    tr(ng-repeat="currentTimeStamp in controlPointsCtrl.ctrlPointS11values track by $index" )
+                                        td
+                                            span {{currentTimeStamp.time}}
+                                        td
+                                            span {{currentTimeStamp.value}}
+
+                    //- memOut[dataLayer][time][radius][angle]
+                    div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
+                        div(id="data{{tabName}}")
+
+                            //- ctrlPoints [index][layer][time] -> value
+                            table(class="table table-striped table-hover")
+                                tbody
+                                    thead
+                                        th
+                                            span T \ Points
+                                        th(ng-repeat="pointIndex in controlPointsCtrl.ctrlPoints track by $index" )
+                                            span Point{{$index}}
+
+                                    tr(ng-repeat="timeIndex in controlPointsCtrl.ctrlPoints[0][0] track by $index" )
+                                        td
+                                            span {{controlPointsCtrl.getTimeByTimeIndex($index).toFixed(2)}}
+                                        td(ng-repeat="pointIndex in controlPointsCtrl.ctrlPoints track by $index" )
+                                            span {{controlPointsCtrl.ctrlPoints[$index][controlPointsCtrl.currentTabIndex][$parent.$index].toFixed(6)}}
+
+                    //-div(ng-repeat="tabName in CalcCtrl.dataNames track by $index" ng-show="tab.isSet( {{$index}} )")
+                        div(id="data{{tabName}}")
+                            div(class="row" ng-repeat="currentCoord in CalcCtrl.data.memOut[$index] track by $index")
+                                table(class="table table-striped table-hover")
+                                    caption X = {{($index * CalcCtrl.data.STEPX).toFixed(2)}}
+                                    tbody
+                                        thead
+                                            th
+                                                //-span T \ ∠
+                                                span(style="float:left;") T
+                                                span(style="float:right;") ∠
+                                            th(ng-repeat="angleValue in CalcCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
+                                                span {{angleValue}}
+
+                                        tr(ng-repeat="currentTimeStamp in currentCoord track by $index" )
+                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" class="active")
+                                                span {{($index * CalcCtrl.data.STEP).toFixed(2)}}
+                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index" ng-click="CalcCtrl.changeCellValueOnServer(this)" class="text-right")
+                                                span {{currentAngle | numberFilter}}
+                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
+                                                span &nbsp;
+
         //-
             | test
             p

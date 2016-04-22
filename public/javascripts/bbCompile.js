@@ -196,7 +196,7 @@ define(function (require, exports, module) {
                     {radiusStepIndex: -1, angleStepIndex: -1, distance: Number.MAX_VALUE}
                 ];
                 for (var c0 = 0; c0 < nearestPoints.length; c0++) {
-                    for (var c1 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c1 < c0len; c1++) {
+                    for (var c1 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c1 <= c0len; c1++) {
                         for (var c2 = 0, c1len = angles.length - 1; c2 < c1len; c2++) {
                             //mem[time][radius][angle]\
                             var skipThis = false;
@@ -227,22 +227,27 @@ define(function (require, exports, module) {
             }
             var showControlPoints = false;
             var controlPoints = [
-                //{ radius: data.XDESTR + data.rtetA, angle: 0 },
-                //{ radius: data.XDESTR + data.rtetB, angle: 90 },
+                { radius: data.XDESTR + data.rtetA, angle: 0 },
+                { radius: data.XDESTR + data.rtetB, angle: 90 },
                 { radius: 5, angle: 30 }
             ];
-            for (var npi = 0; npi < 10; npi++){
-                var testPoint = {
-                    radius: Math.max(data.rtetA, data.rtetB) + data.XDESTR * Math.random(),
-                    angle: 360 * Math.random()
-                };
-                controlPoints.push(testPoint);
-            }
+            // additional random points to test
+            //for (var npi = 0; npi < 10; npi++){
+            //    var testPoint = {
+            //        radius: Math.max(data.rtetA, data.rtetB) + data.XDESTR * Math.random(),
+            //        angle: 360 * Math.random()
+            //    };
+            //    controlPoints.push(testPoint);
+            //}
             var nearestPoints = [];
             for (var currentControlPoint in controlPoints){
                 nearestPoints.push(findNearestFourPointsToPoint(controlPoints[currentControlPoint]));
             }
             console.log("controlPoints", controlPoints, "nearestPoints", nearestPoints);
+
+            data.angles = angles;
+            data.controlPoints = controlPoints;
+            data.nearestPoints = nearestPoints;
 
             function findNearestCavFormAngle(angle){
                 var minDiff = Number.MAX_VALUE;
@@ -385,7 +390,7 @@ define(function (require, exports, module) {
                 //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
-                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0++){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                         var isInvert = useInvertationColors;
@@ -673,6 +678,17 @@ define(function (require, exports, module) {
             }
             //for (var testI = 0; testI <= 1; testI += 1/12) console.warn("RGB", testI, getBlueWhiteRedColor(testI));
 
+            function getTimeByTimeIndex(timeIndex){
+                var realTime = 0;
+
+                if (timeIndex < stepsBeforeT0){
+                    realTime = timeIndex * data.STEPX - data.XDESTR*1.1;
+                } else {
+                    realTime = ((timeIndex - stepsBeforeT0) * data.STEP);
+                }
+                return realTime;
+            }
+
             // RENDER
             function render() {
                 renderer.render(scene, camera);
@@ -701,6 +717,9 @@ define(function (require, exports, module) {
                 this.amplifyColors = amplifyColors;
                 this.amplifyCoef = amplifyCoef;
                 this.showControlPoints = showControlPoints;
+                this.showCPData = false;
+                this.cmin = cmin.toFixed(6);
+                this.cmax = cmax.toFixed(6);
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -771,17 +790,7 @@ define(function (require, exports, module) {
                 };
 
                 this.changeTime = function(){
-                    //var altTimeStepsCount = Math.round(data.XDESTR*1.1/data.STEPX) + Math.round(data.TM/data.STEP);
-                    var realTime = 0;
-
-                    if (controls.timeStep < stepsBeforeT0){
-                        realTime = controls.timeStep * data.STEPX - data.XDESTR*1.1;
-                    } else {
-                        realTime = ((controls.timeStep - stepsBeforeT0) * data.STEP);
-                    }
-                    realTime = realTime.toFixed(2);
-                    //console.log(controls.timeStep, realTime, stepsBeforeT0, stepsAfterT0, stepsBeforeT0 + stepsAfterT0);
-                    controls.realTime = realTime;
+                    controls.realTime = getTimeByTimeIndex(controls.timeStep).toFixed(2);
                     controls.updateGUIwithName('realTime');
 
                     initColorVertices( Math.round(controls.timeStep) );
@@ -791,6 +800,11 @@ define(function (require, exports, module) {
                     mem = data.memOut[ Math.round( controls.schemeIndex ) ];
 
                     countMinMax();
+
+                    controls.cmin = cmin.toFixed(6);
+                    controls.updateGUIwithName('cmin');
+                    controls.cmax = cmax.toFixed(6);
+                    controls.updateGUIwithName('cmax');
 
                     controls.changeTime();
                 };
@@ -819,6 +833,10 @@ define(function (require, exports, module) {
                 this.changeControlPoints = function(){
                     controlPointsDots.visible = controls.showControlPoints;
                     nearestPointsDots.visible = controls.showControlPoints;
+                };
+
+                this.changeVisibilityCPData = function(){
+                    setControlPointsData(controls.showCPData);
                 };
             };
 
@@ -854,6 +872,9 @@ define(function (require, exports, module) {
             gui.add(controls, 'amplifyColors').onChange(controls.changeAmplifyOfColors);
             gui.add(controls, 'amplifyCoef').min(0.5).max(4).step(0.1).onChange(controls.changeAmplifyValue);
             gui.add(controls, 'showControlPoints').onChange(controls.changeControlPoints);
+            gui.add(controls, 'showCPData').onChange(controls.changeVisibilityCPData);
+            gui.add(controls, 'cmin');
+            gui.add(controls, 'cmax');
 
             function initStats() {
                 var stats = new Stats();
