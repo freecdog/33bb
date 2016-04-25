@@ -10,6 +10,8 @@
 
     var jBBControllers = angular.module('jBBControllers', []);
 
+    window.dataNames = ["V_1", "V_2", "S11", "S22", "S12"];
+
     jBBControllers.controller('jBBController', ['$scope', '$window', function($scope, $window) {
 
         var self = this;
@@ -54,7 +56,7 @@
             data = {};
 
             self.currentTabIndex = 2;
-            self.dataNames = ["V_1", "V_2", "S11", "S22", "S12"];
+            self.dataNames = $window.dataNames;
         }
 
         var stepsBeforeT0 = Math.round(data.XDESTR * 1.1 / data.STEPX);
@@ -142,9 +144,7 @@
             data = {};
 
             self.currentTabIndex = 2;
-            self.dataNames = ["V_1", "V_2", "S11", "S22", "S12"];
-
-            self.recentText = 'jBBDataController is here';
+            self.dataNames = $window.dataNames;
         }
 
         var stepsBeforeT0 = Math.round(data.XDESTR * 1.1 / data.STEPX);
@@ -184,12 +184,46 @@
             altTimeStepsCount = stepsBeforeT0 + stepsAfterT0;
         }
 
+        function getDecimal(num) {
+            return num > 0 ? (num % 1) : (-num % 1);
+        }
         function setDisplayData(visibility){
             self.visible = visibility;
 
             updateBBData();
 
+            // data.memOut[layer][time][radius][angle]
+            var limitedData = [];
+            data.limitedData = limitedData;
+            for (var layer in data.memOut){
+                var curLayer = [];
+                limitedData.push(curLayer);
+
+                for (var time in data.memOut[layer]){
+                    var timeValue = time * data.STEP;
+                    if (getDecimal(timeValue) !== 0) continue;
+
+                    var curTime = [];
+                    curLayer.push(curTime);
+
+                    for (var radius in data.memOut[layer][time]){
+                        var radiusValue = radius * data.STEPX;
+                        if (getDecimal(radiusValue) !== 0) continue;
+
+                        var curRadius = [];
+                        curTime.push(curRadius);
+
+                        for (var angle in data.memOut[layer][time][radius]){
+                            curRadius.push(data.memOut[layer][time][radius][angle].toFixed(6));
+                        }
+                    }
+                }
+            }
+            console.log("limitedData:", limitedData);
+
+            var timeBeforeDigest = Date.now();
             $scope.$digest();
+            console.log(((Date.now() - timeBeforeDigest)/1000).toFixed(2) + "s to $digest()");
         }
         this.setDisplayData = setDisplayData;
         $window.setDisplayData = setDisplayData;

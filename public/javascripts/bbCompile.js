@@ -198,7 +198,7 @@ define(function (require, exports, module) {
                 for (var c0 = 0; c0 < nearestPoints.length; c0++) {
                     for (var c1 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c1 <= c0len; c1++) {
                         for (var c2 = 0, c1len = angles.length - 1; c2 < c1len; c2++) {
-                            //mem[time][radius][angle]\
+                            //mem[time][radius][angle]
                             var skipThis = false;
                             for (var c3 = 0; c3 < c0; c3++){
                                 if (nearestPoints[c3].radiusStepIndex == c1 && nearestPoints[c3].angleStepIndex == c2) {
@@ -721,6 +721,7 @@ define(function (require, exports, module) {
                 this.showCPData = false;
                 this.cmin = cmin.toFixed(6);
                 this.cmax = cmax.toFixed(6);
+                this.showMemOutData = false;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -839,6 +840,10 @@ define(function (require, exports, module) {
                 this.changeVisibilityCPData = function(){
                     setControlPointsData(controls.showCPData);
                 };
+
+                this.changeVisibilityMemOutData = function(){
+                    setDisplayData(controls.showMemOutData);
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -876,6 +881,7 @@ define(function (require, exports, module) {
             gui.add(controls, 'showCPData').onChange(controls.changeVisibilityCPData);
             gui.add(controls, 'cmin');
             gui.add(controls, 'cmax');
+            gui.add(controls, 'showMemOutData').onChange(controls.changeVisibilityMemOutData);
 
             function initStats() {
                 var stats = new Stats();

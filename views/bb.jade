@@ -45,7 +45,7 @@ html
 
                     //- memOut[dataLayer][time][radius][angle]
                     div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
-                        div(id="data{{tabName}}")
+                        div(id="dataCP{{tabName}}")
 
                             //- ctrlPoints [index][layer][time] -> value
                             table(class="table table-striped table-hover")
@@ -84,8 +84,57 @@ html
                                             td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
                                                 span &nbsp;
 
+        //-div(ng-controller="jBBDataController as BBDataCtrl")
+            div(ng-show="BBDataCtrl.visible")
+
+                section(class="tab")
+                    ul(class="nav nav-tabs")
+                        li(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-class="{active: BBDataCtrl.isSet($index)}" )
+                            a(href ng-click="BBDataCtrl.setTab($index)") {{tabName}}
+
+                    //- memOut[dataLayer][time][radius][angle]
+                    div(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-show="BBDataCtrl.isSet( {{$index}} )")
+                        div(id="data{{tabName}}")
+
+                            div(class="row" ng-repeat="currentRadius in BBDataCtrl.data.memOut[$index] track by $index")
+                                div r = {{currentRadius}}
+
+                                table(class="table table-striped table-hover")
+                                    tbody
+                                        thead
+                                            th
+                                                span T \ ∠
+                                            th(ng-repeat="angleValue in BBDataCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
+                                                span {{angleValue}}
+
+                                        tr(ng-repeat="currentTime in BBDataCtrl.data.memOut[$parent.$index] track by $index" )
+                                            td(ng-repeat="currentAngle in BBDataCtrl.data.memOut[$parent.$parent.$index][$index][$parent.$index] track by $index" )
+                                                span {{BBDataCtrl.data.memOut[$parent.$parent.$parent.$index][$parent.$index][$parent.$parent.$index][$index]}}
+
         div(ng-controller="jBBDataController as BBDataCtrl")
-            div {{BBDataCtrl.recentText}}
+            div(ng-show="BBDataCtrl.visible")
+                section(class="tab")
+                    ul(class="nav nav-tabs")
+                        li(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-class="{active: BBDataCtrl.isSet($index)}" )
+                            a(href ng-click="BBDataCtrl.setTab($index)") {{tabName}}
+                    //- limitedData[dataLayer][time][radius][angle]
+                    div(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-show="BBDataCtrl.isSet( {{$index}} )")
+                        div(id="data{{tabName}}")
+                            div(class="row" ng-repeat="currentRadius in BBDataCtrl.data.limitedData[$index] track by $index")
+                                div r = {{$index}}
+                                table(class="table table-striped table-hover")
+                                    tbody
+                                        thead
+                                            th
+                                                span T \ ∠
+                                            th(ng-repeat="angleValue in BBDataCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
+                                                span {{angleValue}}
+                                        tr(ng-repeat="currentTime in BBDataCtrl.data.limitedData[$parent.$index] track by $index" )
+                                            td
+                                                span {{$index - BBDataCtrl.data.XDESTR}}
+                                            td(ng-repeat="currentAngle in BBDataCtrl.data.limitedData[$parent.$parent.$index][$index][$parent.$index] track by $index" )
+                                                span {{BBDataCtrl.data.limitedData[$parent.$parent.$parent.$index][$parent.$index][$parent.$parent.$index][$index]}}
+
 
         //-
             | test
