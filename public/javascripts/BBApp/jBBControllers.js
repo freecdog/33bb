@@ -12,8 +12,30 @@
 
     window.dataNames = ["V_1", "V_2", "S11", "S22", "S12"];
 
-    jBBControllers.controller('jBBController', ['$scope', '$window', function($scope, $window) {
+    jBBControllers.controller('jBBLoaderController', ['$scope', '$http', '$window', function($scope, $http, $window) {
+        var self = this;
+        init();
 
+        var url = $window.location.href;
+        var addressArr = url.split("/");
+
+        function init(){
+            console.log('jBBLoaderController is here');
+
+            $http({
+                method: 'GET',
+                //url: addressArr[0] + "//" + addressArr[2] + '/filesList'
+                url: '/filesList'
+            }).then(function successCallback(response) {
+                self.allFiles = response.data.allFiles;
+                console.warn(response, self.allFiles);
+            }, function errorCallback(response) {
+                console.error(response);
+            });
+        }
+    }]);
+
+    jBBControllers.controller('jBBController', ['$scope', '$window', function($scope, $window) {
         var self = this;
         init();
 
@@ -43,7 +65,6 @@
     }]);
 
     jBBControllers.controller('jBBControlPointsController', ['$scope', '$window', function($scope, $window) {
-
         var self = this;
         init();
 
@@ -131,7 +152,6 @@
     }]);
 
     jBBControllers.controller('jBBDataController', ['$scope', '$window', function($scope, $window) {
-
         var self = this;
         init();
 
@@ -195,13 +215,19 @@
             // data.memOut[layer][time][radius][angle]
             var limitedData = [];
             data.limitedData = limitedData;
+
+            var radiusValues = [];
+            data.radiusValues = radiusValues;
+            var timeValues = [];
+            data.timeValues = timeValues;
             for (var layer in data.memOut){
                 var curLayer = [];
                 limitedData.push(curLayer);
 
                 for (var time in data.memOut[layer]){
-                    var timeValue = time * data.STEP;
-                    if (getDecimal(timeValue) !== 0) continue;
+                    var timeValue = getTimeByTimeIndex(time);//time * data.STEP;
+                    //if (getDecimal(timeValue) !== 0) continue;
+                    timeValues.push(timeValue.toFixed(2));
 
                     var curTime = [];
                     curLayer.push(curTime);
@@ -209,6 +235,7 @@
                     for (var radius in data.memOut[layer][time]){
                         var radiusValue = radius * data.STEPX;
                         if (getDecimal(radiusValue) !== 0) continue;
+                        radiusValues.push(radiusValue);
 
                         var curRadius = [];
                         curTime.push(curRadius);

@@ -25,6 +25,19 @@ function readJSONFile(filepath, callback){
     });
 }
 
+function writeJSONFile(filepath, jsondata, callback){
+    callback = callback || function(){};
+    fs.writeFile(filepath, JSON.stringify(jsondata), {encoding: "utf8"}, function (err) {
+        if (err) {
+            console.log("write error:", err);
+            callback(e, null);
+        } else {
+            console.log('File has been successfully written', new Date());
+            callback();
+        }
+    });
+}
+
 // send default memOut
 router.get('/', function(req, res){
     var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def01.json');
@@ -51,19 +64,6 @@ router.get('/:name', function(req, res){
 // recording to file req.body as json
 router.post('/', function(req, res){
 
-    function writeJSONFile(filepath, jsondata, callback){
-        callback = callback || function(){};
-        fs.writeFile(filepath, JSON.stringify(jsondata), {encoding: "utf8"}, function (err) {
-            if (err) {
-                console.log("write error:", err);
-                callback(e, null);
-            } else {
-                console.log('File has been successfully written', new Date());
-                callback();
-            }
-        });
-    }
-
     // TODO try Blob(), "sending binary data" https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
     //console.log("req.body.memout[1][1][1][1]:", req.body.memout[1][1][1][1]);
     var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def01.json');
@@ -73,6 +73,17 @@ router.post('/', function(req, res){
         res.send('Data has been written');
     });
 
+});
+
+router.post('/:name', function(req, res) {
+    var name = req.params.name;
+
+    var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def01_' + name + '.json');
+    writeJSONFile(pathToFile, req.body, function(err){
+        if (err != null) console.log('Some errors occurred:', err);
+
+        res.send('Data has been written');
+    });
 });
 
 module.exports = router;

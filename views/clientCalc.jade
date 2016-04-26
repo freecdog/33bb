@@ -31,7 +31,7 @@ html
                         h5(ng-click="CalcCtrl.calcAllWatchers()") calc all watchers
 
                 div(class="row")
-                    h3 S0 = {{CalcCtrl.data.S0}}
+                    h3 S0 = {{CalcCtrl.data.inputData.needRealValues ? CalcCtrl.data.S0 *CalcCtrl.data.C2*CalcCtrl.data.RC2*1E-06 : CalcCtrl.data.S0}}
                 div(class="row")
                     h3 S = {{CalcCtrl.data.geomprocS}}
                 div(class="row")

@@ -63,7 +63,6 @@ define(function (require, exports, module) {
             }
             renderer.domElement.style.bottom = '10px';
             document.body.appendChild( renderer.domElement );
-            setVisibility(renderer.domElement, showCanvas);
 
             var axisHelper = new THREE.AxisHelper( 5 );
             scene.add( axisHelper );
@@ -72,6 +71,10 @@ define(function (require, exports, module) {
             document.body.appendChild(zeroDegreeText);
             var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
             document.body.appendChild(ninetyDegreeText);
+
+            setVisibility(renderer.domElement, showCanvas);
+            setVisibility(zeroDegreeText, showCanvas);
+            setVisibility(ninetyDegreeText, showCanvas);
 
             function createText(text, left, top, width, height){
                 left = left || 0;
@@ -818,6 +821,8 @@ define(function (require, exports, module) {
 
                 this.changeCanvasVisible = function(){
                     setVisibility(renderer.domElement, controls.canvasVisible);
+                    setVisibility(zeroDegreeText, controls.canvasVisible);
+                    setVisibility(ninetyDegreeText, controls.canvasVisible);
                 };
 
                 this.changeAmplifyOfColors = function(){
