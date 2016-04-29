@@ -112,7 +112,7 @@ define(function (require, exports, module) {
                     if (data.TP[cang] != null) angles.push(data.TP[cang]);
                 }
             }
-            console.log("angles:", angles);
+            //console.log("angles:", angles);
             var axisX = 2, axisY = 2;   // length of axises
             var axisX2 = axisX / 2, axisY2 = axisY / 2;
             var defZ = 1.0;

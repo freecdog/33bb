@@ -21,6 +21,7 @@
 
         function init(){
             console.log('jBBLoaderController is here');
+            console.warn('there should be a search option, see jade file');
 
             $http({
                 method: 'GET',
@@ -226,7 +227,7 @@
 
                 for (var time in data.memOut[layer]){
                     var timeValue = getTimeByTimeIndex(time);//time * data.STEP;
-                    //if (getDecimal(timeValue) !== 0) continue;
+                    if (getDecimal(timeValue) !== 0) continue;
                     timeValues.push(timeValue.toFixed(2));
 
                     var curTime = [];
