@@ -31,7 +31,9 @@ requirejs(['BB'], function(BB) {
 //requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
 //requirejs(['BB', document, window], function(BB, document, window) {
     var data = (new BB.Datatone());
-    BB.BBup.run(function(){
+    //BB.BBup.run({}, runCallback);
+
+    function runCallback(){
         var dataToSend = {};
         //dataToSend.memOut = data.memOut;
         //dataToSend.G = data.G;
@@ -57,32 +59,7 @@ requirejs(['BB'], function(BB) {
         //ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
         // 360x5_30s_4xd_epur0_45deg_circleCube_config(19min)
         var name = buildName(data);
-        function buildName(data){
-            var name = "";
-            name += data.inputData.printPoints[data.inputData.printPoints.length-1].toFixed(0);
-            name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
-            name += '_';
-            name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(1) + 's';
-            name += '_';
-            name += data.inputData.XDESTR.toFixed(1) + 'xd';
-            name += '_';
-            name += data.inputData.EPUR.toFixed(0) + 'epur';
-            name += '_';
-            name += data.inputData.INDEX.toFixed(0) + 'index';
-            name += '_';
-            name += data.inputData.ALFA.toFixed(0) + 'deg';
-            name += '_';
-            name += data.inputData.rtetN.toFixed(0) + 'N';
-            name += '_';
-            name += data.inputData.rtetA.toFixed(2) + 'A';
-            name += '_';
-            name += data.inputData.rtetB.toFixed(2) + 'B';
-            name += '_';
-            name += data.inputData.needRealValues ? 'real' : 'norm';
-            name += '(' + (data.status.duration/1000/60).toFixed(1) + 'min)';
 
-            return name;
-        }
 
         // TODO use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
         ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
@@ -91,7 +68,35 @@ requirejs(['BB'], function(BB) {
             window.connectToApp(data);
         });
 
-    });
+    }
+    window.runCallback = runCallback;
+
+    function buildName(data){
+        var name = "";
+        name += data.inputData.printPoints[data.inputData.printPoints.length-1].toFixed(0);
+        name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
+        name += '_';
+        name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(1) + 's';
+        name += '_';
+        name += data.inputData.XDESTR.toFixed(1) + 'xd';
+        name += '_';
+        name += data.inputData.EPUR.toFixed(0) + 'epur';
+        name += '_';
+        name += data.inputData.INDEX.toFixed(0) + 'index';
+        name += '_';
+        name += data.inputData.ALFA.toFixed(0) + 'deg';
+        name += '_';
+        name += data.inputData.rtetN.toFixed(0) + 'N';
+        name += '_';
+        name += data.inputData.rtetA.toFixed(2) + 'A';
+        name += '_';
+        name += data.inputData.rtetB.toFixed(2) + 'B';
+        name += '_';
+        name += data.inputData.needRealValues ? 'real' : 'norm';
+        name += '(' + (data.status.duration/1000/60).toFixed(1) + 'min)';
+
+        return name;
+    }
 
     function ajaxWrapper(mode, theJson, toUrl, callback){
         var xmlhttp = new XMLHttpRequest();
@@ -129,6 +134,12 @@ requirejs(['BB'], function(BB) {
 
         // reading from localStorage
         //d.memOut = JSON.parse( localStorage.getItem('mo') );
+
+        // if it isn't started try a bit later
+        if (!data.status) {
+            setTimeout( checkTime, checkInterval);
+            return;
+        }
 
         var str = "";
         if (data.currentT < 0){

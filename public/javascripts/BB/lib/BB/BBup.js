@@ -20,7 +20,7 @@ define(function (require, exports, module) {
             previous_BBup = root.BBup;
         }
 
-        function run(callback) {
+        function run(params, callback) {
             callback = callback || function(){};
 
             var BB = require('../BB');
@@ -32,7 +32,7 @@ define(function (require, exports, module) {
             data.status.startTime = Date.now();
             data.status.active = true;
 
-            BBstart.STARTPROC({}, function(){
+            BBstart.STARTPROC(params, function(){
                 BBcount.COUNTPROC(function(){
                     data.status.active = false;
                     data.status.finishTime = Date.now();

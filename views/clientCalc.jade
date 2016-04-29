@@ -19,6 +19,81 @@ html
         script(src="/javascripts/ClientCalcApp/jClientCalcControllers.js")
 
     body(ng-app="jClientCalcApp")
+
+        div(ng-controller="jClientInputCalcController as InputCalcCtrl")
+            div(class="container" ng-show="InputCalcCtrl.visibility")
+                div(class="row")
+                    div(class="col-xs-12")
+                        form(name="inputForm")
+                            h4 Params for calculation
+                                fieldset
+                            div(class="form-group")
+                                label(class="col-xs-8 control-label")
+                                    h3 TM
+                                div(class="col-xs-4 input-group")
+                                    input(ng-model="InputCalcCtrl.inputParams.TM" type="number" class="form-control input-lg" min="0" max="100" placeholder="TM" required)
+                                    span(class="input-group-addon input-lg") s
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 XDESTR
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.XDESTR" type="number" class="form-control input-lg" min="0" max="100" placeholder="XDESTR" required)
+                                        span(class="input-group-addon input-lg") m
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 EPUR
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.EPUR" type="number" class="form-control input-lg" min="0" max="2" placeholder="EPUR" required)
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 INDEX
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.INDEX" type="number" class="form-control input-lg" min="0" max="1" placeholder="INDEX" required)
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 Angle
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.ALFA" type="number" class="form-control input-lg" min="0" max="60" placeholder="Angle" required)
+                                        span(class="input-group-addon input-lg") °
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 rtetN
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.rtetN" type="number" class="form-control input-lg" min="1" max="6" placeholder="rtetN" required)
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 rtetA
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.rtetA" type="number" class="form-control input-lg" min="0.1" max="100" placeholder="rtetA" required)
+                                        span(class="input-group-addon input-lg") m
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 rtetB
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.rtetB" type="number" class="form-control input-lg" min="0.1" max="100" placeholder="rtetB" required)
+                                        span(class="input-group-addon input-lg") m
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-8 control-label")
+                                        h3 realValues
+                                    div(class="col-xs-4 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.needRealValues" type="checkbox" class="form-control input-lg" placeholder="needRealValues")
+                            fieldset
+                                div Here should be a small preview for shape of an object (if webGL is available)
+                                    fieldset(class="form-group")
+                                a(
+                                    class="btn-lg col-xs-4 pull-right"
+                                    ng-class="{'btn-default': !inputForm.$valid, 'btn-primary': inputForm.$valid}"
+                                    ng-click="inputForm.$valid && InputCalcCtrl.startCalculactions()"
+                                ) Start calculations
+
         div(id="currentTime")
         div(ng-controller="jClientCalcController as CalcCtrl")
             div(class="container" ng-show="true")

@@ -65,7 +65,7 @@ var BBup = BB.BBup;
 //BBup.run();
 
 app.use('/runcalc', function(req, res){
-    BBup.run();
+    BBup.run({});
     res.redirect("/");
 });
 

@@ -26,6 +26,50 @@
         console.log(fontSize, style);
     };
 
+    jClientCalcControllers.controller('jClientInputCalcController', ['$scope', '$window', function($scope, $window) {
+        var self = this;
+        init();
+
+        var BB, data, inputObject, userData;
+
+        function init(){
+            console.log("jClientInputCalcController init");
+
+            userData = {
+                TM: 30,
+                XDESTR: 4,
+                EPUR: 2,
+                INDEX: 0,
+                ALFA: 0,
+                rtetN: 4,
+                rtetA: 2.05,
+                rtetB: 4.05,
+                needRealValues: true
+            };
+            inputObject = {
+                userInput: true,
+                userData: userData
+            };
+
+            self.inputParams = userData;
+            self.visibility = true;
+        }
+
+        function startCalculactions(){
+            self.visibility = false;
+
+            BB.BBup.run(inputObject, $window.runCallback);
+        }
+        this.startCalculactions = startCalculactions;
+
+        $window.onload = function(e) {
+            BB = require('BB');
+            data = new BB.Datatone();
+            //console.log("data", data);
+        };
+
+    }]);
+
     jClientCalcControllers.controller('jClientCalcController', ['$scope', function($scope) {
 
         var self = this;
@@ -37,7 +81,7 @@
             //self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22', 'V01', 'V02', 'S011', 'S012', 'S022'];
             self.dataNames = ['V1', 'V2', 'S11', 'S12', 'S22'];
 
-            console.log("controller init");
+            console.log("jClientCalcController init");
         }
 
         function drawMe(param){
