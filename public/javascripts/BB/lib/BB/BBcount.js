@@ -42,6 +42,30 @@ define(function (require, exports, module) {
         var Complex = numbers.complex;
         var matrix = numbers.matrix;
 
+        // TODO probably my method should be here, but not in numbers.matrix code, also I should test values, so now it stays commented
+        //matrix.scalarSafe = function(arr, value){
+        //    var result = new Array(arr.length);
+        //
+        //    if (!arr[0].length) {
+        //        // This array is vector.
+        //        for (var c in arr) {
+        //            result[c] = arr[c] * value;
+        //        }
+        //    } else {
+        //        for (var k = 0; k < arr.length; k++) {
+        //            result[k] = new Array(arr[0].length);
+        //        }
+        //
+        //        for (var i = 0; i < arr.length; i++) {
+        //            for (var j = 0; j < arr[i].length; j++) {
+        //                result[i][j] = value * arr[i][j];
+        //            }
+        //        }
+        //    }
+        //
+        //    return result;
+        //}
+
         // helpful methods
         function compareWithEps(num1, num2, eps){
             eps = eps || 1e-6;
