@@ -127,7 +127,7 @@ define(function (require, exports, module) {
             countMinMax();
 
             var amplifyColors = false;
-            var amplifyCoef = 2;
+            var amplifyCoef = 1.3;
 
             //var timeStepsCount = Math.round(data.TM/data.STEP);
             // TODO see how counted NBX, it would be correct for G array, but for QP use STEP and STEPX
