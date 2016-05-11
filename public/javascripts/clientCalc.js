@@ -93,6 +93,10 @@ requirejs(['BB'], function(BB) {
         name += data.inputData.rtetB.toFixed(2) + 'B';
         name += '_';
         name += data.inputData.needRealValues ? 'real' : 'norm';
+        if (data.inputData.rtetNoEdge == false){
+            name += '_';
+            name += '(Edge' + data.inputData.rtetVortex.toFixed(0) + 'deg,' + data.inputData.rtetC.toFixed(2) + 'C,' + data.inputData.rtetN1.toFixed(2) + 'N1,' + data.inputData.rtetN2.toFixed(2) + 'N2' + ')';
+        }
         name += '(' + (data.status.duration/1000/60).toFixed(1) + 'min)';
 
         return name;

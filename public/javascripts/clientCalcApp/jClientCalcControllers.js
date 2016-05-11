@@ -44,6 +44,13 @@
                 rtetN: 4,
                 rtetA: 2.05,
                 rtetB: 4.05,
+
+                rtetN1: 1.3,
+                rtetN2: 1.2,
+                rtetC: 4.5,
+                rtetVortex: 0,
+                rtetNoEdge: true,
+
                 needRealValues: true
             };
             inputObject = {
