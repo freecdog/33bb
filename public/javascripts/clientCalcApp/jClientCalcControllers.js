@@ -70,9 +70,13 @@
         this.startCalculactions = startCalculactions;
 
         $window.onload = function(e) {
-            BB = require('BB');
-            data = new BB.Datatone();
-            //console.log("data", data);
+            // TODO it's not working on JNOTE
+            console.warn("setTimeout should not be used");
+            setTimeout(function(){
+                BB = require('BB');
+                data = new BB.Datatone();
+                //console.log("data", data);
+            }, 2000);
         };
 
     }]);

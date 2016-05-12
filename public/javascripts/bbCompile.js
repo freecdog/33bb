@@ -230,6 +230,7 @@ define(function (require, exports, module) {
                 return nearestPoints;
             }
             var showControlPoints = false;
+            // TODO draw graph below table for all points S(T)
             var controlPoints = [
                 { radius: data.XDESTR + data.rtetA, angle: 0 },
                 { radius: data.XDESTR + data.rtetB, angle: 90 },

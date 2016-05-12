@@ -520,13 +520,24 @@ define(function (require, exports, module) {
                                                     (
                                                         (new Complex(RISQ, 0)).multiply(IMV)
                                                     ).add(
-                                                        IM.multiply(Z.multiply(ZC)).multiply(IMC)
+                                                        IM.multiply(Z.subtract(ZC)).multiply( new Complex(IMC, 0) )
                                                     )
                                                 )
                                         )
                                 );
-                                U[0] = Uexpr.re;
-                                U[1] = Uexpr.im;
+
+                                // debug mode
+//                                var ue10 = Z.subtract(ZC);
+//                                var ue11 = IM.multiply(ue10);
+//                                var ue1 = ue11.multiply( new Complex(IMC, 0) );
+//                                var ue2 = (new Complex(RISQ, 0)).multiply(IMV);
+//                                var ue3 = ue2.add(ue1);
+//                                var ue4 = (new Complex(KP, 0)).multiply(ue3);
+//                                var ue5 = (new Complex(Math.cos(-FIM), Math.sin(-FIM))).multiply(ue4);
+//                                Uexpr = ue5;
+
+                                U[0][0] = Uexpr.re;
+                                U[1][0] = Uexpr.im;
                             }
                             U = matrix.multiply(FU, U);
                             var recAUX = new Array(genSize);
@@ -904,7 +915,7 @@ define(function (require, exports, module) {
                 // very last version, letter from Harry 2016.04.19, there should be RO2
                 if (needRealValues){
                     //var realValuesConst = RC2 * C2 * 1e-05 / 0.981; // as it mentioned above it is oldversion
-                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;
+                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;  // atmosphere values (MPa -> RO2 * C2 * 1e-06)
                     for (var c8 in QP){
                         if (!QP.hasOwnProperty(c8)) continue;
 
