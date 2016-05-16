@@ -31,6 +31,8 @@
         init();
 
         var BB, data, inputObject, userData;
+        var objectShapeDomObject, objectShapeChartData, objectShapeChartOptions, objectShapeChartObject;
+        var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
 
         function init(){
             console.log("jClientInputCalcController init");
@@ -73,11 +75,168 @@
             // TODO it's not working on JNOTE
             console.warn("setTimeout should not be used");
             setTimeout(function(){
+                console.warn("But still used. Reason why window.onload is ready before require[BB] can be completed");
                 BB = require('BB');
                 data = new BB.Datatone();
                 //console.log("data", data);
+
+                initCharts(BB, data);
             }, 2000);
         };
+
+        $scope.$watch('InputCalcCtrl.inputParams', function(newValue, oldValue, angularObject){
+            console.log('changed to', newValue, oldValue, angularObject);
+
+            if ($scope.inputForm.$valid){
+                if (BB) {
+                    initCharts(BB, data);
+                } else {
+                    console.warn("BB is not initialized");
+                }
+            } else {
+                console.warn("inputForm is not valid");
+                $scope.InputCalcCtrl.inputParams = oldValue;
+            }
+        }, true);
+
+        function initCharts(BB, data){
+            BB.BBstart.STARTPROC(inputObject, function(){
+                console.log('data', data);
+
+                Chart.defaults.global.defaultFontColor = '#aaaaaa';
+                initObjectShape(data);
+                initWaveShape(data);
+            });
+        }
+
+        function initObjectShape(data){
+            var angleStep = 5;
+            var angles = initAngles();
+            //console.log('angles', angles);
+
+            var vertices = initPositionVertices();
+            //console.warn('vertices', vertices);
+
+            function initAngles(){
+                var angles = [];
+                for (var i = 0; i < data.TP.length; i++){
+                    if (data.TP.hasOwnProperty(i)) {
+                        if (data.TP[i] != null && data.TP[i] != 360 && data.TP[i] % angleStep == 0) {
+                            angles.push(data.TP[i]);
+                        }
+                    }
+                }
+                return angles;
+            }
+
+            function initPositionVertices(){
+                var vertexPositions = [];
+                for (var i = 0; i < data.cavform.length; i = i + angleStep){
+                    vertexPositions.push(data.cavform[i].radius);
+                }
+                return vertexPositions;
+            }
+
+            if (objectShapeDomObject){
+                objectShapeChartData.labels = angles;
+                objectShapeChartData.datasets[0].data = vertices;
+                objectShapeChartObject.update();
+            } else {
+                objectShapeDomObject = document.getElementById("objectShape");
+                objectShapeChartData = {
+                    labels: angles,
+                    datasets: [
+                        {
+                            label: "Object shape R(θ)",
+                            backgroundColor: "rgba(179,181,198,0.2)",
+                            borderColor: "rgba(179,181,198,1)",
+                            pointBackgroundColor: "rgba(179,181,198,1)",
+                            pointBorderColor: "#fff",
+                            pointHoverBackgroundColor: "#fff",
+                            pointHoverBorderColor: "rgba(179,181,198,1)",
+                            data: vertices
+                        },
+                        {
+                            // fake dataset for correct auto size
+                            label: '',
+                            data: [0, 5]
+                        }
+                    ]
+                };
+                objectShapeChartOptions = {
+                    scales: {
+                        scaleLabel: {
+                            fontColor: '#ff0000'
+                        }
+                    }
+                };
+                objectShapeChartObject = Chart.Radar(objectShapeDomObject, {
+                    data: objectShapeChartData,
+                    options: objectShapeChartOptions
+                });
+            }
+
+        }
+
+        function initWaveShape(data){
+            var timeSteps = [];
+            var valueSteps = [];
+
+            if (userData.EPUR == 0){
+                for (var j = -10 ; j < 10 ; j++){
+                    timeSteps.push(j);
+                    valueSteps.push( j >= 0 ? 1 : 0 );
+                }
+            } else {
+                var dataStep = 1;
+                if (userData.EPUR == 2) dataStep = 10;
+
+                for (var i = 0; i < data.waveEpure.length; i = i + dataStep){
+                    timeSteps.push(data.waveEpure[i].T);
+                    valueSteps.push(data.waveEpure[i].value);
+                }
+            }
+
+            if (waveShapeDomObject){
+                waveShapeChartData.labels = timeSteps;
+                waveShapeChartData.datasets[0].data = valueSteps;
+                waveShapeChartObject.update();
+            } else {
+                waveShapeDomObject = document.getElementById("waveShape");
+                waveShapeChartData = {
+                    labels: timeSteps,
+                    datasets: [
+                        {
+                            label: "Wave diagram S(T)",
+                            fill: false,
+                            lineTension: 0.1,
+                            backgroundColor: "rgba(75,192,192,0.4)",
+                            borderColor: "rgba(75,192,192,1)",
+                            borderCapStyle: 'butt',
+                            borderDash: [],
+                            borderDashOffset: 0.0,
+                            borderJoinStyle: 'miter',
+                            pointBorderColor: "rgba(75,192,192,1)",
+                            pointBackgroundColor: "#fff",
+                            pointBorderWidth: 1,
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                            pointHoverBorderColor: "rgba(220,220,220,1)",
+                            pointHoverBorderWidth: 2,
+                            pointRadius: 1,
+                            pointHitRadius: 10,
+                            data: valueSteps
+                        }
+                    ]
+                };
+                waveShapeChartOptions = {};
+                if (waveShapeChartObject) waveShapeChartObject.clear();
+                waveShapeChartObject = Chart.Line(waveShapeDomObject, {
+                    data: waveShapeChartData,
+                    options: waveShapeChartOptions
+                });
+            }
+        }
 
     }]);
 

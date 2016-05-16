@@ -1068,23 +1068,34 @@ define(function (require, exports, module) {
             var TMAX = 50;
             var T = 0;
 
-            var CavformPath = 'BBdat/_Epure.dat'; // looks like path depends on app.js for server side
+            var waveEpure = [];
+            data.waveEpure = waveEpure;
+
+            var EpurePath = 'BBdat/_Epure.dat'; // looks like path depends on app.js for server side
             //noinspection JSUnresolvedFunction
-            var fd = fs.openSync(CavformPath, 'w');
+            var fd = fs.openSync(EpurePath, 'w');
             var recBuffer = new Buffer('T, ' + 'F\n');
             //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
 
+            var value;
             if (EPUR == 1) {
                 while (true){
                     if (T > TPLUS) break;
-                    if (needRealValues) {
-                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (-C2 * C2 * RO2 * TENS(T) * 1E-05 / 0.981).toFixedDef() + '\n');
+                    if (needRealValues){
+                        value = -C2 * C2 * RO2 * TENS(T) * 1E-05 / 0.981;
                     } else {
-                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (TENS(T)).toFixedDef() + '\n');
+                        value = TENS(T);
                     }
+                    recBuffer = new Buffer(T.toFixedDef() + ' ' + (value).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+
+                    waveEpure.push({
+                        T: T.toFixed(5),
+                        value: value.toFixedDef()
+                    });
+
                     T = T + TPLUS/50;
                 }
             } else if (EPUR == 2) {
@@ -1092,12 +1103,19 @@ define(function (require, exports, module) {
                     if (T > TMAX) break;
                     // WRITE(50,'(5X,E10.4,3X,E11.4)') T,TENS(LC*T)    !C2*C2*RO2*TENS(LC*T)*1E-06
                     if (needRealValues){
-                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (C2*C2*RO2*TENS(LC*T)*1E-05/0.981).toFixedDef() + '\n');
+                        value = C2*C2*RO2*TENS(LC*T)*1E-05/0.981;
                     } else {
-                        recBuffer = new Buffer(T.toFixedDef() + ' ' + (TENS(LC*T)).toFixedDef() + '\n');
+                        value = TENS(LC*T);
                     }
+                    recBuffer = new Buffer(T.toFixedDef() + ' ' + (value).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
                     fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
+
+                    waveEpure.push({
+                        T: T.toFixedDef(),
+                        value: value.toFixedDef()
+                    });
+
                     T = T + TMAX/1000;
                 }
             } else {

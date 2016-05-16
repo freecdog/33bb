@@ -12,7 +12,9 @@ requirejs.config({
         THREE: 'three',
         Stats: 'stats',
         dat: 'dat.gui',
-        bbCompile: 'bbCompile'
+        bbCompile: 'bbCompile',
+
+        Chart: 'Chart'
     },
     shim: {
         'THREE': {
@@ -23,11 +25,14 @@ requirejs.config({
         },
         'Stats': {
             exports: 'Stats'
+        },
+        'Chart': {
+            exports: 'Chart'
         }
     }
 });
 
-requirejs(['BB'], function(BB) {
+requirejs(['BB', 'Chart'], function(BB, Chart) {
 //requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
 //requirejs(['BB', document, window], function(BB, document, window) {
     var data = (new BB.Datatone());
