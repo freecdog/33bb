@@ -23,16 +23,16 @@ html
         div(ng-controller="jClientInputCalcController as InputCalcCtrl")
             div(class="container" ng-show="InputCalcCtrl.visibility")
                 div(class="row")
-                    div(class="col-xs-6")
+                    div(class="col-xs-12 col-sm-6")
                         div
                             div
                                 canvas(id="objectShape" width="400" height="400")
                             div
                                 canvas(id="waveShape" width="400" height="400")
 
-                    div(class="col-xs-6")
+                    div(class="col-xs-12 col-sm-6")
                         form(name="inputForm")
-                            h4 Params for calculation
+                            h4 Parameters for calculation
                             fieldset
                                 div(class="form-group")
                                     label(class="col-xs-6 control-label")
@@ -125,10 +125,8 @@ html
                                     div(class="col-xs-6 input-group")
                                         input(ng-model="InputCalcCtrl.inputParams.needRealValues" type="checkbox" class="form-control input-lg" placeholder="needRealValues")
                             fieldset
-                                div Here should be a small preview for shape of an object (if webGL is available)
-                                    fieldset(class="form-group")
                                 a(
-                                    class="btn-lg col-xs-6 pull-right"
+                                    class="btn-lg col-xs-12 pull-right text-center"
                                     ng-class="{'btn-default': !inputForm.$valid, 'btn-primary': inputForm.$valid}"
                                     ng-click="inputForm.$valid && InputCalcCtrl.startCalculactions()"
                                 ) Start calculations

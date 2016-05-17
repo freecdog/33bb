@@ -165,6 +165,8 @@
         function initCharts(data, ctrlPoints){
             console.log("initCharts");
 
+            Chart.defaults.global.defaultFontColor = '#aaaaaa';
+
             if (ctrlPoints.length > 0) {
 
                 if (charts.length > 0) {
@@ -172,6 +174,15 @@
                     //waveShapeChartData.datasets[0].data = valueSteps;
                     //waveShapeChartObject.update();
                 } else {
+
+                    // color.adobe.com Honey Pot
+                    var colorsPresets = [
+                        "rgba(16,91,99,1)",
+                        "rgba(255,250,213,1)",
+                        "rgba(255,211,78,1)",
+                        "rgba(219,158,54,1)",
+                        "rgba(189,73,50,1)"
+                    ];
 
                     var timeLabels = [];
                     for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
@@ -213,7 +224,15 @@
 
                         for (var j = 0; j < ctrlPoints.length; j++) {
                             var pointDataset = angular.copy(datasetTemplate);
-                            pointDataset.label = "R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString();
+
+                            pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
+                            var pointColor = colorsPresets[j % colorsPresets.length];
+                            pointDataset.backgroundColor = pointColor;
+                            pointDataset.borderColor = pointColor;
+                            pointDataset.pointBorderColor = pointColor;
+                            pointDataset.pointHoverBackgroundColor = pointColor;
+                            pointDataset.pointHoverBorderColor = pointColor;
+
                             pointDataset.data = ctrlPoints[j][i];
                             shapeChartData.datasets.push(pointDataset);
                         }
@@ -243,9 +262,10 @@
 
     jBBControllers.controller('jBBDataController', ['$scope', '$window', function($scope, $window) {
         var self = this;
-        init();
 
         var BB, data;
+
+        init();
 
         function init(){
             self.visible = false;
@@ -344,6 +364,108 @@
         }
         this.setDisplayData = setDisplayData;
         $window.setDisplayData = setDisplayData;
+
+    }]);
+
+    jBBControllers.controller('jBBEpureController', ['$scope', '$window', function($scope, $window) {
+        var self = this;
+
+        var BB, data;
+
+        var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
+
+        init();
+
+        function init(){
+            self.visible = false;
+
+            BB = {};
+            data = {};
+        }
+
+        function updateBBData(){
+            BB = require('BB');
+            data = new BB.Datatone();
+            console.log("here is data", data);
+
+            self.data = data;
+        }
+
+        function setEpureData(visibility){
+            self.visible = visibility;
+
+            updateBBData();
+
+            initWaveShape(data);
+
+            $scope.$digest();
+        }
+        this.setEpureData = setEpureData;
+        $window.setEpureData = setEpureData;
+
+        function initWaveShape(data){
+
+            Chart.defaults.global.defaultFontColor = '#fff';
+
+            var userData = data.inputData;
+
+            var timeSteps = [];
+            var valueSteps = [];
+
+            if (userData.EPUR == 0){
+                for (var j = -10 ; j < 10 ; j++){
+                    timeSteps.push(j);
+                    valueSteps.push( j >= 0 ? 1 : 0 );
+                }
+            } else {
+                var dataStep = 1;
+                if (userData.EPUR == 2) dataStep = 10;
+
+                for (var i = 0; i < data.waveEpure.length; i = i + dataStep){
+                    timeSteps.push(data.waveEpure[i].T);
+                    valueSteps.push(data.waveEpure[i].value);
+                }
+            }
+
+            if (waveShapeDomObject){
+                waveShapeChartData.labels = timeSteps;
+                waveShapeChartData.datasets[0].data = valueSteps;
+                waveShapeChartObject.update();
+            } else {
+                waveShapeDomObject = document.getElementById("waveShape");
+                waveShapeChartData = {
+                    labels: timeSteps,
+                    datasets: [
+                        {
+                            label: "Wave diagram S(T)",
+                            fill: false,
+                            lineTension: 0.1,
+                            backgroundColor: "rgba(75,192,192,0.4)",
+                            borderColor: "rgba(75,192,192,1)",
+                            borderCapStyle: 'butt',
+                            borderDash: [],
+                            borderDashOffset: 0.0,
+                            borderJoinStyle: 'miter',
+                            pointBorderColor: "rgba(75,192,192,1)",
+                            pointBackgroundColor: "#fff",
+                            pointBorderWidth: 1,
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                            pointHoverBorderColor: "rgba(220,220,220,1)",
+                            pointHoverBorderWidth: 2,
+                            pointRadius: 1,
+                            pointHitRadius: 10,
+                            data: valueSteps
+                        }
+                    ]
+                };
+                waveShapeChartOptions = {};
+                waveShapeChartObject = Chart.Line(waveShapeDomObject, {
+                    data: waveShapeChartData,
+                    options: waveShapeChartOptions
+                });
+            }
+        }
 
     }]);
 

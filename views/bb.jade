@@ -16,6 +16,9 @@ html
         link(rel='stylesheet' href='/bootstrap/css/bootstrap.css')
         link(rel='stylesheet', href='/stylesheets/style.css')
     body(ng-app="jBBApp" ng-controller="jBBController as BBCtrl")
+
+        div(id="mainCanvasHolder")
+
         div(class="container")
             div(class="row")
                 //- This col-xs-1 is also good for padding when tables with data are shown (because previously V_1, V_2 were hidden because of UI control panel)
@@ -47,22 +50,6 @@ html
                         li(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-class="{active: controlPointsCtrl.isSet($index)}" )
                             a(href ng-click="controlPointsCtrl.setTab($index)") {{tabName}}
 
-                    //-div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
-                        div(id="data{{tabName}}")
-                            table(class="table table-striped table-hover")
-                                tbody
-                                    thead
-                                        th
-                                            span T \ Points
-                                        th
-                                            span Point1
-
-                                    tr(ng-repeat="currentTimeStamp in controlPointsCtrl.ctrlPointS11values track by $index" )
-                                        td
-                                            span {{currentTimeStamp.time}}
-                                        td
-                                            span {{currentTimeStamp.value}}
-
                     //- memOut[dataLayer][time][radius][angle]
                     div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
                         div(id="dataCP{{tabName}}")
@@ -83,55 +70,6 @@ html
                                             span {{controlPointsCtrl.getTimeByTimeIndex($index).toFixed(2)}}
                                         td(ng-repeat="pointIndex in controlPointsCtrl.ctrlPoints track by $index" )
                                             span {{controlPointsCtrl.ctrlPoints[$index][controlPointsCtrl.currentTabIndex][$parent.$index].toFixed(6)}}
-
-                    //-div(ng-repeat="tabName in CalcCtrl.dataNames track by $index" ng-show="tab.isSet( {{$index}} )")
-                        div(id="data{{tabName}}")
-                            div(class="row" ng-repeat="currentCoord in CalcCtrl.data.memOut[$index] track by $index")
-                                table(class="table table-striped table-hover")
-                                    caption X = {{($index * CalcCtrl.data.STEPX).toFixed(2)}}
-                                    tbody
-                                        thead
-                                            th
-                                                //-span T \ ∠
-                                                span(style="float:left;") T
-                                                span(style="float:right;") ∠
-                                            th(ng-repeat="angleValue in CalcCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
-                                                span {{angleValue}}
-
-                                        tr(ng-repeat="currentTimeStamp in currentCoord track by $index" )
-                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" class="active")
-                                                span {{($index * CalcCtrl.data.STEP).toFixed(2)}}
-                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="currentAngle in currentTimeStamp track by $index" ng-click="CalcCtrl.changeCellValueOnServer(this)" class="text-right")
-                                                span {{currentAngle | numberFilter}}
-                                            td(width="{{1/(currentCoord[0].length+1)*100}}%" ng-repeat="fakeAngle in currentCoord[0] track by $index" ng-if="currentTimeStamp.length == 0" class="danger")
-                                                span &nbsp;
-
-        //-div(ng-controller="jBBDataController as BBDataCtrl")
-            div(ng-show="BBDataCtrl.visible")
-
-                section(class="tab")
-                    ul(class="nav nav-tabs")
-                        li(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-class="{active: BBDataCtrl.isSet($index)}" )
-                            a(href ng-click="BBDataCtrl.setTab($index)") {{tabName}}
-
-                    //- memOut[dataLayer][time][radius][angle]
-                    div(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-show="BBDataCtrl.isSet( {{$index}} )")
-                        div(id="data{{tabName}}")
-
-                            div(class="row" ng-repeat="currentRadius in BBDataCtrl.data.memOut[$index] track by $index")
-                                div r = {{currentRadius}}
-
-                                table(class="table table-striped table-hover")
-                                    tbody
-                                        thead
-                                            th
-                                                span T \ ∠
-                                            th(ng-repeat="angleValue in BBDataCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
-                                                span {{angleValue}}
-
-                                        tr(ng-repeat="currentTime in BBDataCtrl.data.memOut[$parent.$index] track by $index" )
-                                            td(ng-repeat="currentAngle in BBDataCtrl.data.memOut[$parent.$parent.$index][$index][$parent.$index] track by $index" )
-                                                span {{BBDataCtrl.data.memOut[$parent.$parent.$parent.$index][$parent.$index][$parent.$parent.$index][$index]}}
 
         div(ng-controller="jBBDataController as BBDataCtrl")
             div(ng-show="BBDataCtrl.visible")
@@ -158,12 +96,8 @@ html
                                             td(ng-repeat="currentAngle in BBDataCtrl.data.limitedData[$parent.$parent.$index][$index][$parent.$index] track by $index" )
                                                 span {{BBDataCtrl.data.limitedData[$parent.$parent.$parent.$index][$parent.$index][$parent.$parent.$index][$index]}}
 
-
-        //-
-            | test
-            p
-                a(href='#', onclick='require("BB").BBup.run()') Run calculations
-            p
-                a(href='#', onclick='(new require("BB").Datatone()).breakCalculation = true') Stop calculations
-
-            div(id='Stats-output')
+        div(ng-controller="jBBEpureController as BBEpureCtrl")
+            div(ng-show="BBEpureCtrl.visible")
+                div Wave epure
+                div
+                    canvas(id="waveShape" width="400" height="400")

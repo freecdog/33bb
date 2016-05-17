@@ -62,7 +62,13 @@ define(function (require, exports, module) {
                 renderer.domElement.style.right = '50px';
             }
             renderer.domElement.style.bottom = '10px';
-            document.body.appendChild( renderer.domElement );
+            var canvasHolder = document.getElementById("mainCanvasHolder");
+            if (canvasHolder){
+                canvasHolder.appendChild( renderer.domElement );
+            } else {
+                console.warn("canvasHolder was not found, appending renderer to document.body");
+                document.body.appendChild( renderer.domElement );
+            }
 
             var axisHelper = new THREE.AxisHelper( 5 );
             scene.add( axisHelper );
@@ -502,7 +508,7 @@ define(function (require, exports, module) {
                 var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
                 geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
             }
-            var controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 5, sizeAttenuation: false } );
+            var controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 10, sizeAttenuation: false } );
             var controlPointsDots = new THREE.PointCloud( geometryControlPoints, controlPointMaterial );
             scene.add( controlPointsDots );
             controlPointsDots.visible = showControlPoints;
@@ -727,6 +733,7 @@ define(function (require, exports, module) {
                 this.cmin = cmin.toFixed(6);
                 this.cmax = cmax.toFixed(6);
                 this.showMemOutData = false;
+                this.showEpureData = false;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -851,6 +858,10 @@ define(function (require, exports, module) {
                 this.changeVisibilityMemOutData = function(){
                     setDisplayData(controls.showMemOutData);
                 };
+
+                this.changeVisibilityEpureData = function(){
+                    setEpureData(controls.showEpureData);
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -889,6 +900,7 @@ define(function (require, exports, module) {
             gui.add(controls, 'cmin');
             gui.add(controls, 'cmax');
             gui.add(controls, 'showMemOutData').onChange(controls.changeVisibilityMemOutData);
+            gui.add(controls, 'showEpureData').onChange(controls.changeVisibilityEpureData);
 
             function initStats() {
                 var stats = new Stats();
