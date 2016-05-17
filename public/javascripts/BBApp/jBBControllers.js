@@ -38,10 +38,13 @@
 
     jBBControllers.controller('jBBController', ['$scope', '$window', function($scope, $window) {
         var self = this;
+        var progressBarHolder, progressBar;
+
         init();
 
         function init(){
-
+            progressBarHolder = document.getElementById("progressBarHolder");
+            progressBar = document.getElementById("progressBar");
         }
 
         var isLoading = true;
@@ -51,9 +54,12 @@
         }
         this.getLoading = getLoading;
 
-        function setLoading(state){
+        function setLoading(state, percentLoaded){
             //console.log("change state to:", state);
             isLoading = state;
+
+            if (progressBar) progressBar.style.width = percentLoaded.toString() + "%";
+
             $scope.$digest();
         }
         this.setLoading = setLoading;
@@ -67,9 +73,11 @@
 
     jBBControllers.controller('jBBControlPointsController', ['$scope', '$window', function($scope, $window) {
         var self = this;
-        init();
-
         var BB, data;
+
+        var charts;
+
+        init();
 
         function init(){
             self.visible = false;
@@ -79,6 +87,8 @@
 
             self.currentTabIndex = 2;
             self.dataNames = $window.dataNames;
+
+            charts = [];
         }
 
         var stepsBeforeT0 = Math.round(data.XDESTR * 1.1 / data.STEPX);
@@ -145,10 +155,89 @@
                 }
             }
 
+            initCharts(data, ctrlPoints);
+
             $scope.$digest();
         }
         this.setControlPointsData = setControlPointsData;
         $window.setControlPointsData = setControlPointsData;
+
+        function initCharts(data, ctrlPoints){
+            console.log("initCharts");
+
+            if (ctrlPoints.length > 0) {
+
+                if (charts.length > 0) {
+                    //waveShapeChartData.labels = timeSteps;
+                    //waveShapeChartData.datasets[0].data = valueSteps;
+                    //waveShapeChartObject.update();
+                } else {
+
+                    var timeLabels = [];
+                    for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
+                        timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                    }
+
+                    var datasetTemplate = {
+                        label: "datasetName",
+                        fill: false,
+                        lineTension: 0.1,
+                        backgroundColor: "rgba(75,192,192,0.4)",
+                        borderColor: "rgba(75,192,192,1)",
+                        borderCapStyle: 'butt',
+                        borderDash: [],
+                        borderDashOffset: 0.0,
+                        borderJoinStyle: 'miter',
+                        pointBorderColor: "rgba(75,192,192,1)",
+                        pointBackgroundColor: "#fff",
+                        pointBorderWidth: 1,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                        pointHoverBorderColor: "rgba(220,220,220,1)",
+                        pointHoverBorderWidth: 2,
+                        pointRadius: 1,
+                        pointHitRadius: 10,
+                        //data: [Math.random(),Math.random(),Math.random()]
+                        data: [Math.random(), Math.random(), Math.random()]
+                    };
+
+                    for (var i = 0; i < data.memOut.length; i++) {
+                        var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
+
+                        shapeDomObject = document.getElementById("diagramCP" + i.toString());
+                        shapeChartData = {
+                            //labels: [1,2,3],
+                            labels: timeLabels,
+                            datasets: []
+                        };
+
+                        for (var j = 0; j < ctrlPoints.length; j++) {
+                            var pointDataset = angular.copy(datasetTemplate);
+                            pointDataset.label = "R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString();
+                            pointDataset.data = ctrlPoints[j][i];
+                            shapeChartData.datasets.push(pointDataset);
+                        }
+
+                        shapeChartOptions = {};
+                        shapeChartObject = Chart.Line(shapeDomObject, {
+                            data: shapeChartData,
+                            options: shapeChartOptions
+                        });
+
+                        charts.push({
+                            shapeDomObject: shapeDomObject,
+                            shapeChartData: shapeChartData,
+                            shapeChartOptions: shapeChartOptions,
+                            shapeChartObject: shapeChartObject
+                        });
+                    }
+
+                }
+            } else {
+                console.log("no charts because of lack of control points:", ctrlPoints);
+            }
+
+        }
 
     }]);
 

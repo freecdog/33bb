@@ -230,7 +230,6 @@
                     ]
                 };
                 waveShapeChartOptions = {};
-                if (waveShapeChartObject) waveShapeChartObject.clear();
                 waveShapeChartObject = Chart.Line(waveShapeDomObject, {
                     data: waveShapeChartData,
                     options: waveShapeChartOptions

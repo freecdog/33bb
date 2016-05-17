@@ -13,7 +13,9 @@ requirejs.config({
         THREE: 'three',
         Stats: 'stats',
         dat: 'dat.gui',
-        bbCompile: 'bbCompile'
+        bbCompile: 'bbCompile',
+
+        Chart: 'Chart'
     },
     shim: {
         'THREE': {
@@ -24,11 +26,14 @@ requirejs.config({
         },
         'Stats': {
             exports: 'Stats'
+        },
+        'Chart': {
+            exports: 'Chart'
         }
     }
 });
 
-requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData) {
+requirejs(['BB', 'bbCompile', 'bulkedData', 'Chart'], function(BB, bbCompile, bulkedData, Chart) {
     console.log("bb is starting");
 
     //data.memOut = bulkedData;
@@ -89,8 +94,6 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
         }
     }
 
-    var progressBarHolder = document.getElementById("progressBarHolder");
-    var progressBar = document.getElementById("progressBar");
     var anchorsHolder = document.getElementById("anchorsHolder");
     function ajaxWrapper(mode, theJson, toUrl, callback){
         var xmlhttp = new XMLHttpRequest();
@@ -100,15 +103,17 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 //console.log(xmlhttp.responseText);
                 callback(xmlhttp.status, xmlhttp.responseText);
-                setLoading(false);
+                setLoading(false, 100);
             }else {
                 callback(xmlhttp.status);
             }
         };
         xmlhttp.onprogress = function(event){
-            setLoading(true);
             //console.log(event.loaded, event.total);
-            if (progressBar) progressBar.style.width = Math.round(event.loaded / event.total * 100).toString() + "%";
+            var percentLoaded = Math.round(event.loaded / event.total * 100);
+            //if (progressBar) progressBar.style.width = percentLoaded.toString() + "%";
+
+            setLoading(true, percentLoaded);
         };
         var parameters = JSON.stringify(theJson);
         xmlhttp.send(parameters);
@@ -125,7 +130,7 @@ requirejs(['BB', 'bbCompile', 'bulkedData'], function(BB, bbCompile, bulkedData)
         h3Object.appendChild(textObj);
         aObject.onclick = function(e){
             //console.log("asd", e);
-            setLoading(true);
+            setLoading(true, 0);
             ajaxWrapper('GET', null, url, startDrawing);
         };
         anchorsHolder.appendChild(divObject);

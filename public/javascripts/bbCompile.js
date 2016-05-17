@@ -491,7 +491,8 @@ define(function (require, exports, module) {
             }
             var nearestPointMaterial = new THREE.PointCloudMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
             var nearestPointsDots = new THREE.PointCloud( geometryNearestPoints, nearestPointMaterial );
-            scene.add( nearestPointsDots );
+            // uncomment to see nearestPoints
+            //scene.add( nearestPointsDots );
             nearestPointsDots.visible = showControlPoints;
 
             var geometryControlPoints = new THREE.Geometry();
