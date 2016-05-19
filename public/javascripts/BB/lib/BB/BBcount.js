@@ -424,35 +424,46 @@ define(function (require, exports, module) {
                                 //for (var c2 = 0; c2 < NBX +1; c2++) {
                                   //  AUX[c1][c2] = [];
                             // probably SOLVED (looks like that for..in is ok), indexes ??? or for..in loop has solved all problems
-                            for (var c8 in AUX){
-                                //if (!AUX.hasOwnProperty(c8)) continue;
-
-                                for (var c9 in AUX[c8]){
-                                    //if (!AUX[c8].hasOwnProperty(c9)) continue;
-
+                            //for (var c8 in AUX){
+                            //    //if (!AUX.hasOwnProperty(c8)) continue;
+                            //
+                            //    for (var c9 in AUX[c8]){
+                            //        //if (!AUX[c8].hasOwnProperty(c9)) continue;
+                            //
+                            //        AUX[c8][c9][IK] = 0;
+                            //    }
+                            //}
+                            for (var c8 = 1; c8 <= genSize; c8++) {
+                                for (var c9 = 0; c9 <= NBX; c9++) {
                                     AUX[c8][c9][IK] = 0;
                                 }
                             }
-                            for (var c10 in G) {
-                                //if (!G.hasOwnProperty(c10)) continue;
-
+                            //for (var c10 in G) {
+                            //    //if (!G.hasOwnProperty(c10)) continue;
+                            //
+                            //    GA[c10 -1][-1] = G[c10][0][I];
+                            //}
+                            for (var c10 = 1; c10 <= genSize; c10++) {
                                 GA[c10 -1][-1] = G[c10][0][I];
                             }
-                            for (var c11 in G) {
-                                //if (!G.hasOwnProperty(c11)) continue;
-
+                            //for (var c11 in G) {
+                            //    //if (!G.hasOwnProperty(c11)) continue;
+                            //
+                            //    GA[c11 -1][0] = G[c11][1][I];
+                            //}
+                            for (var c11 = 1; c11 <= genSize; c11++) {
                                 GA[c11 -1][0] = G[c11][1][I];
                             }
                             for (J = 1; J <= NX; J++){
                                 X = X + DX;
-                                for (var c12 in G) {
-                                    //if (!G.hasOwnProperty(c12)) continue;
-
-                                    GA[c12 -1][1] = G[c12][J+1][I];
-                                }
-                                //for (var c12 = 1; c12 <= 5; c12++) {
+                                //for (var c12 in G) {
+                                //    //if (!G.hasOwnProperty(c12)) continue;
+                                //
                                 //    GA[c12 -1][1] = G[c12][J+1][I];
                                 //}
+                                for (var c12 = 1; c12 <= genSize; c12++) {
+                                    GA[c12 -1][1] = G[c12][J+1][I];
+                                }
                                 P = 1 / ((1 + COM * (X - DX/2)) * LOM);
                                 PP = COM / (1 + COM * (X - DX/2));
                                 LAX = matrix.addition(
@@ -476,27 +487,27 @@ define(function (require, exports, module) {
                                 W = matrix.addition(W, matrix.scalarSafe(U, DT / DX));
 
                                 var recG = new Array(genSize);
-                                for (var c13 in G) {
-                                    //if (!G.hasOwnProperty(c13)) continue;
-
-                                    recG[c13-1] = G[c13][J][I-1];
-                                }
-                                //for (var c13 = 1; c13 <= 5; c13++) {
+                                //for (var c13 in G) {
+                                //    //if (!G.hasOwnProperty(c13)) continue;
+                                //
                                 //    recG[c13-1] = G[c13][J][I-1];
                                 //}
+                                for (var c13 = 1; c13 <= genSize; c13++) {
+                                    recG[c13-1] = G[c13][J][I-1];
+                                }
                                 var recGtrFIYP = matrix.vectorTranspose(recG);
                                 U = matrix.multiply(FIYP, recGtrFIYP); //recG);
 
                                 W = matrix.addition(W, matrix.scalarSafe(U, DT * P / DFI));
 
-                                for (var c14 in G) {
-                                    //if (!G.hasOwnProperty(c14)) continue;
-
-                                    recG[c14-1] = G[c14][J][I+1];
-                                }
-                                //for (var c14 = 1; c14 <= 5; c14++) {
+                                //for (var c14 in G) {
+                                //    //if (!G.hasOwnProperty(c14)) continue;
+                                //
                                 //    recG[c14-1] = G[c14][J][I+1];
                                 //}
+                                for (var c14 = 1; c14 <= genSize; c14++) {
+                                    recG[c14-1] = G[c14][J][I+1];
+                                }
                                 var recGtrFIYM = matrix.vectorTranspose(recG);
                                 U = matrix.multiply(FIYM, recGtrFIYM); // recG);
 
@@ -505,24 +516,24 @@ define(function (require, exports, module) {
                                 LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
                                 LX = matrix.inverse(LX);
                                 W = matrix.multiply(LX, W);
-                                for (var c15 in AUX) {
-                                    //if (!AUX.hasOwnProperty(c15)) continue;
-
-                                    AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
-                                }
-                                //for (var c15 = 1; c15 <= 5; c15++) {
+                                //for (var c15 in AUX) {
+                                //    //if (!AUX.hasOwnProperty(c15)) continue;
+                                //
                                 //    AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
                                 //}
-                                for (var c16 in GA) {
-                                    //if (!GA.hasOwnProperty(c16)) continue;
-
-                                    GA[c16][-1] = GA[c16][0];
-                                    GA[c16][0] = GA[c16][1];
+                                for (var c15 = 1; c15 <= genSize; c15++) {
+                                    AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
                                 }
-                                //for (var c16 = 0; c16 < 5; c16++) {
+                                //for (var c16 in GA) {
+                                //    //if (!GA.hasOwnProperty(c16)) continue;
+                                //
                                 //    GA[c16][-1] = GA[c16][0];
                                 //    GA[c16][0] = GA[c16][1];
                                 //}
+                                for (var c16 = 0; c16 < genSize; c16++) {
+                                    GA[c16][-1] = GA[c16][0];
+                                    GA[c16][0] = GA[c16][1];
+                                }
                             }
                             // ДООПРЕДЕЛЕНИЕ ВЕКТОРА G(:,0,I)
 
@@ -557,36 +568,50 @@ define(function (require, exports, module) {
                             }
                             U = matrix.multiply(FU, U);
                             var recAUX = new Array(genSize);
-                            for (var c17 in AUX) {
-                                //if (!AUX.hasOwnProperty(c17)) continue;
-
+                            //for (var c17 in AUX) {
+                            //    //if (!AUX.hasOwnProperty(c17)) continue;
+                            //
+                            //    recAUX[c17-1] = AUX[c17][1][IK];
+                            //}
+                            for (var c17 = 1; c17 <= genSize; c17++) {
                                 recAUX[c17-1] = AUX[c17][1][IK];
                             }
                             W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                             var recWpU = matrix.addition(W, U);
                             // TODO forEach with "c18 -1"... rewrite
-                            for (var c18 in AUX) {
-                                //if (!AUX.hasOwnProperty(c18)) continue;
-
+                            //for (var c18 in AUX) {
+                            //    //if (!AUX.hasOwnProperty(c18)) continue;
+                            //
+                            //    AUX[c18][0][IK] = recWpU[c18 -1][0];
+                            //} // recWpU[c18 -1]
+                            for (var c18 = 1; c18 <= genSize; c18++) {
                                 AUX[c18][0][IK] = recWpU[c18 -1][0];
                             } // recWpU[c18 -1]
                             if ((I > 1) && (I < NFI-1)) {
                                 // TODO ACC uses value of G array, before it will be counted, is it correct?
                                 // ACC(:,:,I-SN)=(AUX(1:2,:,IS)-G(1:2,:,I-SN))/DT;
                                 for (var c27 = 1; c27 <= 2; c27++){
-                                    for (var c28 in AUX[c27]){
-                                        //if (!AUX[c27].hasOwnProperty(c28)) continue;
-
+                                    //for (var c28 in AUX[c27]){
+                                    //    //if (!AUX[c27].hasOwnProperty(c28)) continue;
+                                    //
+                                    //    ACC[c27][c28][I-SN] = (AUX[c27][c28][IS] - G[c27][c28][I-SN]) / DT;
+                                    //}
+                                    for (var c28 = 0; c28 <= NBX; c28++) {
                                         ACC[c27][c28][I-SN] = (AUX[c27][c28][IS] - G[c27][c28][I-SN]) / DT;
                                     }
                                 }
                                 // G(:,:,I-SN)=AUX(:,:,IS);
-                                for (var c19 in G){
-                                    //if (!G.hasOwnProperty(c19)) continue;
-
-                                    for (var c20 in G[c19]){
-                                        //if (!G[c19].hasOwnProperty(c20)) continue;
-
+                                //for (var c19 in G){
+                                //    //if (!G.hasOwnProperty(c19)) continue;
+                                //
+                                //    for (var c20 in G[c19]){
+                                //        //if (!G[c19].hasOwnProperty(c20)) continue;
+                                //
+                                //        G[c19][c20][I-SN] = AUX[c19][c20][IS];
+                                //    }
+                                //}
+                                for (var c19 = 1; c19 <= genSize; c19++) {
+                                    for (var c20 = 0; c20 <= NBX; c20++) {
                                         G[c19][c20][I-SN] = AUX[c19][c20][IS];
                                     }
                                 }
@@ -605,74 +630,106 @@ define(function (require, exports, module) {
                         // TODO ACC uses value of G array, before it will be counted, is it correct?
                         // ACC(:,:,I+SN)=(AUX(1:2,:,IS)-G(1:2,:,I+SN))/DT;
                         for (var c29 = 1; c29 <= 2; c29++){
-                            for (var c30 in AUX[c29]){
-                                //if (!AUX[c29].hasOwnProperty(c30)) continue;
-
+                            //for (var c30 in AUX[c29]){
+                            //    //if (!AUX[c29].hasOwnProperty(c30)) continue;
+                            //
+                            //    ACC[c29][c30][I+SN] = (AUX[c29][c30][IS] - G[c29][c30][I+SN]) / DT;
+                            //}
+                            for (var c30 = 0; c30 < NBX; c30++) {
                                 ACC[c29][c30][I+SN] = (AUX[c29][c30][IS] - G[c29][c30][I+SN]) / DT;
                             }
                         }
                         // ACC(:,:,I)=(AUX(1:2,:,-(IS+IK))-G(1:2,:,I))/DT;
                         for (var c31 = 1; c31 <= 2; c31++){
-                            for (var c32 in AUX[c31]){
-                                //if (!AUX[c31].hasOwnProperty(c32)) continue;
-
+                            //for (var c32 in AUX[c31]){
+                            //    //if (!AUX[c31].hasOwnProperty(c32)) continue;
+                            //
+                            //    ACC[c31][c32][I+SN] = (AUX[c31][c32][-(IS+IK)] - G[c31][c32][I]) / DT;
+                            //}
+                            for (var c32 = 0; c32 <= NBX; c32++) {
                                 ACC[c31][c32][I+SN] = (AUX[c31][c32][-(IS+IK)] - G[c31][c32][I]) / DT;
                             }
                         }
                         // G(:,:,I+SN)=AUX(:,:,IS);
-                        for (var c33 in G){
-                            //if (!G.hasOwnProperty(c33)) continue;
-
-                            for (var c34 in G[c33]){
-                                //if (!G[c33].hasOwnProperty(c34)) continue;
-
+                        //for (var c33 in G){
+                        //    //if (!G.hasOwnProperty(c33)) continue;
+                        //
+                        //    for (var c34 in G[c33]){
+                        //        //if (!G[c33].hasOwnProperty(c34)) continue;
+                        //
+                        //        G[c33][c34][I+SN] = AUX[c33][c34][IS];
+                        //    }
+                        //}
+                        for (var c33 = 1; c33 <= genSize; c33++) {
+                            for (var c34 = 0; c34 <= NBX; c34++) {
                                 G[c33][c34][I+SN] = AUX[c33][c34][IS];
                             }
                         }
                         // G(:,:,I)=AUX(:,:,-(IS+IK));
-                        for (var c35 in G){
-                            //if (!G.hasOwnProperty(c35)) continue;
-
-                            for (var c36 in G[c35]){
-                                //if (!G[c35].hasOwnProperty(c36)) continue;
-
+                        //for (var c35 in G){
+                        //    //if (!G.hasOwnProperty(c35)) continue;
+                        //
+                        //    for (var c36 in G[c35]){
+                        //        //if (!G[c35].hasOwnProperty(c36)) continue;
+                        //
+                        //        G[c35][c36][I] = AUX[c35][c36][-(IS+IK)];
+                        //    }
+                        //}
+                        for (var c35 = 1; c35 <= genSize; c35++) {
+                            for (var c36 = 0; c36 <= NBX; c36++) {
                                 G[c35][c36][I] = AUX[c35][c36][-(IS+IK)];
                             }
                         }
                         //          !ДООПРЕДЕЛЕЕНИЕ ВЕКТОРОВ G(:,J,0),G(:,J,NFI)
                         // G(:,:,NFI)=G(:,:,1);
-                        for (var c37 in G){
-                            //if (!G.hasOwnProperty(c37)) continue;
-
-                            for (var c38 in G[c37]){
-                                //if (!G[c37].hasOwnProperty(c38)) continue;
-
+                        //for (var c37 in G){
+                        //    //if (!G.hasOwnProperty(c37)) continue;
+                        //
+                        //    for (var c38 in G[c37]){
+                        //        //if (!G[c37].hasOwnProperty(c38)) continue;
+                        //
+                        //        G[c37][c38][NFI] = G[c37][c38][1];
+                        //    }
+                        //}
+                        for (var c37 = 1; c37 <= genSize; c37++) {
+                            for (var c38 = 0; c38 <= NBX; c38++) {
                                 G[c37][c38][NFI] = G[c37][c38][1];
                             }
                         }
                         // G(:,:,0)=G(:,:,NFI-1);
-                        for (var c39 in G){
-                            //if (!G.hasOwnProperty(c39)) continue;
-
-                            for (var c40 in G[c39]){
-                                //if (!G[c39].hasOwnProperty(c40)) continue;
-
+                        //for (var c39 in G){
+                        //    //if (!G.hasOwnProperty(c39)) continue;
+                        //
+                        //    for (var c40 in G[c39]){
+                        //        //if (!G[c39].hasOwnProperty(c40)) continue;
+                        //
+                        //        G[c39][c40][0] = G[c39][c40][NFI-1];
+                        //    }
+                        //}
+                        for (var c39 = 1; c39 <= genSize; c39++) {
+                            for (var c40 = 0; c40 <= NBX; c40++) {
                                 G[c39][c40][0] = G[c39][c40][NFI-1];
                             }
                         }
                         // ACC(:,:,NFI)=ACC(:,:,1);
                         for (var c41 = 1; c41 <= 2; c41++){
-                            for (var c42 in ACC[c41]){
-                                //if (!ACC[c41].hasOwnProperty(c42)) continue;
-
+                            //for (var c42 in ACC[c41]){
+                            //    //if (!ACC[c41].hasOwnProperty(c42)) continue;
+                            //
+                            //    ACC[c41][c42][NFI] = ACC[c41][c42][1];
+                            //}
+                            for (var c42 = 0; c42 <= NBX; c42++) {
                                 ACC[c41][c42][NFI] = ACC[c41][c42][1];
                             }
                         }
                         // ACC(:,:,0)=ACC(:,:,1);
                         for (var c43 = 1; c43 <= 2; c43++){
-                            for (var c44 in ACC[c43]){
-                                //if (!ACC[c43].hasOwnProperty(c44)) continue;
-
+                            //for (var c44 in ACC[c43]){
+                            //    //if (!ACC[c43].hasOwnProperty(c44)) continue;
+                            //
+                            //    ACC[c43][c44][0] = ACC[c43][c44][1];
+                            //}
+                            for (var c44 = 0; c44 <= NBX; c44++) {
                                 ACC[c43][c44][0] = ACC[c43][c44][1];
                             }
                         }
@@ -719,12 +776,13 @@ define(function (require, exports, module) {
                     }
 
                     // 200, goto order to this place
+                    var timeBeforeCountOut = Date.now();
                     if (WT) COUNTOUT(T);
                     T = T1;
                     data.currentT = T;
 
                     jStepsCnt++;
-                    if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()");
+                    if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()", '; CountOut:', Date.now() - timeBeforeCountOut, 'ms');
 
                     //callback();
                     // It should be a joke, but setTimeout works faster or for the same time! How come?
