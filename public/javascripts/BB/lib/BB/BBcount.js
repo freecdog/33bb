@@ -450,6 +450,9 @@ define(function (require, exports, module) {
 
                                     GA[c12 -1][1] = G[c12][J+1][I];
                                 }
+                                //for (var c12 = 1; c12 <= 5; c12++) {
+                                //    GA[c12 -1][1] = G[c12][J+1][I];
+                                //}
                                 P = 1 / ((1 + COM * (X - DX/2)) * LOM);
                                 PP = COM / (1 + COM * (X - DX/2));
                                 LAX = matrix.addition(
@@ -478,6 +481,9 @@ define(function (require, exports, module) {
 
                                     recG[c13-1] = G[c13][J][I-1];
                                 }
+                                //for (var c13 = 1; c13 <= 5; c13++) {
+                                //    recG[c13-1] = G[c13][J][I-1];
+                                //}
                                 var recGtrFIYP = matrix.vectorTranspose(recG);
                                 U = matrix.multiply(FIYP, recGtrFIYP); //recG);
 
@@ -488,6 +494,9 @@ define(function (require, exports, module) {
 
                                     recG[c14-1] = G[c14][J][I+1];
                                 }
+                                //for (var c14 = 1; c14 <= 5; c14++) {
+                                //    recG[c14-1] = G[c14][J][I+1];
+                                //}
                                 var recGtrFIYM = matrix.vectorTranspose(recG);
                                 U = matrix.multiply(FIYM, recGtrFIYM); // recG);
 
@@ -501,12 +510,19 @@ define(function (require, exports, module) {
 
                                     AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
                                 }
+                                //for (var c15 = 1; c15 <= 5; c15++) {
+                                //    AUX[c15][J][IK] = W[c15-1][0]; // W[c15-1];
+                                //}
                                 for (var c16 in GA) {
                                     //if (!GA.hasOwnProperty(c16)) continue;
 
                                     GA[c16][-1] = GA[c16][0];
                                     GA[c16][0] = GA[c16][1];
                                 }
+                                //for (var c16 = 0; c16 < 5; c16++) {
+                                //    GA[c16][-1] = GA[c16][0];
+                                //    GA[c16][0] = GA[c16][1];
+                                //}
                             }
                             // ДООПРЕДЕЛЕНИЕ ВЕКТОРА G(:,0,I)
 
@@ -548,6 +564,7 @@ define(function (require, exports, module) {
                             }
                             W = matrix.multiply(FG, matrix.vectorTranspose(recAUX)); // recAUX);
                             var recWpU = matrix.addition(W, U);
+                            // TODO forEach with "c18 -1"... rewrite
                             for (var c18 in AUX) {
                                 //if (!AUX.hasOwnProperty(c18)) continue;
 
@@ -585,35 +602,6 @@ define(function (require, exports, module) {
 
                     //if (T < 0) goto200();
                     if (T >= 0) {
-                        // old code goes next commented lines
-                        //for (var c21 in G){
-                        //    if (!G.hasOwnProperty(c21)) continue;
-                        //
-                        //    for (var c22 in G[c21]){
-                        //        if (!G[c21].hasOwnProperty(c22)) continue;
-                        //
-                        //        G[c21][c22][I+SN] = AUX[c21][c22][IS];
-                        //    }
-                        //}
-                        //for (var c23 in G){
-                        //    if (!G.hasOwnProperty(c23)) continue;
-                        //
-                        //    for (var c24 in G[c23]){
-                        //        if (!G[c23].hasOwnProperty(c24)) continue;
-                        //
-                        //        G[c23][c24][I] = AUX[c23][c24][-(IS+IK)];
-                        //    }
-                        //}
-                        //for (var c25 in G){
-                        //    if (!G.hasOwnProperty(c25)) continue;
-                        //
-                        //    for (var c26 in G[c25]){
-                        //        if (!G[c25].hasOwnProperty(c26)) continue;
-                        //
-                        //        G[c25][c26][0] = G[c25][c26][NFI-1];
-                        //    }
-                        //}
-
                         // TODO ACC uses value of G array, before it will be counted, is it correct?
                         // ACC(:,:,I+SN)=(AUX(1:2,:,IS)-G(1:2,:,I+SN))/DT;
                         for (var c29 = 1; c29 <= 2; c29++){

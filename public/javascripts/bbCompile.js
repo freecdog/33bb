@@ -18,6 +18,7 @@ define(function (require, exports, module) {
 
         var bbCompile = {};
 
+        // TODO move to angular, it should problems such as separate code to methods
         function start(){
             var startSelf = this;
 
@@ -37,7 +38,6 @@ define(function (require, exports, module) {
             var stats = initStats();
 
             var N = 3; // number of components per vertex
-            var useDuplicate = false;
             var useInvertationColors = false;
 
             var scene = new THREE.Scene();
@@ -63,12 +63,11 @@ define(function (require, exports, module) {
             }
             renderer.domElement.style.bottom = '10px';
             var canvasHolder = document.getElementById("mainCanvasHolder");
-            if (canvasHolder){
-                canvasHolder.appendChild( renderer.domElement );
-            } else {
+            if (!canvasHolder){
                 console.warn("canvasHolder was not found, appending renderer to document.body");
-                document.body.appendChild( renderer.domElement );
+                canvasHolder = document.body;
             }
+            canvasHolder.appendChild( renderer.domElement );
 
             var axisHelper = new THREE.AxisHelper( 5 );
             scene.add( axisHelper );
@@ -366,24 +365,6 @@ define(function (require, exports, module) {
                         vertexPositions.push( [p2x, p2y, defZ] );
                         vertexPositions.push( [p3x, p3y, defZ] );
                         vertexPositions.push( [p4x, p4y, defZ] );
-
-                        // duplicate
-                        if (useDuplicate){
-                            p1x = r2 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
-                            p1y = r2 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
-                            p2x = r1 * Math.cos( deg2rad(currentAngle) ) * axisX - axisX2;
-                            p2y = r1 * Math.sin( deg2rad(currentAngle) ) * axisY - axisY2;
-                            p3x = r2 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
-                            p3y = r2 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
-                            p4x = r1 * Math.cos( deg2rad(nextAngle) ) * axisX - axisX2;
-                            p4y = r1 * Math.sin( deg2rad(nextAngle) ) * axisY - axisY2;
-                            vertexPositions.push( [p1x, 1-p1y -1, defZ] );
-                            vertexPositions.push( [p2x, 1-p2y -1, defZ] );
-                            vertexPositions.push( [p3x, 1-p3y -1, defZ] );
-                            vertexPositions.push( [p2x, 1-p2y -1, defZ] );
-                            vertexPositions.push( [p3x, 1-p3y -1, defZ] );
-                            vertexPositions.push( [p4x, 1-p4y -1, defZ] );
-                        }
                     }
                 }
 
@@ -444,16 +425,6 @@ define(function (require, exports, module) {
                             vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
                         }
 
-
-                        // duplicate
-                        if (useDuplicate){
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0+1][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                            vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
-                        }
                     }
                 }
 
@@ -720,7 +691,6 @@ define(function (require, exports, module) {
                 this.schemeIndex = schemeIndex;
                 this.autoPlay = false;
                 this.invertColors = useInvertationColors;
-                this.duplicate = useDuplicate;
                 this.visualisationSchemeIndex = visualisationSchemeIndex;
                 this.autoUpdateTimer = 0;
                 this.autoUpdateInterval = 10;
@@ -787,15 +757,6 @@ define(function (require, exports, module) {
                         }
 
                     }
-                };
-
-                this.changeDuplicate = function(){
-                    console.error("unfortunately duplicate is not available now");
-                    return;
-
-                    //useDuplicate = controls.duplicate;
-                    //initVertices();
-                    //controls.changeTime();
                 };
 
                 this.changeInvertation = function(){
@@ -880,7 +841,6 @@ define(function (require, exports, module) {
                 'S12.dat': 4
             }).onChange(controls.changeMem);
             //gui.add(controls, 'invertColors').onChange(controls.changeInvertation);
-            //gui.add(controls, 'duplicate').onChange(controls.changeDuplicate);
             gui.add(controls, 'visualisationSchemeIndex', {
                 'Rainbow': 0,
                 'HSV': 1,
