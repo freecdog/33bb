@@ -14,7 +14,12 @@ requirejs.config({
         dat: 'dat.gui',
         bbCompile: 'bbCompile',
 
-        Chart: 'Chart'
+        Chart: 'Chart',
+
+        angular: 'angular',
+        'ui-bootstrap-tpls-0.12.0': 'ui-bootstrap-tpls-0.12.0',
+        jClientCalcApp: 'clientCalcApp/jClientCalcApp',
+        jClientCalcControllers: 'clientCalcApp/jClientCalcControllers'
     },
     shim: {
         'THREE': {
@@ -28,13 +33,29 @@ requirejs.config({
         },
         'Chart': {
             exports: 'Chart'
+        },
+        'angular': {
+            exports: 'angular'
+        },
+        'jClientCalcApp': {
+            deps:['angular']
+        },
+        'jClientCalcControllers': {
+            deps: ['jClientCalcApp']
         }
     }
 });
 
-requirejs(['BB', 'Chart'], function(BB, Chart) {
+requirejs(['BB', 'Chart', 'angular', 'jClientCalcApp', 'jClientCalcControllers'], function(BB, Chart, angular, jClientCalcApp, jClientCalcControllers) {
 //requirejs(['BB', 'bbCompile'], function(BB, bbCompile) {
 //requirejs(['BB', document, window], function(BB, document, window) {
+    console.warn(angular, jClientCalcApp, jClientCalcControllers);
+
+    // init angular application (instead of ng-app directive in view)
+    angular.element(document).ready(function() {
+        angular.bootstrap(document, [jClientCalcApp.name]);
+    });
+
     var data = (new BB.Datatone());
     //BB.BBup.run({}, runCallback);
 

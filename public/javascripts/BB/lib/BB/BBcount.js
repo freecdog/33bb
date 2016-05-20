@@ -961,7 +961,7 @@ define(function (require, exports, module) {
                 // very last version, letter from Harry 2016.04.19, there should be RO2
                 if (needRealValues){
                     //var realValuesConst = RC2 * C2 * 1e-05 / 0.981; // as it mentioned above it is oldversion
-                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;  // atmosphere values (MPa -> RO2 * C2 * 1e-06)
+                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;  // atmosphere values (if you want MegaPascals -> RO2 * C2 * 1e-06)
                     for (var c8 in QP){
                         if (!QP.hasOwnProperty(c8)) continue;
 

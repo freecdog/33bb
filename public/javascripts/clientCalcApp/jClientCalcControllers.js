@@ -62,6 +62,9 @@
 
             self.inputParams = userData;
             self.visibility = true;
+
+            initBB();
+            initCharts(BB, data);
         }
 
         function startCalculactions(){
@@ -71,18 +74,24 @@
         }
         this.startCalculactions = startCalculactions;
 
-        $window.onload = function(e) {
-            // TODO it's not working on JNOTE
-            console.warn("setTimeout should not be used");
-            setTimeout(function(){
-                console.warn("But still used. Reason why window.onload is ready before require[BB] can be completed");
-                BB = require('BB');
-                data = new BB.Datatone();
-                //console.log("data", data);
+        //$window.onload = function(e) {
+        //    // TODO it's not working on JNOTE
+        //    console.warn("setTimeout should not be used");
+        //    setTimeout(function(){
+        //        console.warn("But still used. Reason why window.onload is ready before require[BB] can be completed");
+        //        BB = require('BB');
+        //        data = new BB.Datatone();
+        //        //console.log("data", data);
+        //
+        //        initCharts(BB, data);
+        //    }, 2000);
+        //};
 
-                initCharts(BB, data);
-            }, 2000);
-        };
+        function initBB(callback){
+            BB = require('BB');
+            data = new BB.Datatone();
+            //console.log("data", data);
+        }
 
         $scope.$watch('InputCalcCtrl.inputParams', function(newValue, oldValue, angularObject){
             console.log('changed to', newValue, oldValue, angularObject);
@@ -183,7 +192,7 @@
             var valueSteps = [];
 
             if (userData.EPUR == 0){
-                for (var j = -10 ; j < 10 ; j++){
+                for (var j = -data.XDESTR ; j <= Math.floor(data.TM); j++){
                     timeSteps.push(j);
                     valueSteps.push( j >= 0 ? 1 : 0 );
                 }

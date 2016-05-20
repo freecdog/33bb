@@ -455,6 +455,7 @@ define(function (require, exports, module) {
 
             // TODO ask Harry about S0. FF(S0), TENS(FF), WAVEEPURE(TENS); INITLOAD(TENS), COUNTOUT(TENS).
             if (needRealValues){
+                // TODO Shouldn't we use (1e-05/0.981 or 9.869*1e-06 [1/101325 google] )
                 console.log('S0 =', S0 *C2*RC2*1E-06);
             } else {
                 console.log('S0 =', S0);

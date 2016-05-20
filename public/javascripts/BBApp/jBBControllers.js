@@ -413,7 +413,7 @@
             var valueSteps = [];
 
             if (userData.EPUR == 0){
-                for (var j = -10 ; j < 10 ; j++){
+                for (var j = -data.XDESTR ; j <= Math.floor(data.TM); j++){
                     timeSteps.push(j);
                     valueSteps.push( j >= 0 ? 1 : 0 );
                 }
