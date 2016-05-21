@@ -41,6 +41,7 @@ html
                                     div(class="col-xs-6 input-group")
                                         input(ng-model="InputCalcCtrl.inputParams.TM" type="number" class="form-control input-lg" min="0" max="60" placeholder="TM" required)
                                         span(class="input-group-addon input-lg") s
+                                h4(class='col-xs-12 text-warning' ng-show="InputCalcCtrl.inputParams.TM>30") Use firefox for TM > 30s
                             fieldset
                                 div(class="form-group")
                                     label(class="col-xs-6 control-label")

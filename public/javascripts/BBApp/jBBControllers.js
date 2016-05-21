@@ -418,6 +418,7 @@
                     valueSteps.push( j >= 0 ? 1 : 0 );
                 }
             } else {
+                // TODO with X > 12, waveepure draw nothing
                 var dataStep = 1;
                 if (userData.EPUR == 2) dataStep = 10;
 

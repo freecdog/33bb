@@ -268,6 +268,7 @@ define(function (require, exports, module) {
                         ALFA: 0,
                         SPLIT: false,
                         RZ: 2.55E-02,   // TODO what is it?
+                        // TODO with X > 12, waveepure draw nothing
                         X: 10,  // X only matters when EPUR == 1 or SPLIT == true
                         RO2: 2.7E03,    // TODO what material is it?
                         C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
