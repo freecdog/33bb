@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html manifest="example.mf">
+ <head>
+  <title>Worker example: Multicore computation</title>
+ </head>
+ <body>
+ <p>From:
+  <a href="https://html.spec.whatwg.org/multipage/workers.html#delegation">https://html.spec.whatwg.org/multipage/workers.html#delegation</a>
+ </p>
+ <p>Chrome had bug with nested workers:
+   <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=31666">https://bugs.chromium.org/p/chromium/issues/detail?id=31666</a>
+ </p>
+ <p>
+  Now we started multithreaded caclulation after that single-thread calculation will be started. See console (firefox: ctrl+shift+K) for more information.
+ </p>
+ <p>
+  TODO: It seems that every subworker try to fetch core.js from server. Try to use cache
+  <a href="http://www.html5rocks.com/en/tutorials/appcache/beginner/">http://www.html5rocks.com/en/tutorials/appcache/beginner/</a>
+ </p>
+ <p>
+  I've started to try. See example.mf file.
+ </p>
+ <p>Result: <output id="result"></output></p>
+  <script>
+
+   var timeAtStart = Date.now();
+   var worker = new Worker('worker.js');
+   worker.onmessage = function (event) {
+     document.getElementById('result').textContent = event.data;
+	 console.log('multithread', Date.now() - timeAtStart, 'ms');
+	 
+	 timeAtStart = Date.now();
+	 var j = 0;
+	 for (var i = 0; i < 8e9; i++){
+		j+=1;
+	 }
+	 console.log(1, j);
+	 console.log('single-thread', Date.now() - timeAtStart, 'ms');
+	 
+   };
+  </script>
+ </body>
+</html>

@@ -1,0 +1,4 @@
+﻿CACHE MANIFEST
+1.htm
+worker.js
+core.js
