@@ -69,6 +69,8 @@ define(function (require, exports, module) {
             }
             canvasHolder.appendChild( renderer.domElement );
 
+            renderer.domElement.addEventListener("click", clickOnCanvas);
+
             var axisHelper = new THREE.AxisHelper( 5 );
             scene.add( axisHelper );
 
@@ -250,14 +252,19 @@ define(function (require, exports, module) {
             //    controlPoints.push(testPoint);
             //}
             var nearestPoints = [];
-            for (var currentControlPoint in controlPoints){
-                nearestPoints.push(findNearestFourPointsToPoint(controlPoints[currentControlPoint]));
-            }
+            findNearestPoints();
             console.log("controlPoints", controlPoints, "nearestPoints", nearestPoints);
 
             data.angles = angles;
             data.controlPoints = controlPoints;
             data.nearestPoints = nearestPoints;
+
+            function findNearestPoints(){
+                nearestPoints.length = 0;
+                for (var currentControlPoint in controlPoints){
+                    nearestPoints.push(findNearestFourPointsToPoint(controlPoints[currentControlPoint]));
+                }
+            }
 
             function findNearestCavFormAngle(angle){
                 var minDiff = Number.MAX_VALUE;
@@ -276,6 +283,7 @@ define(function (require, exports, module) {
             function deg2rad(angle){ return angle / 180 * Math.PI; }
 
             var totalRadius = 1;
+            var totalRadiusOffset = 1.05;
             function calcTotalRadius(){
                 // SOLVED we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
                 var maxRadius = data.cavform[0].radius;
@@ -284,7 +292,7 @@ define(function (require, exports, module) {
                 }
                 console.log("maxRadius", maxRadius);
 
-                return (maxRadius + data.XDESTR) * 1.05; // *1.05 to show axis
+                return (maxRadius + data.XDESTR) * totalRadiusOffset; // *1.05 to show axis
             }
             function initPositionVertices(){
                 vertexPositions = [];
@@ -672,6 +680,61 @@ define(function (require, exports, module) {
                 return realTime;
             }
 
+            function convertCortesianToPolar(screenWidth, screenHeight, pointerX, pointerY, invertY){
+                var screenX = screenWidth;
+                var screenX2 = screenX / 2;
+                var screenY = screenHeight;
+                var screenY2 = screenY / 2;
+
+                var mouseX = pointerX; // can't set (pointX, pointY) to (1,1)
+                var mouseY = pointerY;
+                if (invertY) mouseY = screenY - mouseY;
+
+                var pointX = (mouseX - screenX2) / screenX2;
+                var pointY = (mouseY - screenY2) / screenY2;
+                //console.warn(pointX, pointY);
+
+                var pointDistanceToCenter = Math.sqrt(pointX*pointX + pointY*pointY);
+                var pointRadius = pointDistanceToCenter * totalRadius;
+                //console.warn(pointDistanceToCenter, pointRadius);
+
+                var pointAngle = 90 - (Math.atan( pointY / pointX) ) * 180 / Math.PI;
+                if (pointX < 0) pointAngle += 180;
+                //console.warn(pointAngle);
+
+                return { radius: pointRadius, angle: pointAngle};
+            }
+
+            function clickOnCanvas(event){
+                var screenWidth = renderer.domElement.width;
+                var screenHeight = renderer.domElement.height;
+                var mouseX = event.offsetX; // can't set (pointX, pointY) to (1,1)
+                var mouseY = screenHeight - (event.offsetY);
+
+                //controlPoints = [];
+                controlPoints.length = 0;
+                controlPoints.push( convertCortesianToPolar(screenWidth, screenHeight, mouseX, mouseY) );
+
+                controlPointsDots.visible = false;
+
+                geometryControlPoints = new THREE.Geometry();
+                for (var pointIndex in controlPoints){
+                    var controlPoint = controlPoints[pointIndex];
+                    var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
+                    var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
+                    geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
+                }
+                controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 10, sizeAttenuation: false } );
+                controlPointsDots = new THREE.PointCloud( geometryControlPoints, controlPointMaterial );
+                scene.add( controlPointsDots );
+                controlPointsDots.visible = controls.showControlPoints;
+
+                // it is important, because data for points are fetched from nearestPoints array
+                findNearestPoints();
+
+                setControlPointsData(controls.showCPData);
+            }
+
             // RENDER
             function render() {
                 renderer.render(scene, camera);
@@ -704,6 +767,7 @@ define(function (require, exports, module) {
                 this.cmax = cmax.toFixed(6);
                 this.showMemOutData = false;
                 this.showEpureData = false;
+                this.testButton = false;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -823,6 +887,10 @@ define(function (require, exports, module) {
                 this.changeVisibilityEpureData = function(){
                     setEpureData(controls.showEpureData);
                 };
+
+                this.testButtonChange = function(){
+                    console.warn("nothing");
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -861,6 +929,7 @@ define(function (require, exports, module) {
             gui.add(controls, 'cmax');
             gui.add(controls, 'showMemOutData').onChange(controls.changeVisibilityMemOutData);
             gui.add(controls, 'showEpureData').onChange(controls.changeVisibilityEpureData);
+            gui.add(controls, 'testButton').onChange(controls.testButtonChange);
 
             function initStats() {
                 var stats = new Stats();

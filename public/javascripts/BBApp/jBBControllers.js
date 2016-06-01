@@ -169,48 +169,90 @@
 
             if (ctrlPoints.length > 0) {
 
+                // color.adobe.com Honey Pot
+                var colorsPresets = [
+                    "rgba(16,91,99,1)",
+                    "rgba(255,250,213,1)",
+                    "rgba(255,211,78,1)",
+                    "rgba(219,158,54,1)",
+                    "rgba(189,73,50,1)"
+                ];
+
+                var timeLabels = [];
+                for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
+                    timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                }
+
+                var datasetTemplate = {
+                    label: "datasetName",
+                    fill: false,
+                    lineTension: 0.1,
+                    backgroundColor: "rgba(75,192,192,0.4)",
+                    borderColor: "rgba(75,192,192,1)",
+                    borderCapStyle: 'butt',
+                    borderDash: [],
+                    borderDashOffset: 0.0,
+                    borderJoinStyle: 'miter',
+                    pointBorderColor: "rgba(75,192,192,1)",
+                    pointBackgroundColor: "#fff",
+                    pointBorderWidth: 1,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                    pointHoverBorderColor: "rgba(220,220,220,1)",
+                    pointHoverBorderWidth: 2,
+                    pointRadius: 1,
+                    pointHitRadius: 10,
+                    //data: [Math.random(),Math.random(),Math.random()]
+                    data: [Math.random(), Math.random(), Math.random()]
+                };
+
                 if (charts.length > 0) {
+                    // TODO it would be nice if you manage this repetition code, but it's needed to calc all graphs
                     //waveShapeChartData.labels = timeSteps;
                     //waveShapeChartData.datasets[0].data = valueSteps;
                     //waveShapeChartObject.update();
-                } else {
 
-                    // color.adobe.com Honey Pot
-                    var colorsPresets = [
-                        "rgba(16,91,99,1)",
-                        "rgba(255,250,213,1)",
-                        "rgba(255,211,78,1)",
-                        "rgba(219,158,54,1)",
-                        "rgba(189,73,50,1)"
-                    ];
+                    charts.length = 0;
+                    for (var i = 0; i < data.memOut.length; i++) {
+                        var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
 
-                    var timeLabels = [];
-                    for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
-                        timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                        shapeDomObject = document.getElementById("diagramCP" + i.toString());
+                        shapeChartData = {
+                            //labels: [1,2,3],
+                            labels: timeLabels,
+                            datasets: []
+                        };
+
+                        for (var j = 0; j < ctrlPoints.length; j++) {
+                            var pointDataset = angular.copy(datasetTemplate);
+
+                            pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
+                            var pointColor = colorsPresets[j % colorsPresets.length];
+                            pointDataset.backgroundColor = pointColor;
+                            pointDataset.borderColor = pointColor;
+                            pointDataset.pointBorderColor = pointColor;
+                            pointDataset.pointHoverBackgroundColor = pointColor;
+                            pointDataset.pointHoverBorderColor = pointColor;
+
+                            pointDataset.data = ctrlPoints[j][i];
+                            shapeChartData.datasets.push(pointDataset);
+                        }
+
+                        shapeChartOptions = {};
+                        shapeChartObject = Chart.Line(shapeDomObject, {
+                            data: shapeChartData,
+                            options: shapeChartOptions
+                        });
+
+                        charts.push({
+                            shapeDomObject: shapeDomObject,
+                            shapeChartData: shapeChartData,
+                            shapeChartOptions: shapeChartOptions,
+                            shapeChartObject: shapeChartObject
+                        });
                     }
 
-                    var datasetTemplate = {
-                        label: "datasetName",
-                        fill: false,
-                        lineTension: 0.1,
-                        backgroundColor: "rgba(75,192,192,0.4)",
-                        borderColor: "rgba(75,192,192,1)",
-                        borderCapStyle: 'butt',
-                        borderDash: [],
-                        borderDashOffset: 0.0,
-                        borderJoinStyle: 'miter',
-                        pointBorderColor: "rgba(75,192,192,1)",
-                        pointBackgroundColor: "#fff",
-                        pointBorderWidth: 1,
-                        pointHoverRadius: 5,
-                        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                        pointHoverBorderColor: "rgba(220,220,220,1)",
-                        pointHoverBorderWidth: 2,
-                        pointRadius: 1,
-                        pointHitRadius: 10,
-                        //data: [Math.random(),Math.random(),Math.random()]
-                        data: [Math.random(), Math.random(), Math.random()]
-                    };
+                } else {
 
                     for (var i = 0; i < data.memOut.length; i++) {
                         var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
