@@ -732,7 +732,7 @@ define(function (require, exports, module) {
                 // it is important, because data for points are fetched from nearestPoints array
                 findNearestPoints();
 
-                setControlPointsData(controls.showCPData);
+                setControlPointsData(controls.showCPData, controls.invertCPData);
             }
 
             // RENDER
@@ -767,7 +767,7 @@ define(function (require, exports, module) {
                 this.cmax = cmax.toFixed(6);
                 this.showMemOutData = false;
                 this.showEpureData = false;
-                this.testButton = false;
+                this.invertCPData = false;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -877,7 +877,7 @@ define(function (require, exports, module) {
                 };
 
                 this.changeVisibilityCPData = function(){
-                    setControlPointsData(controls.showCPData);
+                    setControlPointsData(controls.showCPData, controls.invertCPData);
                 };
 
                 this.changeVisibilityMemOutData = function(){
@@ -888,8 +888,9 @@ define(function (require, exports, module) {
                     setEpureData(controls.showEpureData);
                 };
 
-                this.testButtonChange = function(){
-                    console.warn("nothing");
+                this.invertCPDataButtonChange = function(){
+                    console.warn("testing");
+                    setControlPointsData(controls.showCPData, controls.invertCPData);
                 };
             };
 
@@ -929,7 +930,7 @@ define(function (require, exports, module) {
             gui.add(controls, 'cmax');
             gui.add(controls, 'showMemOutData').onChange(controls.changeVisibilityMemOutData);
             gui.add(controls, 'showEpureData').onChange(controls.changeVisibilityEpureData);
-            gui.add(controls, 'testButton').onChange(controls.testButtonChange);
+            gui.add(controls, 'invertCPData').onChange(controls.invertCPDataButtonChange);
 
             function initStats() {
                 var stats = new Stats();
