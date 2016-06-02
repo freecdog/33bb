@@ -212,6 +212,10 @@
                     //waveShapeChartData.datasets[0].data = valueSteps;
                     //waveShapeChartObject.update();
 
+                    for (var c1 = 0; c1 < charts.length; c1++){
+                        charts[c1].shapeChartObject.destroy();
+                    }
+
                     charts.length = 0;
                     for (var i = 0; i < data.memOut.length; i++) {
                         var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
@@ -292,6 +296,7 @@
                             shapeChartObject: shapeChartObject
                         });
                     }
+                    console.warn(charts);
 
                 }
             } else {
