@@ -24,6 +24,8 @@ define(function (require, exports, module) {
 
             var BB = require('BB');
             var data = new BB.Datatone();
+            var FUNC2 = BB.FUNC2;
+            var RTET = FUNC2.RTET;
 
             var THREE = require('THREE');
             var Stats = require('Stats');
@@ -197,6 +199,7 @@ define(function (require, exports, module) {
 
                 return dist;
             }
+            // TODO recalculate to Polar from Mizes
             function findNearestFourPointsToPoint(point){
                 point = point || {radius: 0, angle: 0}; // angle in degree
                 var nearestPoints = [
@@ -282,17 +285,63 @@ define(function (require, exports, module) {
             }
             function deg2rad(angle){ return angle / 180 * Math.PI; }
 
+            // TODO it could be movedto FUNC2 with name SinGamma
+            function derivativeR0(T){
+                // from FUNC2.RCURB()
+                var DR1, R0, R1, DT = 0.0000000001;
+                R1 = RTET(T + DT);
+                R0 = RTET(T - DT);
+                DR1 = (R1 - R0) / (2 * DT);
+                return DR1;
+            }
+            function fromMizesToPolar(Th, X){
+                var ans = { phi: 0, radius: 0 };
+                //return {phi: Th, radius: X};
+
+                var theta = Th * Math.PI / 180;
+
+                var R0 = RTET(theta);
+                var DR1 = derivativeR0(theta);
+                var sinGamma = DR1 / (Math.sqrt( R0*R0 + DR1*DR1 ));
+                var cosGamma = R0 / (Math.sqrt( R0*R0 + DR1*DR1 ));
+                //ans.sinGamma = sinGamma;
+
+                ans.radius = Math.sqrt( R0*R0 + X*X + 2*R0*X*cosGamma );
+
+                var betta = Math.asin(X / ans.radius * sinGamma);
+                ans.phi = theta - betta;
+                ans.phi = ans.phi * 180 / Math.PI;
+                ans.betta = betta * 180 / Math.PI;
+
+                return ans;
+            }
+            for (var mi = 0; mi <= 5; mi = mi + 0.5){
+                var mians = fromMizesToPolar(80, mi);
+                console.log(mi, mians);
+            }
+            for (var mi = 0; mi <= 360; mi = mi + 5){
+                var mians = fromMizesToPolar(mi, data.XDESTR);
+                console.log(mi, mians);
+            }
+
             var totalRadius = 1;
             var totalRadiusOffset = 1.05;
             function calcTotalRadius(){
                 // SOLVED we are using special radius that had been moved from FUNC2.js (RTET) to configuration, actually there can be not only circle
-                var maxRadius = data.cavform[0].radius;
+                var maxIndex = 0;
+                var maxRadius = data.cavform[maxIndex].radius;
                 for (var c2 = 1, cfLength = data.cavform.length; c2 < cfLength; c2++){
-                    maxRadius = Math.max(maxRadius, data.cavform[c2].radius);
+                    if (data.cavform[c2].radius > maxRadius){
+                        maxRadius = data.cavform[c2].radius;
+                        maxIndex = c2;
+                    }
+                    //maxRadius = Math.max(maxRadius, data.cavform[c2].radius);
                 }
-                console.log("maxRadius", maxRadius);
+                console.log("maxRadius", maxRadius, maxIndex);
 
-                return (maxRadius + data.XDESTR) * totalRadiusOffset; // *1.05 to show axis
+                var ans = fromMizesToPolar(data.cavform[maxIndex].TETA, data.XDESTR).radius;
+                //return (maxRadius + data.XDESTR) * totalRadiusOffset; // *1.05 to show axis
+                return ans * totalRadiusOffset; // *1.05 to show axis
             }
             function initPositionVertices(){
                 vertexPositions = [];
@@ -302,9 +351,10 @@ define(function (require, exports, module) {
                 var objectRadius1, objectRadius2;
                 totalRadius = calcTotalRadius();
 
-                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0=c0+1){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
+                        // Theta
                         var currentAngle = angles[c1];
                         var nextAngle = angles[c1+1];
 
@@ -318,10 +368,30 @@ define(function (require, exports, module) {
                             objectRadius1 = data.cavform[currentAngle].radius;
                             objectRadius2 = data.cavform[nextAngle].radius;
                         }
+                        // X
                         r1 = objectRadius1 + c0 * data.STEPX;
                         r2 = r1 + data.STEPX;
                         r3 = objectRadius2 + c0 * data.STEPX;
                         r4 = r3 + data.STEPX;
+
+                        // transfer from Mizes to Polar
+                        var mp1 = fromMizesToPolar(currentAngle, c0 * data.STEPX);
+                        var mp2 = fromMizesToPolar(currentAngle, (c0+1) * data.STEPX);
+                        var mp3 = fromMizesToPolar(nextAngle, c0 * data.STEPX);
+                        var mp4 = fromMizesToPolar(nextAngle, (c0+1) * data.STEPX);
+
+                        currentAngle = mp1.phi;
+                        var currentAngle2 = mp2.phi;
+                        nextAngle = mp3.phi;
+                        var nextAngle2 = mp4.phi;
+                        r1 = mp1.radius;
+                        r2 = mp2.radius;
+                        r3 = mp3.radius;
+                        r4 = mp4.radius;
+
+                        if (c1 == 4){
+                            var b=0;
+                        }
 
                         // normalization of radiuses
                         r1 = r1 / totalRadius;
@@ -350,12 +420,12 @@ define(function (require, exports, module) {
                         //p4y = r1 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
 
                         // zero degree angle is on the top
-                        p1x = r2 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
-                        p1y = r2 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
+                        p1x = r2 * Math.sin( deg2rad(currentAngle2) ) * axisX - axisX2;
+                        p1y = r2 * Math.cos( deg2rad(currentAngle2) ) * axisY - axisY2;
                         p2x = r1 * Math.sin( deg2rad(currentAngle) ) * axisX - axisX2;
                         p2y = r1 * Math.cos( deg2rad(currentAngle) ) * axisY - axisY2;
-                        p3x = r4 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
-                        p3y = r4 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
+                        p3x = r4 * Math.sin( deg2rad(nextAngle2) ) * axisX - axisX2;
+                        p3y = r4 * Math.cos( deg2rad(nextAngle2) ) * axisY - axisY2;
                         p4x = r3 * Math.sin( deg2rad(nextAngle) ) * axisX - axisX2;
                         p4y = r3 * Math.cos( deg2rad(nextAngle) ) * axisY - axisY2;
 
@@ -390,7 +460,7 @@ define(function (require, exports, module) {
                 //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
-                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0++){
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0=c0+1){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                         var isInvert = useInvertationColors;

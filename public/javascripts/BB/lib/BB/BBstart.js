@@ -269,7 +269,7 @@ define(function (require, exports, module) {
                         SPLIT: false,
                         RZ: 2.55E-02,   // TODO what is it?
                         // TODO with X > 12, waveepure draw nothing
-                        X: 10,  // X only matters when EPUR == 1 or SPLIT == true
+                        X: 100,  // meters to explosion,  X only matters when EPUR == 1 or SPLIT == true
                         RO2: 2.7E03,    // TODO what material is it?
                         C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
                         GAPOIS: false,  // TODO what is it and POIS, GAMMA and B variables?
@@ -424,8 +424,8 @@ define(function (require, exports, module) {
             if (EPUR == 0) {
                 S0 = 1;
             } else if (EPUR == 1) {
-                X = X / RZ;
-                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
+//                X = X / RZ;
+//                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
                 A1 = (0.325 + 0.16E-06 * RC2) * 1E-03;
                 A2 = (0.47 - 0.113E-07 * RC2) * 1E-04;
                 B1 = 178 + 3.49E-06 * RC2;
@@ -434,9 +434,14 @@ define(function (require, exports, module) {
                 BETTA = (B1 + B2*X) / RZ;
                 ALEF = BETTA / Math.tan(BETTA * TH);
                 TPLUS = Math.PI / BETTA;
+                // Moved here from the start of EPUR==1, so values would be more clear
+                X = X / RZ;
+                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
             } else if (EPUR == 2) {
                 if (needRealValues){
-                    S0=9.6*1E06/(C2*RC2);
+                    // for calculation SHOULD be in MPa
+//                    S0=9.6*1E06/(C2*RC2);
+                    S0=0.96*1E06/(C2*RC2);  // because 100atm is too much
                 } else {
                     S0 = 1;
                 }
@@ -457,7 +462,8 @@ define(function (require, exports, module) {
             // TODO ask Harry about S0. FF(S0), TENS(FF), WAVEEPURE(TENS); INITLOAD(TENS), COUNTOUT(TENS).
             if (needRealValues){
                 // TODO Shouldn't we use (1e-05/0.981 or 9.869*1e-06 [1/101325 google] )
-                console.log('S0 =', S0 *C2*RC2*1E-06);
+                // for calculation SHOULD be in MPa
+                console.log('S0 =', S0 *C2*RC2*1E-05/0.981);
             } else {
                 console.log('S0 =', S0);
             }
