@@ -315,14 +315,14 @@ define(function (require, exports, module) {
 
                 return ans;
             }
-            for (var mi = 0; mi <= 5; mi = mi + 0.5){
-                var mians = fromMizesToPolar(80, mi);
-                console.log(mi, mians);
-            }
-            for (var mi = 0; mi <= 360; mi = mi + 5){
-                var mians = fromMizesToPolar(mi, data.XDESTR);
-                console.log(mi, mians);
-            }
+            //for (var mi = 0; mi <= 5; mi = mi + 0.5){
+            //    var mians = fromMizesToPolar(80, mi);
+            //    console.log(mi, mians);
+            //}
+            //for (var mi = 0; mi <= 360; mi = mi + 5){
+            //    var mians = fromMizesToPolar(mi, data.XDESTR);
+            //    console.log(mi, mians);
+            //}
 
             var totalRadius = 1;
             var totalRadiusOffset = 1.05;
