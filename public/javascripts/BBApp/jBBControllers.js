@@ -178,13 +178,26 @@
 
             if (ctrlPoints.length > 0) {
 
-                // color.adobe.com Honey Pot
+                // color.adobe.com Circus III, Honey Pot and others
                 var colorsPresets = [
-                    "rgba(16,91,99,1)",
-                    "rgba(255,250,213,1)",
-                    "rgba(255,211,78,1)",
-                    "rgba(219,158,54,1)",
-                    "rgba(189,73,50,1)"
+                    "rgba(255,31,61,1)",
+                    "rgba(91,227,227,1)",
+                    "rgba(83,219,80,1)",
+                    "rgba(202,57,149,1)",
+                    //"rgba(255,220,0,1)", yellow
+                    "rgba(21,16,240,1)"
+
+                    //"rgba(46,9,39,1)",
+                    //"rgba(217,0,0,1)",
+                    //"rgba(255,45,0,1)",
+                    //"rgba(255,140,0,1)",
+                    //"rgba(4,117,111,1)"
+
+                    //"rgba(16,91,99,1)",
+                    //"rgba(255,250,213,1)",
+                    //"rgba(255,211,78,1)",
+                    //"rgba(219,158,54,1)",
+                    //"rgba(189,73,50,1)"
                 ];
 
                 var timeLabels = [];
@@ -216,7 +229,8 @@
                 };
 
                 if (charts.length > 0) {
-                    // TODO it would be nice if you manage this repetition code, but it's needed to calc all graphs
+                    // SOLVED repetition. it would be nice if you manage this repetition code, but it's needed to calc all graphs
+                    // TODO It is still be better if you will not destroy graphics but use new values, but even now is much better than it was before.
                     //waveShapeChartData.labels = timeSteps;
                     //waveShapeChartData.datasets[0].data = valueSteps;
                     //waveShapeChartObject.update();
@@ -226,110 +240,59 @@
                         charts[c1].shapeChartObject.destroy();
                     }
                     charts.length = 0;
-
-                    for (var i = 0; i < data.memOut.length; i++) {
-                        var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
-
-                        shapeDomObject = document.getElementById("diagramCP" + i.toString());
-                        shapeChartData = {
-                            //labels: [1,2,3],
-                            labels: timeLabels,
-                            datasets: []
-                        };
-
-                        for (var j = 0; j < ctrlPoints.length; j++) {
-                            var pointDataset = angular.copy(datasetTemplate);
-
-                            pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
-                            var pointColor = colorsPresets[j % colorsPresets.length];
-                            pointDataset.backgroundColor = pointColor;
-                            pointDataset.borderColor = pointColor;
-                            pointDataset.pointBorderColor = pointColor;
-                            pointDataset.pointHoverBackgroundColor = pointColor;
-                            pointDataset.pointHoverBorderColor = pointColor;
-
-                            pointDataset.data = ctrlPoints[j][i].toFixed(6);
-                            shapeChartData.datasets.push(pointDataset);
-                        }
-
-                        shapeChartOptions = {
-                            responsive: mobileAndTabletcheck(),
-                            maintainAspectRatio: true,
-                            scales: {
-                                xAxes: [{
-                                    ticks: {
-                                        maxTicksLimit: 30 //Math.round( (data.TM + data.XDESTR*1.01) )
-                                    }
-                                }]
-                            }
-                        };
-                        shapeChartObject = Chart.Line(shapeDomObject, {
-                            data: shapeChartData,
-                            options: shapeChartOptions
-                        });
-
-                        charts.push({
-                            shapeDomObject: shapeDomObject,
-                            shapeChartData: shapeChartData,
-                            shapeChartOptions: shapeChartOptions,
-                            shapeChartObject: shapeChartObject
-                        });
-                    }
-
-                } else {
-
-                    for (var i = 0; i < data.memOut.length; i++) {
-                        var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
-
-                        shapeDomObject = document.getElementById("diagramCP" + i.toString());
-                        shapeChartData = {
-                            //labels: [1,2,3],
-                            labels: timeLabels,
-                            datasets: []
-                        };
-
-                        for (var j = 0; j < ctrlPoints.length; j++) {
-                            var pointDataset = angular.copy(datasetTemplate);
-
-                            pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
-                            var pointColor = colorsPresets[j % colorsPresets.length];
-                            pointDataset.backgroundColor = pointColor;
-                            pointDataset.borderColor = pointColor;
-                            pointDataset.pointBorderColor = pointColor;
-                            pointDataset.pointHoverBackgroundColor = pointColor;
-                            pointDataset.pointHoverBorderColor = pointColor;
-
-                            pointDataset.data = ctrlPoints[j][i];
-                            shapeChartData.datasets.push(pointDataset);
-                        }
-
-                        shapeChartOptions = {
-                            responsive: mobileAndTabletcheck(),
-                            maintainAspectRatio: true,
-                            scales: {
-                                xAxes: [{
-                                    ticks: {
-                                        maxTicksLimit: 30 //Math.round( (data.TM + data.XDESTR*1.01) )
-                                    }
-                                }]
-                            }
-                        };
-                        shapeChartObject = Chart.Line(shapeDomObject, {
-                            data: shapeChartData,
-                            options: shapeChartOptions
-                        });
-                        //shapeChartObject = new Chart(shapeDomObject).Line(shapeChartData, shapeChartOptions);
-
-                        charts.push({
-                            shapeDomObject: shapeDomObject,
-                            shapeChartData: shapeChartData,
-                            shapeChartOptions: shapeChartOptions,
-                            shapeChartObject: shapeChartObject
-                        });
-                    }
-                    console.warn(charts);
-
                 }
+
+                for (var i = 0; i < data.memOut.length; i++) {
+                    var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
+
+                    shapeDomObject = document.getElementById("diagramCP" + i.toString());
+                    shapeChartData = {
+                        //labels: [1,2,3],
+                        labels: timeLabels,
+                        datasets: []
+                    };
+
+                    for (var j = 0; j < ctrlPoints.length; j++) {
+                        var pointDataset = angular.copy(datasetTemplate);
+
+                        pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
+                        var pointColor = colorsPresets[j % colorsPresets.length];
+                        pointDataset.backgroundColor = pointColor;
+                        pointDataset.borderColor = pointColor;
+                        pointDataset.pointBorderColor = pointColor;
+                        pointDataset.pointHoverBackgroundColor = pointColor;
+                        pointDataset.pointHoverBorderColor = pointColor;
+
+                        pointDataset.data = ctrlPoints[j][i];
+                        shapeChartData.datasets.push(pointDataset);
+                    }
+
+                    shapeChartOptions = {
+                        responsive: mobileAndTabletcheck(),
+                        maintainAspectRatio: true,
+                        scales: {
+                            xAxes: [{
+                                ticks: {
+                                    maxTicksLimit: 30 //Math.round( (data.TM + data.XDESTR*1.01) )
+                                }
+                            }]
+                        }
+                    };
+                    shapeChartObject = Chart.Line(shapeDomObject, {
+                        data: shapeChartData,
+                        options: shapeChartOptions
+                    });
+                    //shapeChartObject = new Chart(shapeDomObject).Line(shapeChartData, shapeChartOptions);
+
+                    charts.push({
+                        shapeDomObject: shapeDomObject,
+                        shapeChartData: shapeChartData,
+                        shapeChartOptions: shapeChartOptions,
+                        shapeChartObject: shapeChartObject
+                    });
+                }
+                //console.warn(charts);
+
             } else {
                 console.log("no charts because of lack of control points:", ctrlPoints);
             }

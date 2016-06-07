@@ -81,6 +81,14 @@ define(function (require, exports, module) {
             var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
             document.body.appendChild(ninetyDegreeText);
 
+            window.addEventListener("resize", function(){
+                zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
+                zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
+
+                ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
+                ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
+            });
+
             setVisibility(renderer.domElement, showCanvas);
             setVisibility(zeroDegreeText, showCanvas);
             setVisibility(ninetyDegreeText, showCanvas);
@@ -544,21 +552,79 @@ define(function (require, exports, module) {
                     geometryNearestPoints.vertices.push(new THREE.Vector3(nearestPointX, nearestPointY, defZ));
                 }
             }
-            var nearestPointMaterial = new THREE.PointCloudMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
-            var nearestPointsDots = new THREE.PointCloud( geometryNearestPoints, nearestPointMaterial );
+            var nearestPointMaterial = new THREE.PointsMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
+            var nearestPointsDots = new THREE.Points( geometryNearestPoints, nearestPointMaterial );
             // uncomment to see nearestPoints
             //scene.add( nearestPointsDots );
             nearestPointsDots.visible = showControlPoints;
 
-            var geometryControlPoints = new THREE.Geometry();
-            for (var pointIndex in controlPoints){
+            var geometryControlPoints = new THREE.BufferGeometry();
+            geometryControlPoints.addAttribute( 'position',  new THREE.BufferAttribute( [], 3 ) );
+            geometryControlPoints.addAttribute( 'color',  new THREE.BufferAttribute( [], 3 ) );
+            // coords
+            var verticesCPPositions = [];
+            for (var pointIndex = 0; pointIndex < controlPoints.length; pointIndex++){
                 var controlPoint = controlPoints[pointIndex];
                 var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
                 var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
-                geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
+                verticesCPPositions.push([controlPointX, controlPointY, defZ]);
             }
-            var controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 10, sizeAttenuation: false } );
-            var controlPointsDots = new THREE.PointCloud( geometryControlPoints, controlPointMaterial );
+            var verticesCP = new Float32Array( verticesCPPositions.length * 3 ); // three components per vertex
+            for ( var vi = 0, len = verticesCPPositions.length; vi < len; vi++ ) {
+                for (var vj = 0; vj < 3; vj++) verticesCP[ vi*3 + vj ] = verticesCPPositions[vi][vj];
+            }
+            geometryControlPoints.attributes.position = new THREE.BufferAttribute( verticesCP, 3 );
+            geometryControlPoints.computeBoundingSphere();
+            // colors
+            // color.adobe.com Circus III
+            var colorsPresets = [
+                [1, 0.12109375, 0.23828125],
+                [0.35546875, 0.88671875, 0.88671875],
+                [0.32421875, 0.85546875, 0.3125],
+                //[1, 0.859375, 0], yellow
+                [0.7890625, 0.22265625, 0.58203125],
+                [0.08203125, 0.0625, 0.9375]
+                //[0.1796875, 0.03515625, 0.15234375],
+                //[0.84765625, 0, 0],
+                //[1, 0.17578125, 0],
+                //[1, 0.546875, 0],
+                //[0.015625, 0.45703125, 0.43359375]
+                //"rgba(46,9,39,1)",
+                //"rgba(217,0,0,1)",
+                //"rgba(255,45,0,1)",
+                //"rgba(255,140,0,1)",
+                //"rgba(4,117,111,1)"
+                // Honey Pot
+                //[0.0625, 0.35546875, 0.38671875],
+                //[1, 0.9765625, 0.83203125],
+                //[1, 0.82421875, 0.3046875],
+                //[0.85546875, 0.6171875, 0.2109375],
+                //[0.73828125, 0.28515625, 0.1953125]
+                //"rgba(16,91,99,1)",
+                //"rgba(255,250,213,1)",
+                //"rgba(255,211,78,1)",
+                //"rgba(219,158,54,1)",
+                //"rgba(189,73,50,1)"
+            ];
+            var vertexCPColors = [];
+            for (var vci = 0; vci < controlPoints.length; vci++){
+                vertexCPColors.push( colorsPresets[vci%5] );
+            }
+            var colorsCP = new Float32Array( vertexCPColors.length * 3 );
+            for ( var ci = 0, clen = vertexCPColors.length; ci < clen; ci++ ) {
+                for (var ck = 0; ck < 3; ck++) colorsCP[ ci*3 + ck ] = vertexCPColors[ci][ck];
+            }
+            geometryControlPoints.attributes.color = new THREE.BufferAttribute( colorsCP, 3 );
+            var controlPointMaterial = new THREE.PointsMaterial( {
+                //color: 0xff0000,
+                size: 10,
+                sizeAttenuation: false,
+                //size: 1/rendererSize.width*100 * 1.75,
+                //transparent: true,
+                //opacity: 1,
+                vertexColors: THREE.VertexColors
+            } );
+            var controlPointsDots = new THREE.Points( geometryControlPoints, controlPointMaterial );
             scene.add( controlPointsDots );
             controlPointsDots.visible = showControlPoints;
 
@@ -776,28 +842,41 @@ define(function (require, exports, module) {
             }
 
             function clickOnCanvas(event){
+                //console.warn(event);
                 var screenWidth = renderer.domElement.width;
                 var screenHeight = renderer.domElement.height;
                 var mouseX = event.offsetX; // can't set (pointX, pointY) to (1,1)
                 var mouseY = screenHeight - (event.offsetY);
 
-                //controlPoints = [];
-                controlPoints.length = 0;
+                if (event.shiftKey == false){
+                    //controlPoints = [];
+                    controlPoints.length = 0;
+                }
                 controlPoints.push( convertCortesianToPolar(screenWidth, screenHeight, mouseX, mouseY) );
 
-                controlPointsDots.visible = false;
-
-                geometryControlPoints = new THREE.Geometry();
-                for (var pointIndex in controlPoints){
+                var verticesCPPositions = [];
+                for (var pointIndex = 0; pointIndex < controlPoints.length; pointIndex++){
                     var controlPoint = controlPoints[pointIndex];
                     var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
                     var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
-                    geometryControlPoints.vertices.push(new THREE.Vector3(controlPointX, controlPointY, defZ));
+                    verticesCPPositions.push([controlPointX, controlPointY, defZ]);
                 }
-                controlPointMaterial = new THREE.PointCloudMaterial( { color: 0xff0000, size: 10, sizeAttenuation: false } );
-                controlPointsDots = new THREE.PointCloud( geometryControlPoints, controlPointMaterial );
-                scene.add( controlPointsDots );
-                controlPointsDots.visible = controls.showControlPoints;
+                var verticesCP = new Float32Array( verticesCPPositions.length * 3 ); // three components per vertex
+                for ( var c0 = 0, len0 = verticesCPPositions.length; c0 < len0; c0++ ) {
+                    for (var j = 0; j < 3; j++) verticesCP[ c0*3 + j ] = verticesCPPositions[c0][j];
+                }
+                geometryControlPoints.attributes.position = new THREE.BufferAttribute( verticesCP, 3 );
+                geometryControlPoints.computeBoundingSphere();
+
+                var vertexCPColors = [];
+                for (var c1 = 0; c1 < controlPoints.length; c1++){
+                    vertexCPColors.push( colorsPresets[c1%5] );
+                }
+                var colorsCP = new Float32Array( vertexCPColors.length * 3 );
+                for ( var c2 = 0, len2 = vertexCPColors.length; c2 < len2; c2++ ) {
+                    for (var k = 0; k < 3; k++) colorsCP[ c2*3 + k ] = vertexCPColors[c2][k];
+                }
+                geometryControlPoints.attributes.color = new THREE.BufferAttribute( colorsCP, 3 );
 
                 // it is important, because data for points are fetched from nearestPoints array
                 findNearestPoints();
