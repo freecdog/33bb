@@ -853,6 +853,8 @@ define(function (require, exports, module) {
             }
 
             function COUNTOUT(T){
+                // TODO why in memOut no values for TM, but Harry has them. But in TM=5s last value (it is clearly seen on memOut tables in /bb)
+                // TODO why in memOut[layer][time][radius][angle] in radius 0..(XDESTR/STEPX) has values, but there are extra elements (For example for TM = 1.0s 0..40 with values 41..74 w/o values).
                 var countoutStart = Date.now();
 
                 var I, M, J, K, N; //, JNT, COUNT=3; // integer

@@ -255,7 +255,7 @@
                     for (var j = 0; j < ctrlPoints.length; j++) {
                         var pointDataset = angular.copy(datasetTemplate);
 
-                        pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toString() + ", Theta: " + data.controlPoints[j].angle.toString() + ")";
+                        pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toFixed(3) + ", Theta: " + data.controlPoints[j].angle.toFixed(3) + ")";
                         var pointColor = colorsPresets[j % colorsPresets.length];
                         pointDataset.backgroundColor = pointColor;
                         pointDataset.borderColor = pointColor;
@@ -273,7 +273,7 @@
                         scales: {
                             xAxes: [{
                                 ticks: {
-                                    maxTicksLimit: 30 //Math.round( (data.TM + data.XDESTR*1.01) )
+                                    maxTicksLimit: mobileAndTabletcheck() ? 20 : 30 //Math.round( (data.TM + data.XDESTR*1.01) )
                                 }
                             }]
                         }
@@ -318,8 +318,8 @@
             self.dataNames = $window.dataNames;
         }
 
-        var stepsBeforeT0 = Math.round(data.XDESTR * 1.1 / data.STEPX);
-        var stepsAfterT0 = Math.round(data.TM/data.STEP);
+        var stepsBeforeT0 = 0;
+        var stepsAfterT0 = 0;
         var altTimeStepsCount = stepsBeforeT0 + stepsAfterT0;
         function getTimeByTimeIndex(timeIndex){
             var realTime = 0;
@@ -355,48 +355,88 @@
             altTimeStepsCount = stepsBeforeT0 + stepsAfterT0;
         }
 
-        function getDecimal(num) {
-            return num > 0 ? (num % 1) : (-num % 1);
+        function isNumberDecimalEqualTo(number, value){
+            return compareWithEps(getDecimal(number), value);
         }
+        function compareWithEps(num1, num2, eps){
+            eps = eps || 1e-6;
+            return (Math.abs(num1 - num2) < eps);
+        }
+        function getDecimal(num) {
+            return Math.abs( num%1); // num > 0 ? (num % 1) : (-num % 1));
+        }
+        //for (var gdi = -10.5; gdi <= 10.05; gdi=gdi+1.0) console.warn(getDecimal(gdi));
+        //for (var gdi =-1; gdi <= 1; gdi=gdi+0.1) console.warn(getDecimal(gdi));
+
         function setDisplayData(visibility){
             self.visible = visibility;
 
             updateBBData();
 
             // data.memOut[layer][time][radius][angle]
+            // for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0=c0+1){
+            //     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){ mem[recTime][c0+1][c1]
             var limitedData = [];
             data.limitedData = limitedData;
 
+            var radiusesAdded = false;
             var radiusValues = [];
             data.radiusValues = radiusValues;
+            var timesAdded = false;
             var timeValues = [];
             data.timeValues = timeValues;
-            for (var layer in data.memOut){
+            var anglesAdded = false;
+            var angleValues = [];
+            data.angleValues = angleValues;
+            for (var layerIndex = 0; layerIndex < data.memOut.length; layerIndex++){
                 var curLayer = [];
                 limitedData.push(curLayer);
 
-                for (var time in data.memOut[layer]){
-                    var timeValue = getTimeByTimeIndex(time);//time * data.STEP;
-                    if (getDecimal(timeValue) !== 0) continue;
-                    timeValues.push(timeValue.toFixed(2));
+                for (var timeIndex = 0; timeIndex < data.memOut[layerIndex].length; timeIndex++){
+                    var timeValue = getTimeByTimeIndex(timeIndex);
 
-                    var curTime = [];
-                    curLayer.push(curTime);
+                    if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || timeIndex+1 == data.memOut[layerIndex].length) {
+                        if (timesAdded == false) timeValues.push({timeIndex: timeIndex, value: timeValue.toFixed(2)});
 
-                    for (var radius in data.memOut[layer][time]){
-                        var radiusValue = radius * data.STEPX;
-                        if (getDecimal(radiusValue) !== 0) continue;
-                        radiusValues.push(radiusValue);
+                        var curTime = [];
+                        curLayer.push(curTime);
 
-                        var curRadius = [];
-                        curTime.push(curRadius);
+                        //for (var radiusIndex = 0; radiusIndex < data.memOut[layerIndex][timeIndex].length; radiusIndex++) {
+                        for (var radiusIndex = 0, radiusLen = Math.round(data.XDESTR / data.STEPX); radiusIndex < radiusLen; radiusIndex++) {
+                            var radiusValue = radiusIndex * data.STEPX;
+                            //if (layerIndex == 0 && timeIndex == 4) console.warn(radiusValue.toFixed(2));
 
-                        for (var angle in data.memOut[layer][time][radius]){
-                            curRadius.push(data.memOut[layer][time][radius][angle].toFixed(6));
+                            if (isNumberDecimalEqualTo(radiusValue, 0) || radiusIndex+1 == radiusLen) {
+                                if (radiusesAdded == false) radiusValues.push({radiusIndex: radiusIndex, value: radiusValue});
+
+                                var curRadius = [];
+                                curTime.push(curRadius);
+
+                                for (var angleIndex = 0; angleIndex < data.memOut[layerIndex][timeIndex][radiusIndex].length; angleIndex++) {
+
+                                    if (angleIndex % 3 == 0) {
+                                        var angleValue = data.angles[angleIndex];
+                                        if (anglesAdded == false) angleValues.push({angleIndex: angleIndex, value: angleValue});
+
+                                        curRadius.push(data.memOut[layerIndex][timeIndex][radiusIndex][angleIndex].toFixed(6));
+                                    }
+                                }
+                                anglesAdded = true;
+
+                            }
+
                         }
+                        radiusesAdded = true;
+
                     }
+
                 }
+                timesAdded = true;
+
             }
+            console.log("radiusValues:", radiusValues);
+            console.log("timeValues:", timeValues);
+            console.log("angleValues:", angleValues);
             console.log("limitedData:", limitedData);
 
             var timeBeforeDigest = Date.now();

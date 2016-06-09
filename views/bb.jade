@@ -80,19 +80,20 @@ html
                     //- limitedData[dataLayer][time][radius][angle]
                     div(ng-repeat="tabName in BBDataCtrl.dataNames track by $index" ng-show="BBDataCtrl.isSet( {{$index}} )")
                         div(id="data{{tabName}}")
-                            div(class="row" ng-repeat="currentRadius in BBDataCtrl.data.limitedData[$index] track by $index")
-                                div r = {{BBDataCtrl.data.radiusValues[$index]}}
+                            div(class="row" ng-repeat="currentRadius in BBDataCtrl.data.limitedData[$index][0] track by $index")
+                                div r = {{BBDataCtrl.data.radiusValues[$index].value.toFixed(2)}}
                                 table(class="table table-striped table-hover")
                                     tbody
                                         thead
                                             th
                                                 span T \ ∠
-                                            th(ng-repeat="angleValue in BBDataCtrl.data.TP track by $index" ng-if="angleValue != null" class="active text-right")
-                                                span {{angleValue}}
+                                            //-th(ng-repeat="angleValue in BBDataCtrl.data.angles track by $index" class="active text-right")
+                                            th(ng-repeat="angleValue in BBDataCtrl.data.angleValues track by $index" class="active text-right")
+                                                span {{angleValue.value.toFixed(2)}}
                                         tr(ng-repeat="currentTime in BBDataCtrl.data.limitedData[$parent.$index] track by $index" )
                                             td
                                                 //-span {{$index - BBDataCtrl.data.XDESTR}}
-                                                span {{BBDataCtrl.data.timeValues[$index]}}
+                                                span {{BBDataCtrl.data.timeValues[$index].value}}
                                             td(ng-repeat="currentAngle in BBDataCtrl.data.limitedData[$parent.$parent.$index][$index][$parent.$index] track by $index" )
                                                 span {{BBDataCtrl.data.limitedData[$parent.$parent.$parent.$index][$parent.$index][$parent.$parent.$index][$index]}}
 
