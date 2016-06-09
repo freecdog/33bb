@@ -37,7 +37,7 @@
         var self = this;
         init();
 
-        var BB, data, inputObject, userData;
+        var BB, data, RTET, inputObject, userData;
         var objectShapeDomObject, objectShapeChartData, objectShapeChartOptions, objectShapeChartObject;
         var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
 
@@ -51,8 +51,8 @@
                 INDEX: 0,
                 ALFA: 0,
                 rtetN: 4,
-                rtetA: 2.05,
-                rtetB: 4.05,
+                rtetA: 2,
+                rtetB: 4,
 
                 rtetN1: 1.3,
                 rtetN2: 1.2,
@@ -97,6 +97,7 @@
         function initBB(callback){
             BB = require('BB');
             data = new BB.Datatone();
+            RTET = BB.FUNC2.RTET;
             //console.log("data", data);
         }
 
@@ -128,9 +129,11 @@
         function initObjectShape(data){
             var angleStep = 5;
             var angles = initAngles();
-            //console.log('angles', angles);
+            //console.warn('angles', angles, data.TP);
 
-            var vertices = initPositionVertices();
+            var vertices = initPositionVertices(angleStep);
+            var verticesField = [];
+            for (var vfi = 0; vfi < vertices.length; vfi++) verticesField.push(vertices[vfi] + data.XDESTR);
             //console.warn('vertices', vertices);
 
             function initAngles(){
@@ -145,10 +148,14 @@
                 return angles;
             }
 
-            function initPositionVertices(){
+            function initPositionVertices(step){
                 var vertexPositions = [];
-                for (var i = 0; i < data.cavform.length; i = i + angleStep){
-                    vertexPositions.push(data.cavform[i].radius);
+                //for (var i = 0; i < data.cavform.length; i = i + angleStep){
+                //    vertexPositions.push(data.cavform[i].radius);
+                //}
+                for (var i = 0; i < angles.length; i++){
+                    var value = RTET( i * step * Math.PI / 180 );
+                    vertexPositions.push(value);
                 }
                 return vertexPositions;
             }
@@ -171,16 +178,24 @@
                             pointHoverBackgroundColor: "#fff",
                             pointHoverBorderColor: "rgba(179,181,198,1)",
                             data: vertices
-                        },
-                        {
-                            // fake dataset for correct auto size
-                            label: '',
-                            data: [0, 5]
                         }
+                        //{
+                        //    label: "Explosion field",
+                        //    backgroundColor: "rgba(255,181,198,0)",
+                        //    borderColor: "rgba(179,181,198,1)",
+                        //    pointBackgroundColor: "rgba(179,181,198,1)",
+                        //    pointBorderColor: "#fff",
+                        //    pointHoverBackgroundColor: "#fff",
+                        //    pointHoverBorderColor: "rgba(179,181,198,1)",
+                        //    data: verticesField
+                        //}
                     ]
                 };
                 objectShapeChartOptions = {
-                    scales: {
+                    scale: {
+                        ticks: {
+                            beginAtZero: true
+                        },
                         scaleLabel: {
                             fontColor: '#ff0000'
                         }

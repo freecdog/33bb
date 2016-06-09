@@ -414,7 +414,7 @@
 
                                 for (var angleIndex = 0; angleIndex < data.memOut[layerIndex][timeIndex][radiusIndex].length; angleIndex++) {
 
-                                    if (angleIndex % 3 == 0) {
+                                    if (angleIndex % 3 == 0 || angleIndex+1 == data.memOut[layerIndex][timeIndex][radiusIndex].length) {
                                         var angleValue = data.angles[angleIndex];
                                         if (anglesAdded == false) angleValues.push({angleIndex: angleIndex, value: angleValue});
 

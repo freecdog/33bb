@@ -397,10 +397,6 @@ define(function (require, exports, module) {
                         r3 = mp3.radius;
                         r4 = mp4.radius;
 
-                        if (c1 == 4){
-                            var b=0;
-                        }
-
                         // normalization of radiuses
                         r1 = r1 / totalRadius;
                         r2 = r2 / totalRadius;
@@ -468,7 +464,8 @@ define(function (require, exports, module) {
                 //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
                 vertexColors = [];
 
-                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0=c0+1){
+                // it was c0 <= c0len, but in 90degree case it led to an error
+                for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 < c0len; c0++){
                     for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                         var isInvert = useInvertationColors;

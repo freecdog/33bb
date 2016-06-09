@@ -328,6 +328,9 @@ define(function (require, exports, module) {
                         needRealValues: true
 
                     };
+                    //inputData.printPoints = [];
+                    //for (var NTPi = 0; NTPi <= 360; NTPi=NTPi+3) inputData.printPoints.push(NTPi);
+                    //inputData.NTP = inputData.printPoints.length;
 
                 }
 
