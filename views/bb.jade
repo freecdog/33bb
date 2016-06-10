@@ -103,6 +103,8 @@ html
 
         div(ng-controller="jBBEpureController as BBEpureCtrl")
             div(ng-show="BBEpureCtrl.visible")
-                div Wave epure
-                div
-                    canvas(id="waveShape" width="800" height="800")
+                div(class="row")
+                    div(class="col-xs-12 text-center")
+                        div(data-placement="right" data-original-title="Tooltip on right") Wave epure
+                        div
+                            canvas(id="waveShape" width="800" height="800")
