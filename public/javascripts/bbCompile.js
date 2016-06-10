@@ -57,7 +57,8 @@ define(function (require, exports, module) {
                 height: Math.min(window.innerWidth, window.innerHeight)-50
             };
             renderer.setSize(rendererSize.width, rendererSize.height);
-            renderer.domElement.style.position = 'absolute';
+            //renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.position = 'inherit';
             if ( window.innerWidth / window.innerHeight < 1 ) {
                 renderer.domElement.style.right = '50px';
             } else {
@@ -1098,8 +1099,21 @@ define(function (require, exports, module) {
                 // TODO fifefox says that style has no property "visibility", why so?
                 //if (!object.style.hasOwnProperty("visibility")) { console.error("no style.visibility in object"); return; }
 
-                if (state === true) object.style.visibility = "visible";
-                else if (state === false) object.style.visibility = "hidden";
+                if (state === true) {
+                    object.style.visibility = "visible";
+
+                    if (object.visibilityInfo){
+                        object.style.height = object.visibilityInfo.height;
+                    }
+                }
+                else if (state === false) {
+                    //console.warn({obj: object});
+                    object.style.visibility = "hidden";
+
+                    object.visibilityInfo = { height: object.style.height };
+
+                    object.style.height = "0px";
+                }
                 else console.error("state neither true nor false, state:", state);
             }
 
