@@ -111,6 +111,8 @@ define(function (require, exports, module) {
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
+        var splitT0 = 0;
+
         var needRealValues;
 
         function STARTPROC(params, callback){
@@ -269,8 +271,8 @@ define(function (require, exports, module) {
                         SPLIT: false,
                         RZ: 2.55E-02,   // TODO what is it?
                         // TODO with X > 12, waveepure draw nothing
-                        X: 100,  // meters to explosion,  X only matters when EPUR == 1 or SPLIT == true
-                        RO2: 2.7E03,    // TODO what material is it?
+                        X: 10,  // meters to explosion,  X only matters when EPUR == 1 or SPLIT == true
+                        RO2: 2.7E03,    // TODO what material is it? It seems like very hardness ground Грунт 2700kg/m3, open link with Harry http://baurum.ru/_library/?cat=earthworks_general&id=686
                         C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
                         GAPOIS: false,  // TODO what is it and POIS, GAMMA and B variables?
                         POIS: 0.35,
@@ -475,7 +477,7 @@ define(function (require, exports, module) {
                 KAP1 = (RC1 - RC0) / (RC1 + RC0);
                 KAP1 = KAP1 * KAP1;
                 KAP = 1 - KAP1;
-                T0 = RZ * (LS/C1 + (X-LS)/C2);
+                splitT0 = RZ * (LS/C1 + (X-LS)/C2);
                 DTT = 2 * LS * RZ / C1;
             }
 
@@ -1060,7 +1062,7 @@ define(function (require, exports, module) {
         function TENS(T){
             var Q, S, TT; // float
             if (SPLIT) {
-                S = 0; Q = 1; TT = T - T0;
+                S = 0; Q = 1; TT = T - splitT0;
                 while (true){
                     if (TT <= 0) break;
                     S = S + Q * FF(TT);
