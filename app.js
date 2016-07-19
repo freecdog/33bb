@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var clientCalc = require('./routes/clientCalc');
+var bblClientCalc = require('./routes/BBLclientCalc');
 var calcTime = require('./routes/calcTime');
 var memoutRouter = require('./routes/memout');
 var filesList = require('./routes/filesList');
@@ -36,6 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/calc', clientCalc);
+app.use('/c', bblClientCalc);
 app.use('/calcTime', calcTime);
 app.use('/memout', memoutRouter);
 app.use('/restartServer', restartServer);

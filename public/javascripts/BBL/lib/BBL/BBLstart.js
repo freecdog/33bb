@@ -1,5 +1,5 @@
 /**
- * Created by jaric on 22.10.2014.
+ * Created by jaric on 08.07.2016.
  */
 
 if (typeof define !== 'function') {
@@ -18,47 +18,33 @@ define(function (require, exports, module) {
     (function (Buffer) {
     //(function(exports){
 
-        // TODO remove SPLIT parametr totally (BBinput, BBstart), at least now we don't need to use special layer between object and environment
+        // TODO remove SPLIT parametr totally (BBLinput, BBLstart), at least now we don't need to use special layer between object and environment
         // TODO move to config RTET vars (from N to NOEDGE)
 
         'use strict';
 
-        var BBstart = {};
-        console.log("BBstart is starting");
+        var BBLstart = {};
+        console.log("BBLstart is starting");
 
         // global on the server, window in the browser
-        var root, previous_BBstart;
+        var root, previous_BBLstart;
 
         root = this;
         if (root != null) {
-            previous_BBstart = root.BBstart;
+            previous_BBLstart = root.BBLstart;
         }
 
-        //var BB = require('../BB');
-        //var FUNC2 = BB.FUNC2;
-        //var MatMult = BB.MatMult;
-
-        // TODO what numbers library is called: BB/lib/node_modules/numbers or numbersAMD?
         var numbers = require('numbers');
         var fs = require('fs');
 
-        //var Buffer = Buffer || function (inp){
-        //    return inp;
-        //};
-
-        //var FUNC2 = require('./FUNC2.js');
-        //var MatMult = require('./MatMult.js');
-        //var Datatone = require('./Datatone.js').Datatone;
-
-        var BB;// = require('BB'); console.warn("start BB", BB);
+        var BBL;
         var data;
 
         var Complex = numbers.complex;
         var matrix = numbers.matrix;
-        // var calculus = numbers.calculus;    // calculus contains adaptiveSimpson, but doesn't need now
 
         // TODO probably my methods should be here, but not in numbers.matrix code, also I should test values, so now it stays commented
-        //matrix.scalarSafe = function(arr, value){ }
+        // matrix.scalarSafe = function(arr, value){ }
 
         // helpful methods
         function charToBoolean(char){
@@ -73,25 +59,25 @@ define(function (require, exports, module) {
             return this.toFixed(3);
         };
 
-        var SPLIT; // boolean
-        var FILL = "";  // string
-        var ALFA,B,FRIC,RO2,C2,S0,A1,A2,TH,
-            T0,TPLUS,STEP,STEPX,
-            KAP,KAP1,DTT,ALEF,BETTA,
-            S,VOL,JC,RISQ,TET0,TET1,TET2,TET3,L1,L,LC,
-            DFI,FI0,DX,DT,TM,KP,KPA,KPFI,XDESTR;    // float
+        var ALFA,FRIC,S0,A1,A2,TH,
+            TPLUS,STEP,STEPX,
+            ALEF,BETTA,
+            S,TET0,TET1,TET2,TET3,L1,R,LC,
+            DFI,DX,DT,TM,XDESTR, CHECK,
+            RC0, C0, HTOTAL;    // float
         var H = Math.PI / 180;
         var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
         var Q,FIX,FIXP,FIXM,
             FIY,FIYM,FIYP,
-            FU,FG,FR,FL; // [5, 5] of float
-        var ZC,ALIM,IM = new Complex(0.0,1.0); // complex
-        var NT,NTP,JTP,NFI,NBX,NTIME,NXDST,INDEX,EPUR,DELTA; // integer
+            FG,FR,FL, BOUNDARYS, LAUX, LG; // [Layers,5, 5] of float
+        var ALIM,IM = new Complex(0.0,1.0); // complex
+        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,DELTA,NL,L; // integer
+        var layers = [];
+        var LE = [], LRO = [], LNU = [], LH = [], C = [], LB = [], LRC = []; // of float
+        var LK = [],NSTEP = []; // of integer
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
-
-        var splitT0 = 0;
 
         var needRealValues;
 
@@ -102,14 +88,13 @@ define(function (require, exports, module) {
             params = params || {};
             callback = callback || function(){};
 
-            BB = require('../BB');
-            var Datatone = BB.Datatone;
-            var MatMult = BB.MatMult;
+            BBL = require('../BBL');
+            var Datatone = BBL.Datatone;
+            var MatMult = BBL.MatMult;
 
             data = new Datatone();
 
-            var RC0,RC1,RC2,B1,B2, M0,C0,C1,RO0,LS,X,RZ,GAMMA,POIS,BET,OMG; // float //FI,
-            var GAPOIS = false;
+            var B1,B2, X,RZ; // float //FI,
             var I;
 
             var fileData;
@@ -169,18 +154,18 @@ define(function (require, exports, module) {
 
             var inputData = {};
             function loadData(source){
-
                 if (source == 'json'){
-                    loadFromJSONFile(inputData, 'public/dat/BBinput.json');
+                    //loadFromJSONFile(inputData, 'public/dat/BBLinput.json');
                 }
                 else if (source == 'dat'){
+                    /*
                     // helpful method for reading
                     lastIndex = 0;
 
-                    var BBinputPath = 'BBdat/BBinput.dat'; // looks like path depends on app.js for server side
+                    var BBLinputPath = 'BBLdat/BBLinput.dat'; // looks like path depends on app.js for server side
                     //noinspection JSUnresolvedFunction
-                    fileData = fs.readFileSync(BBinputPath, {encoding: 'utf8'});
-                    //fs.readFile(BBinputPath, {encoding: 'utf8'}, function(err, fileData){
+                    fileData = fs.readFileSync(BBLinputPath, {encoding: 'utf8'});
+                    //fs.readFile(BBLinputPath, {encoding: 'utf8'}, function(err, fileData){
                     //if (err) throw err;
                     console.log(fileData);
                     console.log("=============================");
@@ -241,74 +226,76 @@ define(function (require, exports, module) {
                     inputData.STEPX = jParse('float');
                     inputData.DELTA = jParse('int');
 
-                    console.log("NO DATA FOR RTET, NO DATA FOR RTET, NO DATA FOR RTET");
+                    console.log("NO DATA FOR RTET, NO DATA FOR RTET, NO DATA FOR RTET");*/
                 }
                 else {
                     // default config
                     inputData = {
-                        // TODO ALFA==15 leads to an error
-                        ALFA: 0,
-                        SPLIT: false,
-                        RZ: 2.55E-02,   // TODO what is it?
-                        // TODO with X > 12, waveepure draw nothing
-                        X: 10,  // meters to explosion,  X only matters when EPUR == 1 or SPLIT == true
-                        RO2: 2.7E03,    // TODO what material is it? It seems like very hardness ground Грунт 2700kg/m3, open link with Harry http://baurum.ru/_library/?cat=earthworks_general&id=686
-                        C2: 5.8E03,     // TODO what is it? Poperechnaya skorost'? Why 5800?
-                        GAPOIS: false,  // TODO what is it and POIS, GAMMA and B variables?
-                        POIS: 0.35,
-                        GAMMA: 0.6,
-                        XDESTR: 4.0,
+                        ALFA: 0,        // degree
+                        RZ: 2.55E-02,   // metres
+                        X: 10,          // metres
+                        XDESTR: 1.0,    // metres
 
+                        // 0 - Heaviside function
+                        // 1 - exponent
+                        // 2 - sinus * gauss
                         EPUR: 2,
 
-                        waveShapes: [
+                        NL: 3,
+                        layers: [
                             {
-                                LS:0.67, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+                                E: 5.79e10,
+                                RO: 2.7e3,
+                                NU: 0.35,
+                                H: 1.5
                             },
                             {
-                                LS: 2.0, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
+                                E: 5.79e10,
+                                RO: 2.7e3,
+                                NU: 0.35,
+                                H: 1.22
                             },
                             {
-                                LS: 0.67, RC1: 1.01E06, C1: 0.64E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ПЕСОК'
-                            },
-                            {
-                                LS: 2.0, RC1: 2.24E06, C1: 1.3E03, C0: 4.42E03, RO0: 2.8E03, FILL: 'ГЛИНА'
+                                E: 5.45e10,
+                                RO: 2.667e3,
+                                NU: 0.26,
+                                H: 1.0
                             }
+                            //{
+                            //    E: 1.23e10,
+                            //    RO: 2.59e3,
+                            //    NU: 0.3,
+                            //    H: 1.0
+                            //}
                         ],
 
+                        // 0 - cavity
+                        // 1 - НЕПОДВИЖНОЕ ВКЛЮЧЕНИЕ,ЖЕСТКОЕ СЦЕПЛЕНИЕ
+                        // 2 - НЕПОДВИЖНОЕ ВКЛЮЧЕНИЕ,СКОЛЬЗЯЩИЙ КОНТАКТ БЕЗ ТРЕНИЯ
+                        // 3 - НЕПОДВИЖНОЕ ВКЛЮЧЕНИЕ,СКОЛЬЗЯЩИЙ КОНТАКТ С ТРЕНИЕМ
                         INDEX: 0,
-                        FRIC: 0,
-                        M0: 1.5,
+                        FRIC: 0,        // friction coefficient
 
-                        TM: 1.1,
-                        DT: 0.05,
-                        DFI: 5.0,
-                        DX: 0.05,
-                        //NTP: 7,
-                        //printPoints: [ 0,15,30,45,60,75,90 ],
-                        //NTP: 13,
-                        //printPoints: [ 0,15,30,45,60,75,90, 105,120,135,150,165,180 ],
-                        //NTP: 25,
-                        //printPoints: [ 0,15,30,45,60,75,90, 105,120,135,150,165,180, 195,210,225,240,255,270, 285,300,315,330,345,360 ],
-                        NTP: 73,
-                        printPoints: [ 0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90, 95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180, 185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270, 275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360 ],
-                        OMG: 0.98,
-                        BET: 0.7,
-                        STEP: 0.1,
-                        STEPX: 0.1,
+                        TM: 1,          // special time (/0.0004 ~ C0 afaik)
+                        DT: 0.05,       // special
+                        DFI: 2.0,       // degree
+                        DX: 0.05,       // special
+                        NTP: 11,
+                        printPoints: [ 0,5,10,15,30,40,45,60,90,120,135 ],
+                        STEP: 0.05,     // special
+                        STEPX: 0.05,    // special
                         DELTA: 1,
 
                         rtetN: 2,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
-                        rtetA: 2.05,    // vertical
-                        rtetB: 4.05,    // horizontal
+                        rtetA: 2.05,
+                        rtetB: 4.05,
                         rtetC: 4.5,
                         rtetVortex: 0,
                         rtetNoEdge: true,
 
                         needRealValues: true
-
                     };
                     //inputData.printPoints = [];
                     //for (var NTPi = 0; NTPi <= 360; NTPi=NTPi+3) inputData.printPoints.push(NTPi);
@@ -327,36 +314,21 @@ define(function (require, exports, module) {
                 }
 
                 ALFA = inputData.ALFA;
-
-                SPLIT = inputData.SPLIT;
                 RZ = inputData.RZ;
                 X = inputData.X;
-                RO2 = inputData.RO2;
-                C2 = inputData.C2;
-                GAPOIS = inputData.GAPOIS;
-                POIS = inputData.POIS;
-                GAMMA = inputData.GAMMA;
                 XDESTR = inputData.XDESTR;
 
                 EPUR = inputData.EPUR;
 
-                if (SPLIT){
-                    LS = inputData.waveShapes[0].LS;
-                    RC1 = inputData.waveShapes[0].RC1;
-                    C1 = inputData.waveShapes[0].C1;
-                    C0 = inputData.waveShapes[0].C0;
-                    RO0 = inputData.waveShapes[0].RO0;
-                    FILL = inputData.waveShapes[0].FILL;
-                }
+                NL = inputData.NL;
+                layers = inputData.layers;
 
                 INDEX = inputData.INDEX;
                 FRIC = inputData.FRIC;
-                M0 = inputData.M0;
 
                 TM = inputData.TM;
                 DT = inputData.DT;
                 DFI = inputData.DFI;
-
                 DX = inputData.DX;
                 NTP = inputData.printPoints.length;
 
@@ -367,8 +339,6 @@ define(function (require, exports, module) {
                     TP[parseInt(ppIt) +1] = inputData.printPoints[ppIt];
                 }
 
-                OMG = inputData.OMG;
-                BET = inputData.BET;
                 STEP = inputData.STEP;
                 STEPX = inputData.STEPX;
                 DELTA = inputData.DELTA;
@@ -388,7 +358,7 @@ define(function (require, exports, module) {
             data.inputData = inputData;
 
             // TODO I need simple configurator for client side.
-            // At first launch, client will take configuration from server BBinput.json
+            // At first launch, client will take configuration from server BBLinput.json
             // and save it to localStorage, after will take config from localStorage.
             // Also there should be button to restore settings to default values.
             console.log((new Date()) - startProcProfiler, "ms to complete loadData");
@@ -396,37 +366,63 @@ define(function (require, exports, module) {
             ALFA = ALFA * Math.PI / 180;
             ALIM = new Complex(Math.cos(ALFA), Math.sin(ALFA));
 
-            if (GAPOIS) {
-                B = GAMMA * GAMMA;
-                POIS = 0.5 * (1 - 2*B) / (1 - B);
-            } else {
-                B = 0.5 * (1 - 2*POIS) / (1 - POIS);
-                GAMMA = Math.sqrt(B);
+            LE = MatMult.createArray(NL);
+            LRO = MatMult.createArray(NL);
+            LNU = MatMult.createArray(NL);
+            LH = MatMult.createArray(NL);
+            C = MatMult.createArray(NL);
+            LK = MatMult.createArray(NL);
+            NSTEP = MatMult.createArray(NL);
+            LRC = MatMult.createArray(NL);
+            LB = MatMult.createArray(NL);
+
+            Q = MatMult.createArray(NL, 5, 5);
+            FIX = MatMult.createArray(NL, 5, 5);
+            FIXP = MatMult.createArray(NL, 5, 5);
+            FIXM = MatMult.createArray(NL, 5, 5);
+
+            FIY = MatMult.createArray(NL, 5, 5);
+            FIYM = MatMult.createArray(NL, 5, 5);
+            FIYP = MatMult.createArray(NL, 5, 5);
+
+            FG = MatMult.createArray(NL, 5, 5);
+            FR = MatMult.createArray(NL, 5, 5);
+            FL = MatMult.createArray(NL, 5, 5);
+
+            for (L = 0; L < NL; L++){
+                LE[L] = layers[L].E;
+                LRO[L] = layers[L].RO;
+                LNU[L] = layers[L].NU;
+                LH[L] = layers[L].H;
+
+                C[L] = Math.sqrt( ( LE[L]*(1-LNU[L]) ) / (LRO[L]*(1+LNU[L])*(1-2*LNU[L])) );
+                LRC[L]=C[L]*C[L]*LRO[L];
+                LB[L]=.5*(1-2*LNU[L])/(1-LNU[L]);
             }
 
-            RC2 = C2 * RO2;
+            C0 = C[0];
+            RC0 = LRC[0] / C0;
 
             if (EPUR == 0) {
                 S0 = 1;
             } else if (EPUR == 1) {
-//                X = X / RZ;
-//                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
-                A1 = (0.325 + 0.16E-06 * RC2) * 1E-03;
-                A2 = (0.47 - 0.113E-07 * RC2) * 1E-04;
-                B1 = 178 + 3.49E-06 * RC2;
-                B2 = -0.125 - 0.218E-07 * RC2;
+                // TODO again Harry changed something
+                X = X / RZ;
+                A1 = (0.325 + 0.16E-06 * RC0) * 1E-03;
+                A2 = (0.47 - 0.113E-07 * RC0) * 1E-04;
+                B1 = 178 + 3.49E-06 * RC0;
+                B2 = -0.125 - 0.218E-07 * RC0;
                 TH = RZ * (A1 + A2 * X);
                 BETTA = (B1 + B2*X) / RZ;
                 ALEF = BETTA / Math.tan(BETTA * TH);
                 TPLUS = Math.PI / BETTA;
-                // Moved here from the start of EPUR==1, so values would be more clear
-                X = X / RZ;
-                S0 = 545 / (C2 * (Math.pow(X, 1.1)) );
+                // X = X / RZ;
+                S0 = 545 / (C0 * (Math.pow(X, 1.1)) );
             } else if (EPUR == 2) {
                 if (needRealValues){
                     // for calculation SHOULD be in MPa
 //                    S0=9.6*1E06/(C2*RC2);
-                    S0=0.96*1E06/(C2*RC2);  // because 100atm is too much
+                    S0=9.6*1E06/(C0*RC0);
                 } else {
                     S0 = 1;
                 }
@@ -435,33 +431,17 @@ define(function (require, exports, module) {
                 A2 = 48.611;
                 A2 = A1 * A1 / A2;
                 A1 = 1E03 / A1;
-
-                // This 3 commented strings were from another version of BB
-                //S0 = 0.19836 * 1E12 / (C2 * RC2);
-                //BETTA = 875;
-                //A1 = 325;
             } else {
                 console.error('unknown EPUR value');
             }
 
-            // TODO ask Harry about S0. FF(S0), TENS(FF), WAVEEPURE(TENS); INITLOAD(TENS), COUNTOUT(TENS).
             if (needRealValues){
                 // TODO Shouldn't we use (1e-05/0.981 or 9.869*1e-06 [1/101325 google] )
                 // for calculation SHOULD be in MPa
-                console.log('S0 =', S0 *C2*RC2*1E-05/0.981);
+                console.log('S0 =', S0 *C0*RC0*1E-05/0.981);
             } else {
                 console.log('S0 =', S0);
             }
-            if (SPLIT) {
-                RC0 = RO0 * C0;
-                KAP1 = (RC1 - RC0) / (RC1 + RC0);
-                KAP1 = KAP1 * KAP1;
-                KAP = 1 - KAP1;
-                splitT0 = RZ * (LS/C1 + (X-LS)/C2);
-                DTT = 2 * LS * RZ / C1;
-            }
-
-            M0 = 1 / M0;
 
             data.rtetN = rtetN;
             data.rtetN1 = rtetN1;
@@ -475,43 +455,47 @@ define(function (require, exports, module) {
             GEOMPROC();
             console.log((new Date()) - startProcProfiler, "ms to complete GEOMPROC");
 
-            LC = L / C2;
-            if (INDEX > 0) {
-                KPFI = 1 / Math.PI;
-                KPA = 1 / Math.PI;
-                if (INDEX > 3) {
-                    KP = M0 / JC;
-                    KPA = M0 * KPA;
-                    KPFI = M0 / JC;
-                }
-            }
+            LC = R / C0;
 
             DFI = DFI * Math.PI / 180;
 
             ITP = new Array(NTP+2);
 
-            STEPFI();
-            console.log((new Date()) - startProcProfiler, "ms passed when STEPFI finished");
+            DX = STEPX / Math.round(STEPX / DX);
+            HTOTAL = 0;
+            for (L = 1; L < NL; L++){
+                NSTEP[L] = Math.round(LH[L] / (R*STEPX));
+                LH[L] = NSTEP[L] * STEPX;
+                LK[L] = Math.round(LH[L] / DX);
+                HTOTAL += LH[L];
+            }
+            NSTEP[0] = Math.round(XDESTR / (R*STEPX));
+            XDESTR = STEPX * NSTEP[0];
+            CHECK = HTOTAL + XDESTR;
 
-            T0 = 1.1 * XDESTR;
             NT = Math.round(TM/DT);
-            NXDST = Math.round(XDESTR/STEPX);
-            NBX = NT + Math.round(XDESTR/DX) + 10;
-            NTIME = Math.round((TM+T0)/STEP) + 3;
-            STARTOUT();
-            console.log((new Date()) - startProcProfiler, "ms passed when STARTOUT finished");
-            if (EPUR > 0) WAVEEPURE();
-            console.log((new Date()) - startProcProfiler, "ms passed when WAVEEPURE finished");
+
+            NCHECK = Math.round(CHECK/STEPX);
+            NBX = NT + Math.round(CHECK/DX)+10;
+            LK[0] = NBX - Math.round(HTOTAL/DX);
+            NTIME = Math.round(TM/STEP)+3;
+
             MTRXPROC();
             console.log((new Date()) - startProcProfiler, "ms passed when MTRXPROC finished");
+            STEPFI();
+            console.log((new Date()) - startProcProfiler, "ms passed when STEPFI finished");
+            BOUNDARYCONDITIONS();
+            console.log((new Date()) - startProcProfiler, "ms passed when BOUNDARYCONDITIONS finished");
+            //STARTOUT();
+            //console.log((new Date()) - startProcProfiler, "ms passed when STARTOUT finished");
+            if (EPUR > 0) WAVEEPURE();
+            console.log((new Date()) - startProcProfiler, "ms passed when WAVEEPURE finished");
 
-            data.NXDST = NXDST;
             data.NTP = NTP;
             data.NFI = NFI;
             data.NBX = NBX;
             data.INDEX = INDEX;
-            data.T0 = T0;
-            data.L = L;
+            data.R = R;
             data.ALFA = ALFA;
             data.TM = TM;
             data.DT = DT;
@@ -522,7 +506,6 @@ define(function (require, exports, module) {
             data.COURB = COURB;
             data.LONG = LONG;
             data.FAR = FAR;
-            data.ZC = ZC;
             data.DX = DX;
             data.FIX = FIX;
             data.FIY = FIY;
@@ -532,26 +515,35 @@ define(function (require, exports, module) {
             data.FIXM = FIXM;
             data.FIYP = FIYP;
             data.FIYM = FIYM;
-            data.KP = KP;
-            data.RISQ = RISQ;
-            data.IM = IM;
-            data.FU = FU;
             data.FG = FG;
             data.TET0 = TET0;
             data.ITP = ITP;
-            data.B = B;
+
+            data.NL = NL;
+            data.layers = layers;
+            data.LE = LE;
+            data.LRO = LRO;
+            data.LNU = LNU;
+            data.LH = LH;
+            data.C = C;
+            data.LB = LB;
+            data.LRC = LRC;
+            data.LK = LK;
+            data.BOUNDARYS = BOUNDARYS;
+            data.LG = LG;
+            data.NSTEP = NSTEP;
+            data.HTOTAL = HTOTAL;
+            data.CHECK = CHECK;
+
             data.XDESTR = XDESTR;
             data.LC = LC;
             data.STEPX = STEPX;
             data.NTIME = NTIME;
-            data.KPFI = KPFI;
-            data.KPA = KPA;
             data.ALIM = ALIM;
-            data.C2 = C2;
+            data.C0 = C0;
             data.TP = TP;
-            data.RC2 = RC2;
+            data.RC0 = RC0;
             data.S0 = S0;
-            data.RO2 = RO2;
             data.needRealValues = needRealValues;
 
             // jmemOut init
@@ -559,42 +551,40 @@ define(function (require, exports, module) {
             // Tmax / step + 1 , time steps
             // .max(NTP+1, NXDST) max of angle and coord steps
             // [] last one should be filled by values
-            data.memOut = MatMult.createArray(5, Math.round(T0/STEP) + Math.round(TM / STEP)+1,  Math.max(NTP+1, NXDST) +1, 1);   // clear memory output before new iteration
-            for (var moi in data.memOut){
-                if (!data.memOut.hasOwnProperty(moi)) continue;
-
-                for (var moj in data.memOut[moi]){
-                    if (!data.memOut[moi].hasOwnProperty(moj)) continue;
-
-                    for (var mok in data.memOut[moi][moj]){
-                        if (!data.memOut[moi][moj].hasOwnProperty(mok)) continue;
-
-                        data.memOut[moi][moj][mok] = [];
-                    }
-                }
-            }
+            //data.memOut = MatMult.createArray(5, Math.round(T0/STEP) + Math.round(TM / STEP)+1,  Math.max(NTP+1, NXDST) +1, 1);   // clear memory output before new iteration
+            //for (var moi in data.memOut){
+            //    if (!data.memOut.hasOwnProperty(moi)) continue;
+            //
+            //    for (var moj in data.memOut[moi]){
+            //        if (!data.memOut[moi].hasOwnProperty(moj)) continue;
+            //
+            //        for (var mok in data.memOut[moi][moj]){
+            //            if (!data.memOut[moi][moj].hasOwnProperty(mok)) continue;
+            //
+            //            data.memOut[moi][moj][mok] = [];
+            //        }
+            //    }
+            //}
 
             console.log("STARTPROC has end work", (new Date()) - startProcProfiler, "ms to complete STARTPROC");
 
             callback();
         }
-        //exports.STARTPROC = STARTPROC;
-        BBstart.STARTPROC = STARTPROC;
+        BBLstart.STARTPROC = STARTPROC;
 
         // TODO do it asynchronously
         function GEOMPROC(){
-            //var BB = require('../BB');
-            var FUNC2 = BB.FUNC2;
+            //var BBL = require('../BBL');
+            var FUNC2 = BBL.FUNC2;
             var RTET = FUNC2.RTET;
 
             var K; // integer
             var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
-            var MOM; // Complex
             var ROOT = false;
 
             console.log("GEOMPROC has start work");
 
-            var CavformPath = 'BBdat/_Cavform.dat'; // looks like path depends on app.js for server side
+            var CavformPath = 'BBLdat/_Cavform.dat'; // looks like path depends on app.js for server side
             // fs.open
             //noinspection JSUnresolvedFunction
             var fd = fs.openSync(CavformPath, 'w');
@@ -604,8 +594,6 @@ define(function (require, exports, module) {
             //noinspection JSUnresolvedFunction
             fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
             S = 0;
-            JC = 0;
-            MOM = new Complex(0.0,0.0);
             H = Math.PI/180;
             TETA = 0;
             var cavform = [];
@@ -617,26 +605,20 @@ define(function (require, exports, module) {
                 // The only I have is numbers.calculus.adaptiveSimpson(), http://en.wikipedia.org/wiki/Adaptive_Simpson's_method
                 // seems like that adaptiveSimpson(RTET, 0, TETA, H), what is for 2nd parameter? Is it for number of steps N?
                 // adaptiveSimpson don't have number of steps. Number of steps depends on eps
-                // SIMPLE simpson defined in BBstart, but we can improve it.
+                // SIMPLE simpson defined in BBLstart, but we can improve it.
 
                 S = S + SIMPS(RTET, 2, 0, TETA, H).re;  // .re because S and JC is float values
-                JC = JC + SIMPS(RTET, 4, 0, TETA, H).re;
-                MOM = MOM.subtract( (SIMPS(RTET, 3, 1, TETA, H)).divide(new Complex(3,0)) );      // TODO interval from 1 to 0 (TETA initialized with ZERO)
                 RT = RTET(TETA);
 
                 var cfTETA = TETA*180/Math.PI;
                 var cfCosATNTETA = Math.cos(FUNC2.ATN(TETA));
                 var cfSinATNTETA = Math.sin(FUNC2.ATN(TETA));
-                var cfCosATNTETAMinusALFA = Math.cos(FUNC2.ATN(TETA)-ALFA);
-                var cfSinATNTETAMinusALFA = Math.sin(FUNC2.ATN(TETA)-ALFA);
-                //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)),COS(ATN(TETA)-ALFA),SIN(ATN(TETA)-ALFA);
+                //WRITE(30,'(6(4X,F7.3))')  TETA*180/PI,RT,COS(ATN(TETA)),SIN(ATN(TETA)));
                 recBuffer = new Buffer(
                     (cfTETA).toFixedDef() + " " +
                     (RT).toFixedDef() + " " +
                     (cfCosATNTETA).toFixedDef() + " " +
                     (cfSinATNTETA).toFixedDef() + " " +
-                    (cfCosATNTETAMinusALFA).toFixedDef() + " " +
-                    (cfSinATNTETAMinusALFA).toFixedDef() +
                     "\n" );
                 //noinspection JSUnresolvedFunction
                 fs.writeSync(fd, recBuffer, 0, recBuffer.length, null);
@@ -645,9 +627,7 @@ define(function (require, exports, module) {
                     TETA: Math.round(cfTETA),
                     radius: RT,
                     cfCosATNTETA: cfCosATNTETA,
-                    cfSinATNTETA: cfSinATNTETA,
-                    cfCosATNTETAMinusALFA: cfCosATNTETAMinusALFA,
-                    cfSinATNTETAMinusALFA: cfSinATNTETAMinusALFA
+                    cfSinATNTETA: cfSinATNTETA
                 });
 
                 TETA = TETA + H;
@@ -658,22 +638,20 @@ define(function (require, exports, module) {
             console.log(CavformPath, "file written");
 
             S = S / 2;
-            // L - характерный размер
-            L = Math.sqrt(S / Math.PI);
+            // R - характерный размер (радиус)
+            R = Math.sqrt(S / Math.PI);
 
             data.geomprocS = S;
-            data.geomprocL = L;
+            data.geomprocR = R;
 
             //WRITE(*,'()');
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
             //WRITE(*,'()');
-            console.log("S =", S, "L =", L);
+            console.log("S =", S, "R =", R);
             // TODO meters? XDESTR is given in non-dimensional scale, while rtetB in meters (probably meters?)
-            data.TMrecommended = 2 * XDESTR + (2 * data.rtetB) / data.geomprocL;
+            data.TMrecommended = 2 * XDESTR + (2 * data.rtetB) / data.geomprocR;
             console.log("Recommended time for calculations is", data.TMrecommended, " plus a little extra to be sure");
 
-            JC = 0.25 * JC / (Math.pow(L, 4));
-            ZC = MOM.divide(new Complex(S, 0));
             H = Math.PI / 6;
             TK = 0;
             AK = ALFA;
@@ -724,19 +702,14 @@ define(function (require, exports, module) {
             }
 
             if (TET0 >= (2*Math.PI)) TET0 = TET0 - 2 * Math.PI;
-            L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / L;
-            //ZC = ZC / L * Math.exp(-IM*ALFA);
-            ZC = (ZC.divide(new Complex(L, 0))).multiply(new Complex(Math.cos(-ALFA), Math.sin(-ALFA))); // ЦЕНТР МАСС
-            // TODO Is it works properly?
-            JC = JC - ( Math.PI * ((ZC.multiply(ZC.conjugate())).re) ); // МОМЕНТ ИНЕРЦИИ ОТНОСИТЕЛЬНО ЦЕНТРА МАСС
-            RISQ = JC / Math.PI;			 // КВАДРАТ РАДИУСА ИНЕРЦИИ
+            L1 = (RTET(TET0) * Math.cos(TET0-ALFA) - RTET(TET2) * Math.cos(TET2-ALFA)) / R;
 
             console.log("GEOMPROC has end work");
         }
 
         function STEPFI(){
-            //var BB = require('../BB');
-            var FUNC2 = BB.FUNC2;
+            //var BBL = require('../BBL');
+            var FUNC2 = BBL.FUNC2;
 
             var I,J,NI,K,K0,K1,M; // integer
             var RO,ROM,TET,LL,TETA; // real
@@ -777,7 +750,7 @@ define(function (require, exports, module) {
             while (true) {
                 if (TET>TET0+2*Math.PI) break;
                 K0 = K1 + 1;
-                ROM = L;
+                ROM = R;
                 for (I=1; I <= NI; I++) {
                     var courbTet, longTet, rcurbTetAns;
                     rcurbTetAns = FUNC2.RCURB(TET,RO,LL);
@@ -787,7 +760,7 @@ define(function (require, exports, module) {
                     if (RO < ROM) ROM = RO;
                     TET = TET + H;
                 }
-                K = Math.round(Math.min(L/ROM, DFI/H));
+                K = Math.round(Math.min(R/ROM, DFI/H));
                 K1 = K0 + K - 1;
                 NFI = NFI + K;
                 // SOLVED, what is it?
@@ -827,7 +800,7 @@ define(function (require, exports, module) {
                     J = 1;
                     if (J == JTP) break;
                 }
-                TET = Math.PI * TP[J]/180;
+                TET = TP[J] * Math.PI/180;
                 for (M = I; M <= NFI + 1; M++){
                     // TODO there is still bug (ALFA==15), TAR[90] has value 0 which is less than TET so no angle for ITP[10]
                     // Harry's solution solve this well, should take a look on it
@@ -839,158 +812,215 @@ define(function (require, exports, module) {
                 }
                 J++;
             }
-            //while (true){
-            //    if (J == NTP+2) {
-            //        J = 1;
-            //        if (J == JTP) break;
-            //    }
-            //    TET = Math.PI * TP[J]/180;
-            //    for (M = I; M <= NFI + 1; M++){
-            //        if (TET <= TAR[M]){
-            //            I = M + 1;
-            //            ITP[J] = M;
-            //            break;
-            //        }
-            //    }
-            //    J++;
-            //    if (J == JTP) break;
-            //}
             for (J = 1; J <= JTP-1; J++){
                 TP[J] = TP[J] - 360;
             }
         }
 
-        function MTRXPROC(){
-            //var BB = require('../BB');
-            var MatMult = BB.MatMult;
+        function BOUNDARYCONDITIONS(){
+            var MatMult = BBL.MatMult;
 
-            var J;
+            var L;
+            var LBD;    // of real[10,10]
+            var SS;     // of real[4,10]
+
+            LBD = MatMult.createArray(10, 10);
+            SS = MatMult.createArray(4, 10);
+
+            BOUNDARYS = MatMult.createArray(NL, 10, 10);
+
+            for (L = NL-2; L >= 0; L--){
+                MatMult.fillArray(SS, 0);
+                //for (var c0 = 0; c0 < 4; c0++)
+                //    for (var c1 = 0; c1 < 10; c1++) SS[c0][c1] = 0;
+
+                SS[0][0]=C[L+1];	SS[0][5]=-C[L];
+                SS[1][1]=C[L+1];	SS[1][6]=-C[L];
+                SS[2][2]=LRC[L+1];	SS[2][7]=-LRC[L];
+                SS[3][4]=LRC[L+1];	SS[3][9]=-LRC[L];
+
+                MatMult.fillArray(LBD, 0);
+                //for (var c2 = 0; c2 < 10; c2++)
+                //    for (var c3 = 0; c3 < 10; c3++) LBD[c2][c3] = 0;
+
+                //LBD(1:3,1:5)=LAUX(L+1,1:3,1:5);
+                for (var c4 = 0; c4 < 3; c4++)
+                    for (var c5 = 0; c5 < 5; c5++) LBD[c4][c5] = LAUX[L+1][c4][c5];
+
+                //LBD(4:6,6:10)=LAUX(L,3:5,1:5);
+                for (var c6 = 3; c6 < 6; c6++)
+                    for (var c7 = 5; c7 < 10; c7++) LBD[c6][c7] = LAUX[L][c6-1][c7-5];
+
+                //BOUNDARYS(L,1:6,:)=LBD(1:6,:);
+                for (var c8 = 0; c8 < 6; c8++)
+                    for (var c9 = 0; c9 < 10; c9++) BOUNDARYS[L][c8][c9] = LBD[c8][c9];
+
+                //BOUNDARYS(L,7:10,:)=SS;
+                for (var c10 = 6; c10 < 10; c10++)
+                    for (var c11 = 0; c11 < 10; c11++) BOUNDARYS[L][c10][c11] = SS[c10-6][c11];
+
+                //BOUNDARYS(L,:,:)=(.inv.BOUNDARYS(L,:,:)).x.LBD;
+                var invBOUNDARYS = matrix.inverse( BOUNDARYS[L] );
+                BOUNDARYS[L] = matrix.multiply(invBOUNDARYS, LBD);
+                //for (var c12 = 0; c12 < 10; c12++)
+                //    for (var c13 = 0; c13 < 10; c13++) BOUNDARYS[L][c12][c13] = matrix.multiply(invBOUNDARYS, LBD);
+            }
+        }
+
+        function MTRXPROC(){
+            //var BBL = require('../BBL');
+            var MatMult = BBL.MatMult;
+
+            var J, L;
             var M, F, LAY, LAX; // [5,5] of float
             var E; // [3,5] of float
             var LBD; // [2,5] of float
             var CG, SG;
 
+            LAUX = MatMult.createArray(NL, 5, 5);
+            LG = MatMult.createArray(NL, 5, 5);
+            MatMult.fillArray(LG, 0);
+
             F = MatMult.createArray(5, 5);
             MatMult.fillArray(F, 0);
 
-            SG = Math.sqrt(B);
-            CG = 1 - 2*B;
-            // It may be changed to matrix.zeros(5,5) (from numbers.js)
-            Q = MatMult.createArray(5, 5);
             MatMult.fillArray(Q, 0);
             LAX = MatMult.createArray(5, 5);
-            MatMult.fillArray(LAX, 0);
             LAY = MatMult.createArray(5, 5);
-            MatMult.fillArray(LAY, 0);
             M = MatMult.createArray(5, 5);
-            MatMult.fillArray(M, 0);
-            M[0][0] = 1;
-            M[1][1] = SG;
-            M[3][3] = -1;
-            M[4][4] = -SG;
-            // TODO array numerates from 1, but not from 0 !!!!!!!!!!!!!!!!!!!!!!!
-            //M[5][5] = -SG;
-            LAX[0][0] = 1;  LAX[1][4] = 1;  LAX[3][0] = 1;  LAX[3][2] = 1;  LAX[4][4] = 1;
-            LAX[0][2] = -1; LAX[2][3] = -1;
-            LAX[4][1] = SG;
-            LAX[1][1] = -SG;
-            LAX[2][2] = CG;
-            LAY[1][4] = -1; LAY[0][3] = -1; LAY[2][2] = -1;
-            LAY[0][1] = 1;  LAY[3][1] = 1;  LAY[3][3] = 1;  LAY[4][4] = 1;
-            LAY[1][0] = SG; LAY[4][0] = SG;
-            LAY[2][3] = CG;
-            Q[0][2] = -1;   Q[3][0] = -1;
-            Q[2][0] = -CG;  Q[1][4] = -2;   Q[4][1] = B;    Q[0][3] = 1;
-
-            //FIXP = .5 * (Math.abs(M)+M);
-            // TODO ABS(M), it is just ABS for every value in matrix, isn't it?
-            FIXP = matrix.scalarSafe(( matrix.addition(matrix.abs(M), M) ), 0.5);
-            //FIYP=FIXP;
-            // TODO Is it copy of values from FIXP to FIYP, but not links exchange?
-            FIYP = matrix.deepCopy(FIXP);
-            FIXM = matrix.scalarSafe(( matrix.addition( matrix.abs(M), matrix.negative(M) ) ), 0.5);
-            FIYM = matrix.deepCopy(FIXM);
-            FIXP = matrix.multiply(FIXP, LAX);
-            FIXM = matrix.multiply(FIXM, LAX);
-            FIYP = matrix.multiply(FIYP, LAY);
-            FIYM = matrix.multiply(FIYM, LAY);
-            // TODO Is it correct interpritation? Inverse matrix?
-            //LAX=.Inv.LAX;
-            LAX = matrix.inverse(LAX);
-            LAY = matrix.inverse(LAY);
-            FIXP = matrix.multiply(LAX, FIXP);
-            FIXM = matrix.multiply(LAX, FIXM);
-            FIYP = matrix.multiply(LAY, FIYP);
-            FIYM = matrix.multiply(LAY, FIYM);
-            FIX = matrix.addition(FIXP, FIXM);
-            FIY = matrix.addition(FIYP, FIYM);
 
             LBD = MatMult.createArray(2, 5);
-            MatMult.fillArray(LBD, 0);
-            MatMult.fillArray(M, 0);
             E = MatMult.createArray(3, 5);
-            MatMult.fillArray(E, 0);
 
-            if (INDEX == 0) {
-                LBD[0][2] = 1;
-                LBD[1][4] = 1;
-            } else if (INDEX == 1 || INDEX == 4) {
-                LBD[0][0] = 1;
-                LBD[1][1] = 1;
-            } else if (INDEX == 2 || INDEX == 3 || INDEX == 5) {
-                LBD[0][0] = 1;
-                LBD[1][2] = -FRIC;
-                LBD[1][4] = 1;
-            } else {
-                console.log("Unknown INDEX value:", INDEX);
-            }
+            for (L = 0; L < NL; L++) {
+                LG[L][0][0] = C[L];
+                LG[L][1][1] = C[L];
+                LG[L][2][2] = LRC[L];
+                LG[L][3][3] = LRC[L];
+                LG[L][4][4] = LRC[L];
 
-            E[0][2] = 1; E[1][3] = 1; E[2][4] = 1;
-            LAX = matrix.inverse(LAX);
-            E = matrix.multiply(E, LAX);
+                SG = Math.sqrt(LB[L]);
+                CG = 1 - 2 * LB[L];
 
-            for (J = 1 -1; J <= 2 -1; J++){
-                for (var k1 = 0; k1 < LBD[J].length; k1++){
-                    M[J][k1] = -LBD[J][k1];
-                }
-            }
+                MatMult.fillArray(Q, 0);
+                MatMult.fillArray(LAX, 0);
+                MatMult.fillArray(LAY, 0);
+                MatMult.fillArray(M, 0);
+                M[0][0] = 1;
+                M[1][1] = SG;
+                M[3][3] = -1;
+                M[4][4] = -SG;
+                LAX[0][0] = 1;
+                LAX[1][4] = 1;
+                LAX[3][0] = 1;
+                LAX[3][2] = 1;
+                LAX[4][4] = 1;
+                LAX[0][2] = -1;
+                LAX[2][3] = -1;
+                LAX[4][1] = SG;
+                LAX[1][1] = -SG;
+                LAX[2][2] = CG;
 
-            for (J = 1 -1; J <= 5 -1; J++){
-                if (J < 2){
-                    for (var k2 = 0; k2 < LBD[J].length; k2++) {
-                        F[J][k2] = LBD[J][k2];
-                    }
+                LAY[1][4] = -1;
+                LAY[0][3] = -1;
+                LAY[2][2] = -1;
+                LAY[0][1] = 1;
+                LAY[3][1] = 1;
+                LAY[3][3] = 1;
+                LAY[4][4] = 1;
+                LAY[1][0] = SG;
+                LAY[4][0] = SG;
+                LAY[2][3] = CG;
+
+                Q[L][0][2] = -1;
+                Q[L][3][0] = -1;
+                Q[L][2][0] = -CG;
+                Q[L][1][4] = -2;
+                Q[L][4][1] = LB[L];
+                Q[L][0][3] = 1;
+
+                // FIXP(L,:,:)=.5*(ABS(M)+M);
+                FIXP[L] = matrix.scalarSafe(( matrix.addition(matrix.abs(M), M) ), 0.5);
+                // FIYP=FIXP;
+                // TODO Is it copy of values from FIXP to FIYP, but not links exchange?
+                FIYP = matrix.deepCopy(FIXP);
+                FIXM[L] = matrix.scalarSafe(( matrix.addition(matrix.abs(M), matrix.negative(M)) ), 0.5);
+                FIYM = matrix.deepCopy(FIXM);
+                FIXP[L] = matrix.multiply(FIXP[L], LAX);
+                FIXM[L] = matrix.multiply(FIXM[L], LAX);
+                FIYP[L] = matrix.multiply(FIYP[L], LAY);
+                FIYM[L] = matrix.multiply(FIYM[L], LAY);
+                // TODO Is it correct interpritation? Inverse matrix?
+                //LAX=.Inv.LAX;
+                LAX = matrix.inverse(LAX);
+                LAY = matrix.inverse(LAY);
+                FIXP[L] = matrix.multiply(LAX, FIXP[L]);
+                FIXM[L] = matrix.multiply(LAX, FIXM[L]);
+                FIYP[L] = matrix.multiply(LAY, FIYP[L]);
+                FIYM[L] = matrix.multiply(LAY, FIYM[L]);
+                // TODO compare results between Fortran and JS
+                FIX[L] = matrix.addition(FIXP[L], FIXM[L]);
+                FIY[L] = matrix.addition(FIYP[L], FIYM[L]);
+
+                MatMult.fillArray(LBD, 0);
+                MatMult.fillArray(M, 0);
+                MatMult.fillArray(E, 0);
+
+                if (INDEX == 0) {
+                    LBD[0][2] = 1;
+                    LBD[1][4] = 1;
+                } else if (INDEX == 1) {
+                    LBD[0][0] = 1;
+                    LBD[1][1] = 1;
+                } else if (INDEX == 2 || INDEX == 3) {
+                    LBD[0][0] = 1;
+                    LBD[1][2] = -FRIC;
+                    LBD[1][4] = 1;
                 } else {
-                    for (var k3 = 0; k3 < E[J-2].length; k3++) {
-                        F[J][k3] = E[J-2][k3];
+                    console.log("Unknown INDEX value:", INDEX);
+                }
+
+                E[0][2] = 1;
+                E[1][3] = 1;
+                E[2][4] = 1;
+                LAX = matrix.inverse(LAX);
+                E = matrix.multiply(E, LAX);
+
+                //for (J = 1 - 1; J <= 2 - 1; J++) {
+                //    for (var k1 = 0; k1 < LBD[J].length; k1++) {
+                //        M[J][k1] = -LBD[J][k1];
+                //    }
+                //}
+
+                for (J = 0; J < 5; J++) {
+                    if (J < 2) {
+                        for (var k2 = 0; k2 < LBD[J].length; k2++) {
+                            F[J][k2] = LBD[J][k2];
+                        }
+                    } else {
+                        for (var k3 = 0; k3 < E[J - 2].length; k3++) {
+                            F[J][k3] = E[J - 2][k3];
+                        }
                     }
                 }
-            }
 
-            F = matrix.inverse(F);
-            FU = matrix.multiply(F, M);
-            MatMult.fillArray(M, 0);
+                F = matrix.inverse(F);
+                MatMult.fillArray(M, 0);
 
-            for (J = 3 -1; J <= 5 -1; J++){
-                for (var k4 = 0; k4 < E[J-2].length; k4++) {
-                    M[J][k4] = E[J-2][k4];
+                for (J = 2; J < 5; J++) {
+                    for (var k4 = 0; k4 < E[J - 2].length; k4++) {
+                        M[J][k4] = E[J - 2][k4];
+                    }
                 }
-            }
 
-            FG = matrix.multiply(F, M);
+                FG[L] = matrix.multiply(F, M);
+
+                LAUX[L] = matrix.deepCopy(LAX);
+            }   // for L
         }
 
         // Complex
         function SIMPS(F, N, M, T, H){
-            // T, H real
-            // N, M integer
-
-            //function F(T) {
-                // TODO interfface F(T), how it works?
-                // may be it is for changing value by special rule (function)
-                // probably SOLVED, but not sure, so TO DO is still here. F is one parametrs, so function is parametr
-            //}
-
             function FS(value) {
                 // FS=(F(T)**N)*EXP(IM*M*T);
                 // probably SOLVED, probably F could return complex value so... there is huge bug place probably
@@ -1038,24 +1068,7 @@ define(function (require, exports, module) {
                 return 0;
             }
         }
-
-        function TENS(T){
-            var Q, S, TT; // float
-            if (SPLIT) {
-                S = 0; Q = 1; TT = T - splitT0;
-                while (true){
-                    if (TT <= 0) break;
-                    S = S + Q * FF(TT);
-                    Q = Q * KAP1;
-                    TT = TT - DTT;
-                }
-                return KAP * S;
-            } else {
-                return FF(T);
-            }
-        }
-        //exports.TENS = TENS;
-        BBstart.TENS = TENS;
+        BBLstart.FF = FF;
 
         function WAVEEPURE(){
             var TMAX = 50;
@@ -1064,7 +1077,7 @@ define(function (require, exports, module) {
             var waveEpure = [];
             data.waveEpure = waveEpure;
 
-            var EpurePath = 'BBdat/_Epure.dat'; // looks like path depends on app.js for server side
+            var EpurePath = 'BBLdat/_Epure.dat'; // looks like path depends on app.js for server side
             //noinspection JSUnresolvedFunction
             var fd = fs.openSync(EpurePath, 'w');
             var recBuffer = new Buffer('T, ' + 'F\n');
@@ -1076,9 +1089,9 @@ define(function (require, exports, module) {
                 while (true){
                     if (T > TPLUS) break;
                     if (needRealValues){
-                        value = -C2 * C2 * RO2 * TENS(T) * 1E-05 / 0.981;
+                        value = -C0 * C0 * LRO[0] * FF(T) * 1E-05 / 0.981;
                     } else {
-                        value = TENS(T);
+                        value = FF(T);
                     }
                     recBuffer = new Buffer(T.toFixedDef() + ' ' + (value).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
@@ -1096,9 +1109,9 @@ define(function (require, exports, module) {
                     if (T > TMAX) break;
                     // WRITE(50,'(5X,E10.4,3X,E11.4)') T,TENS(LC*T)    !C2*C2*RO2*TENS(LC*T)*1E-06
                     if (needRealValues){
-                        value = C2*C2*RO2*TENS(LC*T)*1E-05/0.981;
+                        value = C0*C0*LRO[0]*FF(LC*T)*1E-05/0.981;
                     } else {
-                        value = TENS(LC*T);
+                        value = FF(LC*T);
                     }
                     recBuffer = new Buffer(T.toFixedDef() + ' ' + (value).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
@@ -1133,7 +1146,7 @@ define(function (require, exports, module) {
 
             var iStart = 9;
             for (I = iStart; I <= 15; I++) {
-                path = 'BBdat/_' + ARS1[I-iStart]; // looks like path depends on app.js for server side
+                path = 'BBLdat/_' + ARS1[I-iStart]; // looks like path depends on app.js for server side
                 //noinspection JSUnresolvedFunction
                 fds1.push( fs.openSync(path, 'w') );
 
@@ -1168,7 +1181,7 @@ define(function (require, exports, module) {
 
             STR = [];
             for (I = 16; I <= 20; I++){
-                path = 'BBdat/_' + ARS2[I-16]; // looks like path depends on app.js for server side
+                path = 'BBLdat/_' + ARS2[I-16]; // looks like path depends on app.js for server side
                 //noinspection JSUnresolvedFunction
                 fds2.push( fs.openSync(path, 'w') );
 
@@ -1204,20 +1217,20 @@ define(function (require, exports, module) {
 
         // Node.js
         if (typeof module !== 'undefined' && module.exports) {
-            module.exports = BBstart;
+            module.exports = BBLstart;
         }
         // AMD / RequireJS
         else if (typeof define !== 'undefined' && define.amd) {
             define([], function () {
-                return BBstart;
+                return BBLstart;
             });
         }
         // included directly via <script> tag
         else {
-            root.BBstart = BBstart;
+            root.BBLstart = BBLstart;
         }
 
     }(Buffer));
-    //})(typeof exports === 'undefined'? this['BBstart']={} : exports);
+    //})(typeof exports === 'undefined'? this['BBLstart']={} : exports);
 
 });

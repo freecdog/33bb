@@ -38,6 +38,22 @@ function writeJSONFile(filepath, jsondata, callback){
     });
 }
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+function DateToStr(){
+    var d = new Date();
+    var year = d.getUTCFullYear().toString();
+    var month = d.getUTCMonth() > 8 ? (d.getUTCMonth()).toString() : "0" + (d.getUTCMonth()+1).toString();
+    var day = d.getUTCDate().toString();
+    var time = d.toLocaleTimeString();
+    time = replaceAll(time, ":", "");
+    return year + month + day + time;
+}
+
 // send default memOut
 router.get('/', function(req, res){
     var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def01.json');
@@ -77,8 +93,9 @@ router.post('/', function(req, res){
 
 router.post('/:name', function(req, res) {
     var name = req.params.name;
+    var date = DateToStr();
 
-    var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def01_' + name + '.json');
+    var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.json');
     writeJSONFile(pathToFile, req.body, function(err){
         if (err != null) console.log('Some errors occurred:', err);
 
