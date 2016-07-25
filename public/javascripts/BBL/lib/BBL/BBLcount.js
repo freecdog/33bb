@@ -256,7 +256,7 @@ define(function (require, exports, module) {
                     LK[0] = NX - Math.round(HTOTAL/DX);
                     X = 0;
 
-                    for (var L = NL-1; L > 0; L--){
+                    for (var L = NL-1; L >= 0; L--){
                         FICTCELLS(L);
 
                         LM = C0 / C[L];
@@ -265,9 +265,12 @@ define(function (require, exports, module) {
                         GABE = GABobj.end;
                         // ALLOCATE(GA(5,0:LK(L)+1,0:NFI))
                         GA = MatMult.createArray(genSize, LK[L]+2, NFI+1);
+                        // GA(:,1:LK(L),1:NFI-1)=G(:,GABS:GABE,1:NFI-1);
+                        // TODO Harry don't do this (GA=0), so it might be non zero values in Fortran
+                        MatMult.fillArray(GA, 0);
                         for (var i0 = 0; i0 < G.length; i0++)
-                            for (var i1 = 0; i1 < LK[L]; i1++)
-                                for (var i2 = 1; i2 < NFI; i2++)
+                            for (var i1 = 1; i1 <= LK[L]; i1++)
+                                for (var i2 = 1; i2 <= NFI-1; i2++)
                                     GA[i0][i1][i2] = G[i0][i1][i2];
 
                         if (L == NL-1){
@@ -334,11 +337,11 @@ define(function (require, exports, module) {
                         if (L != NL-1)
                             for (var i12 = 0; i12 < GA.length; i12++)
                                 for (var i13 = 1; i13 < NFI; i13++)
-                                    GA[i12][0][i13] = GAF2[L][i12][i13];
+                                    GA[i12][0][i13] = GAF2[L][i12][i13-1];
                         if (L != 0)
                             for (var i14 = 0; i14 < GA.length; i14++)
                                 for (var i15 = 1; i15 < NFI; i15++)
-                                    GA[i14][LK[L]+1][i15] = GAF1[L-1][i14][i15];
+                                    GA[i14][LK[L]+1][i15] = GAF1[L-1][i14][i15-1];
 
                         if (T > 0){
                             I = NFI;
@@ -353,10 +356,10 @@ define(function (require, exports, module) {
                                 LOM = LONG[I] / R;
                                 FIM = FAR[I];
 
-                                for (J = 1; J < LK[L]; J++){
-                                    if (J==9){
-                                        // TODO var ga2 = matrix.getColUnSafe3x(GA, J+1, I);
-                                        // GA is empty there
+                                for (J = 1; J <= LK[L]; J++){
+                                    if (J==12 && I==1 && L==1 && T==0.05){
+                                        // TODO T=0.05 values are differ from Harry
+                                        // I have to compare every array at T=0.05
                                         var JSTP=0;
                                     }
                                     X = X + DX;
@@ -415,7 +418,7 @@ define(function (require, exports, module) {
                                 }   // for J
                                 if ((NFI == 2*I) || (NFI == 2*I-1)) break;
                             }   // while true (I)
-                        }   // T > 0
+                        }   // if T > 0
                     }   // for L
 
                     WT = T >= TOUT;
@@ -750,10 +753,10 @@ define(function (require, exports, module) {
 
                     // U(1:5,1:NFI-1)=G(:,BE2,1:NFI-1);
                     for (var c1 = 0; c1 < 5; c1++)
-                        for (var c2 = 0; c2 < NFI-1; c2++) U[c1][c2] = G[c1][BE2][c2];
+                        for (var c2 = 0; c2 < NFI-1; c2++) U[c1][c2] = G[c1][BE2][c2+1];
                     //U(6:10,1:NFI-1)=G(:,BS1,1:NFI-1);
                     for (var c3 = 5; c3 < 10; c3++)
-                        for (var c4 = 0; c4 < NFI-1; c4++) U[c3][c4] = G[c3-5][BS1][c4];
+                        for (var c4 = 0; c4 < NFI-1; c4++) U[c3][c4] = G[c3-5][BS1][c4+1];
                     //U(:,1:NFI-1)=BOUNDARYS(L,:,:).x.U(:,1:NFI-1);
                     U = matrix.multiply(BOUNDARYS[L], U);
 
