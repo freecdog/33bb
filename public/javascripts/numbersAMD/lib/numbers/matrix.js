@@ -1007,6 +1007,32 @@ matrix.vectorTranspose = function (arr) {
     return result;
 };
 
+matrix.inverseCopy = function(m) {
+  var mCopy = matrix.deepCopy(m);
+  var n = mCopy.length;
+
+  if (n === mCopy[0].length) {
+      var identity = matrix.identity(n);
+
+      // AI
+      for(var i=0; i<n; i++) {
+          mCopy[i] = mCopy[i].concat(identity[i]);
+      }
+
+      // inv(IA)
+      mCopy = matrix.GaussJordanEliminate(mCopy);
+
+      // inv(A)
+      for(var i=0; i<n; i++) {
+          mCopy[i] = mCopy[i].slice(n);
+      }
+
+    return mCopy;
+  } else {
+    throw new Error('The given matrix must be square');
+  }
+};
+
 // Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = matrix;

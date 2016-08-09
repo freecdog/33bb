@@ -179,7 +179,7 @@ define(function (require, exports, module) {
                 needRealValues = data.needRealValues;
 
             var I, J, K, N, NX, ICOUNT = 1, GABS,GABE, II, IK; // integer
-            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB; // float
+            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX; // float
             var WT; // boolean
             var DZ0, Z; // Complex
             var LX, LAX, E; // [5, 5] of float
@@ -209,7 +209,9 @@ define(function (require, exports, module) {
             G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
             GOUT = MatMult.createArray(genSize, Math.round(CHECK/STEPX)+1, NTP+1);
             GAF1 = MatMult.createArray(NL, genSize, NFI+1);
+            MatMult.fillArray(GAF1, 0);
             GAF2 = MatMult.createArray(NL, genSize, NFI+1);
+            MatMult.fillArray(GAF2, 0);
 
             E = MatMult.createArray(5,5);
             MatMult.fillArray(E, 0);
@@ -259,7 +261,7 @@ define(function (require, exports, module) {
                     for (var L = NL-1; L >= 0; L--){
                         FICTCELLS(L);
 
-                        LM = C0 / C[L];
+                        LM = C[L] / C0;
                         GABobj = CALCBOUNDARIES(L, GABS, GABE);
                         GABS = GABobj.start;
                         GABE = GABobj.end;
@@ -271,7 +273,7 @@ define(function (require, exports, module) {
                         for (var i0 = 0; i0 < G.length; i0++)
                             for (var i1 = 1; i1 <= LK[L]; i1++)
                                 for (var i2 = 1; i2 <= NFI-1; i2++)
-                                    GA[i0][i1][i2] = G[i0][i1][i2];
+                                    GA[i0][i1][i2] = G[i0][GABS+i1-1][i2];
 
                         if (L == NL-1){
                             // G(:,0,1:NFI-1)=FG(NL,:,:).x.G(:,1,1:NFI-1);
@@ -356,15 +358,16 @@ define(function (require, exports, module) {
                                 LOM = LONG[I] / R;
                                 FIM = FAR[I];
 
+                                JX = X;
                                 for (J = 1; J <= LK[L]; J++){
                                     if (J==12 && I==1 && L==1 && T==0.05){
                                         // TODO T=0.05 values are differ from Harry
                                         // I have to compare every array at T=0.05
                                         var JSTP=0;
                                     }
-                                    X = X + DX;
-                                    P = 1 / ((1 + COM * (X - DX/2)) * LOM);
-                                    PP = COM / (1 + COM * (X - DX/2));
+                                    JX = JX + DX;
+                                    P = 1 / ((1 + COM * (JX - DX/2)) * LOM);
+                                    PP = COM / (1 + COM * (JX - DX/2));
                                     // LAX=DT*LM/DX*FIX(L,:,:)+DT*LM*P/DFI*FIY(L,:,:)+DT*LM*PP*Q(L,:,:)
                                     LAX = matrix.addition(
                                         matrix.addition(
@@ -418,6 +421,8 @@ define(function (require, exports, module) {
                                 }   // for J
                                 if ((NFI == 2*I) || (NFI == 2*I-1)) break;
                             }   // while true (I)
+                            X = X + JX;
+
                         }   // if T > 0
                     }   // for L
 
@@ -760,12 +765,16 @@ define(function (require, exports, module) {
                     //U(:,1:NFI-1)=BOUNDARYS(L,:,:).x.U(:,1:NFI-1);
                     U = matrix.multiply(BOUNDARYS[L], U);
 
+                    // GAF2(L,:,1:NFI-1)=U(1:5,1:NFI-1);
                     for (var c5 = 0; c5 < 5; c5++){
                         for (var c6 = 0; c6 < NFI-1; c6++){
-                            // GAF2(L,:,1:NFI-1)=U(1:5,1:NFI-1);
-                            GAF2[L][c5][c6] = U[c5][c6];
-                            // GAF1(L,:,1:NFI-1)=U(6:10,1:NFI-1);
-                            GAF1[L][c5][c6] = U[c5+5][c6];
+                            GAF2[L][c5][c6+1] = U[c5][c6];
+                        }
+                    }
+                    // GAF1(L,:,1:NFI-1)=U(6:10,1:NFI-1);
+                    for (var c7 = 5; c7 < 10; c7++){
+                        for (var c8 = 0; c8 < NFI-1; c8++){
+                            GAF1[L][c7-5][c8+1] = U[c7][c8];
                         }
                     }
 

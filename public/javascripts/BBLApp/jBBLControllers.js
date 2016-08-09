@@ -79,7 +79,7 @@
 
     jBBLControllers.controller('jBBLControlPointsController', ['$scope', '$window', function($scope, $window) {
         var self = this;
-        var BB, data;
+        var BBL, data;
 
         var charts;
 
@@ -88,7 +88,7 @@
         function init(){
             self.visible = false;
 
-            BB = {};
+            BBL = {};
             data = {};
 
             self.currentTabIndex = 2;
@@ -122,9 +122,9 @@
         }
         this.setTab = setTab;
 
-        function updateBBData(){
-            BB = require('BB');
-            data = new BB.Datatone();
+        function updateBBLData(){
+            BBL = require('BBL');
+            data = new BBL.Datatone();
             console.log("here is data", data);
 
             self.data = data;
@@ -139,7 +139,7 @@
 
             self.visible = visibility;
 
-            updateBBData();
+            updateBBLData();
 
             var ctrlPoints = [];    // ctrlPoints[index][layer][time] -> value
             self.ctrlPoints = ctrlPoints;
@@ -304,14 +304,14 @@
     jBBLControllers.controller('jBBLDataController', ['$scope', '$window', function($scope, $window) {
         var self = this;
 
-        var BB, data;
+        var BBL, data;
 
         init();
 
         function init(){
             self.visible = false;
 
-            BB = {};
+            BBL = {};
             data = {};
 
             self.currentTabIndex = 2;
@@ -343,9 +343,9 @@
         }
         this.setTab = setTab;
 
-        function updateBBData(){
-            BB = require('BB');
-            data = new BB.Datatone();
+        function updateBBLData(){
+            BBL = require('BBL');
+            data = new BBL.Datatone();
             console.log("here is data", data);
 
             self.data = data;
@@ -371,7 +371,7 @@
         function setDisplayData(visibility){
             self.visible = visibility;
 
-            updateBBData();
+            updateBBLData();
 
             // data.memOut[layer][time][radius][angle]
             // for (var c0 = 0, c0len = Math.round(data.XDESTR / data.STEPX); c0 <= c0len; c0=c0+1){
@@ -451,7 +451,7 @@
     jBBLControllers.controller('jBBLEpureController', ['$scope', '$window', function($scope, $window) {
         var self = this;
 
-        var BB, data;
+        var BBL, data;
 
         var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
 
@@ -460,13 +460,13 @@
         function init(){
             self.visible = false;
 
-            BB = {};
+            BBL = {};
             data = {};
         }
 
-        function updateBBData(){
-            BB = require('BB');
-            data = new BB.Datatone();
+        function updateBBLData(){
+            BBL = require('BBL');
+            data = new BBL.Datatone();
             console.log("here is data", data);
 
             self.data = data;
@@ -475,7 +475,7 @@
         function setEpureData(visibility){
             self.visible = visibility;
 
-            updateBBData();
+            updateBBLData();
 
             initWaveShape(data);
 

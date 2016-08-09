@@ -234,14 +234,14 @@ define(function (require, exports, module) {
                         ALFA: 0,        // degree
                         RZ: 2.55E-02,   // metres
                         X: 10,          // metres
-                        XDESTR: 1.0,    // metres
+                        XDESTR: 1.5,    // metres
 
                         // 0 - Heaviside function
                         // 1 - exponent
                         // 2 - sinus * gauss
                         EPUR: 2,
 
-                        NL: 3,
+                        NL: 1,
                         layers: [
                             {
                                 E: 5.79e10,
@@ -280,8 +280,8 @@ define(function (require, exports, module) {
                         DT: 0.05,       // special
                         DFI: 2.0,       // degree
                         DX: 0.05,       // special
-                        NTP: 11,
-                        printPoints: [ 0,5,10,15,30,40,45,60,90,120,135 ],
+                        //NTP: 11, // it is calculated further NTP = printPoints.length
+                        printPoints: [ 0,5,10,15,30,40,45,60,90,120,135,180 ],
                         STEP: 0.05,     // special
                         STEPX: 0.05,    // special
                         DELTA: 1,
@@ -338,6 +338,7 @@ define(function (require, exports, module) {
 
                     TP[parseInt(ppIt) +1] = inputData.printPoints[ppIt];
                 }
+                console.warn("TP", TP);
 
                 STEP = inputData.STEP;
                 STEPX = inputData.STEPX;
@@ -828,6 +829,7 @@ define(function (require, exports, module) {
             SS = MatMult.createArray(4, 10);
 
             BOUNDARYS = MatMult.createArray(NL, 10, 10);
+            MatMult.fillArray(BOUNDARYS, 0);
 
             for (L = NL-2; L >= 0; L--){
                 MatMult.fillArray(SS, 0);
@@ -860,7 +862,7 @@ define(function (require, exports, module) {
                     for (var c11 = 0; c11 < 10; c11++) BOUNDARYS[L][c10][c11] = SS[c10-6][c11];
 
                 //BOUNDARYS(L,:,:)=(.inv.BOUNDARYS(L,:,:)).x.LBD;
-                var invBOUNDARYS = matrix.inverse( BOUNDARYS[L] );
+                var invBOUNDARYS = matrix.inverseCopy( BOUNDARYS[L] );
                 BOUNDARYS[L] = matrix.multiply(invBOUNDARYS, LBD);
                 //for (var c12 = 0; c12 < 10; c12++)
                 //    for (var c13 = 0; c13 < 10; c13++) BOUNDARYS[L][c12][c13] = matrix.multiply(invBOUNDARYS, LBD);

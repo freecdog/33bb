@@ -47,8 +47,10 @@ function replaceAll(str, find, replace) {
 function DateToStr(){
     var d = new Date();
     var year = d.getUTCFullYear().toString();
-    var month = d.getUTCMonth() > 8 ? (d.getUTCMonth()).toString() : "0" + (d.getUTCMonth()+1).toString();
-    var day = d.getUTCDate().toString();
+    var month = d.getUTCMonth()+1;  // months are counted from 0
+    if (month < 10) month = "0" + month;
+    var day = d.getUTCDate();
+    if (day < 10) day = "0" + day;
     var time = d.toLocaleTimeString();
     time = replaceAll(time, ":", "");
     return year + month + day + time;
@@ -94,6 +96,7 @@ router.post('/', function(req, res){
 router.post('/:name', function(req, res) {
     var name = req.params.name;
     var date = DateToStr();
+    console.log("date:", date);
 
     var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.json');
     writeJSONFile(pathToFile, req.body, function(err){
