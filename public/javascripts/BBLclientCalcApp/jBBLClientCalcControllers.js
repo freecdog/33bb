@@ -200,7 +200,8 @@
             var timeSteps = [];
             var valueSteps = [];
 
-            if (userData.EPUR == 0){
+            // TODO it will fixed when user data will be active
+            if (userData.EPUR == 0 || (userData.EPUR == undefined && data.inputData.EPUR == 0)){
                 for (var j = -data.XDESTR ; j <= Math.floor(data.TM); j++){
                     timeSteps.push(j);
                     valueSteps.push( j >= 0 ? 1 : 0 );

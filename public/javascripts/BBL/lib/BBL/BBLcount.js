@@ -286,22 +286,11 @@ define(function (require, exports, module) {
                             var g0mult = matrix.multiply(FG[NL-1], g0);
                             for (var g0m = 0; g0m < G.length; g0m++)
                                 for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
-                                    G[g0m][1][g0n+1] = g0mult[g0m][g0n];
-
+                                    G[g0m][0][g0n+1] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
                             // GA(:,0,1:NFI-1)=G(:,0,1:NFI-1);
                             for (var i3 = 0; i3 < GA.length; i3++)
                                 for (var i4 = 1; i4 < NFI; i4++)
                                     GA[i3][0][i4] = G[i3][0][i4];
-
-                            //for (J = 0; J < NTP + 1; J++){
-                            //    // GOUT(:,0,J)=LG(NL,:,:).x.G(:,0,ITP(J)+1);
-                            //    var g1 = matrix.getColUnSafe3x(G, 0, ITP[J]+1);
-                            //    g1 = matrix.vectorTranspose(g1);
-                            //    var g1mult = matrix.multiply(LG[NL-1], g1);
-                            //    for (var g1i = 0; g1i < GOUT.length; g1i++)
-                            //        GOUT[g1i][0][J] = g1mult[g1i];
-                            //}
-
                         }
 
                         if (L == 0){
@@ -313,14 +302,18 @@ define(function (require, exports, module) {
 
                         for (var i8 = 0; i8 < G.length; i8++) {
                             for (var i9 = GABS; i9 <= GABE; i9++) {
+                                // G(:,GABS:GABE,0)= 	G(:,GABS:GABE,NFI-1);
                                 G[i8][i9][0] = G[i8][i9][NFI - 1];
+                                // G(:,GABS:GABE,NFI)= G(:,GABS:GABE,1);
                                 G[i8][i9][NFI] = G[i8][i9][1];
                             }
                         }
 
                         for (var i10 = 0; i10 < GA.length; i10++) {
-                            for (var i11 = 1; i11 <= LK[L]; i11++) {
+                            for (var i11 = 0, i11len = GA[0].length; i11 < i11len; i11++) {
+                                // GA(:,:,0)= 	GA(:,:,NFI-1);
                                 GA[i10][i11][0] = GA[i10][i11][NFI-1];
+                                // GA(:,:,NFI)= GA(:,:,1);
                                 GA[i10][i11][NFI] = GA[i10][i11][1];
                             }
                         }
@@ -336,14 +329,16 @@ define(function (require, exports, module) {
                         //    }
                         //}
 
+                        // IF (L/=NL) GA(:,0,1:NFI-1)=GAF2(L,:,1:NFI-1)
                         if (L != NL-1)
                             for (var i12 = 0; i12 < GA.length; i12++)
                                 for (var i13 = 1; i13 < NFI; i13++)
-                                    GA[i12][0][i13] = GAF2[L][i12][i13-1];
+                                    GA[i12][0][i13] = GAF2[L][i12][i13];
+                        // IF (L/=1)  GA(:,LK(L)+1,1:NFI-1)=GAF1(L-1,:,1:NFI-1)
                         if (L != 0)
                             for (var i14 = 0; i14 < GA.length; i14++)
                                 for (var i15 = 1; i15 < NFI; i15++)
-                                    GA[i14][LK[L]+1][i15] = GAF1[L-1][i14][i15-1];
+                                    GA[i14][LK[L]+1][i15] = GAF1[L-1][i14][i15];
 
                         if (T > 0){
                             I = NFI;
@@ -371,7 +366,8 @@ define(function (require, exports, module) {
                                     // LAX=DT*LM/DX*FIX(L,:,:)+DT*LM*P/DFI*FIY(L,:,:)+DT*LM*PP*Q(L,:,:)
                                     LAX = matrix.addition(
                                         matrix.addition(
-                                            matrix.scalarSafe(FIX[L], DT * LM / DX), matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
+                                            matrix.scalarSafe(FIX[L], DT * LM / DX),
+                                            matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
                                         ),
                                         matrix.scalarSafe(Q[L], DT * LM * PP)
                                     );
@@ -467,198 +463,6 @@ define(function (require, exports, module) {
 
             ////}
 
-            /*
-            function COUNTOUT(T){
-                // TODO why in memOut no values for TM, but Harry has them. But in TM=5s last value (it is clearly seen on memOut tables in /bb)
-                // TODO why in memOut[layer][time][radius][angle] in radius 0..(XDESTR/STEPX) has values, but there are extra elements (For example for TM = 1.0s 0..40 with values 41..74 w/o values).
-                var countoutStart = Date.now();
-
-                var I, M, J, K, N; //, JNT, COUNT=3; // integer
-                var X, DPSI;  // float
-                var rBuffer;
-                // QP = 0;
-                //MatMult.fillArray(QP, 0);
-                for (var c1 in QP){
-                    if (!QP.hasOwnProperty(c1)) continue;
-
-                    for (var c2 in QP[c1]){
-                        if (!QP[c1].hasOwnProperty(c2)) continue;
-
-                        var QPlen = QP[c1][c2].length;
-                        for (var c3 = 0; c3 < QPlen; c3++){
-                            QP[c1][c2][c3] = 0;
-                        }
-                    }
-                }
-                for (var c11 in QAC){
-                    if (!QAC.hasOwnProperty(c11)) continue;
-
-                    for (var c12 in QAC[c11]){
-                        if (!QAC[c11].hasOwnProperty(c12)) continue;
-
-                        var QACLength = QAC[c11][c12].length;
-                        for (var c13 = 0; c13 < QACLength; c13++){
-                            QAC[c11][c12][c13] = 0;
-                        }
-                    }
-                }
-
-                // jmemOut memory and cpu optimization
-                var memOut = data.memOut;
-                var moT;
-                var maxTimeSteps = Math.round(data.T0 / data.STEP) + Math.round(data.TM / data.STEP)+1;
-                if (T < 0) moT = Math.round( (data.T0 - Math.abs(T)) / data.STEP);
-                else moT = Math.round(data.T0 / data.STEP) + Math.round(T / data.STEP);
-                console.log("countout for T =", T.toFixedDef(), "; index = ", moT);
-
-                // JNT = COUNT; // not used
-                // TETA = TET0; // not used
-                I = 0;
-                for (J = 1; J <= NTP + 1; J++) {
-                    I = ITP[J];
-                    if (T < 0) {
-                        FIM = FAR[I];
-                        Z = ZET(TAR[I]);
-                        KSIN = (Z.subtract(DZ0)).re;
-                        CF = Math.cos(FIM);
-                        SF = Math.sin(FIM);
-                        UFI[0] = CF;
-                        UFI[1] = -SF;
-                        UFI[2] = 1 - 2*B * SF*SF;
-                        UFI[3] = 1 - 2*B * CF*CF;
-                        UFI[4] = -2*B * CF*SF;
-                        // TODO there are small mistakes in UFI e.g. for UFI[4] diff = 0.00001282782528004; my result 0.02611787782528004 vs. 2.610505E-02
-                        // TODO for UFI[0] cos(1.627479), calc.exe shows result next to my results, but not Fortran. May be they use old methods for cos and sin, not that accurate
-                    }
-                    X = 0;
-                    N = 0;
-
-                    while (true){
-                        // SOLVED what is for original -> X>1.01*XDESTR (why exactly 1.01?). It's done because to have extra bounds
-                        if (X > 1.01 * XDESTR) break;
-                        K = Math.round(X / DX);
-                        if (T < 0){
-                            KSI = KSIN - K*DX*CF;
-                            PSI = BBLstart.TENS(LC * (T - KSI));
-                            DPSI = (BBLstart.TENS(LC*(T+DT-KSI)) - BBLstart.TENS(LC*(T-KSI)))/DT;
-                            for (var c4 in QP){
-                                if (!QP.hasOwnProperty(c4)) continue;
-
-                                // TODO, hmm, why not UFI(:) ???? original: QP(:,N,J)=PSI*UFI
-                                if (needRealValues) {
-                                    QP[c4][N][J] = PSI * UFI[c4 - 1] *C2;
-                                } else {
-                                    QP[c4][N][J] = PSI * UFI[c4 - 1];
-                                }
-                            }
-                            for (var c6 = 1; c6 <= 2; c6++){
-                                QAC[c6][N][J] = DPSI * UFI[c6] *C2*C2/L; // QAC(:,N,J)=DPSI*UFI(1:2)*C2*C2/L;
-                            }
-                        } else {
-                            for (var c5 in QP){
-                                if (!QP.hasOwnProperty(c5)) continue;
-
-                                if (needRealValues) {
-                                    QP[c5][N][J] = G[c5][K][I] *C2;
-                                } else {
-                                    QP[c5][N][J] = G[c5][K][I];
-                                }
-                            }
-                            for (var c7 = 1; c7 <= 2; c7++){
-                                QAC[c7][N][J] = ACC[c7][K][I] *C2*C2/L;
-                            }
-                        }
-                        X = X + STEPX;
-                        N = N + 1;
-                    }
-                }
-
-                // SOLVED what is for this string QP(3:5,:,:)=QP(3:5,:,:)    !*RO2*C2*1E-05/0.981;
-                // this string uncommented when it is need to get real measurements
-                // last version is QP(3:5,:,:)=QP(3:5,:,:)   !*RC2*C2*1E-05/0.981;    (RC2 not RO2)
-                // very last version, letter from Harry 2016.04.19, there should be RO2
-                if (needRealValues){
-                    //var realValuesConst = RC2 * C2 * 1e-05 / 0.981; // as it mentioned above it is oldversion
-                    var realValuesConst = RO2 * C2 * 1e-05 / 0.981;  // atmosphere values (if you want MegaPascals -> RO2 * C2 * 1e-06)
-                    for (var c8 in QP){
-                        if (!QP.hasOwnProperty(c8)) continue;
-
-                        for (var c9 in QP[c8]){
-                            if (!QP[c8].hasOwnProperty(c9)) continue;
-
-                            var recQPLength = QP[c8][c9].length;
-                            for (var c10 = 0; c10 < recQPLength; c10++){
-                                QP[c8][c9][c10] = QP[c8][c9][c10] * realValuesConst;
-                            }
-                        }
-                    }
-                }
-
-                //if(!window.debugBool){
-                //    console.error(QP);
-                //    window.debugBool = true;
-                //}
-
-                for (I = 0; I <= Math.max(NTP+1, NXDST); I++){
-                    var st;
-                    if (I <= NXDST) {
-                        for (M = 1; M <= 2; M++){
-                            st = "";
-                            // WRITE(M+8,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QAC(M,I,J),J=1,NTP+1);
-                            st += T.toFixedDef().toFixedLen(6) + "   ";
-                            for (var qacj = 1; qacj <= NTP + 1; qacj++){
-                                st += (QAC[M][I][qacj]).toExponential(5).toFixedLen(12); //.toFixedDef();
-                                st += "   ";
-                            }
-                            st += "\n";
-                            rBuffer = new Buffer(st);
-                            //noinspection JSUnresolvedFunction
-                            fs.writeSync(fds1[M-1], rBuffer, 0, rBuffer.length, null);
-                        }
-                        for (M = 1; M <= 5; M++){
-                            // probably SOLVED WRITE(M+10,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,I,J),J=1,NTP+1);
-                            st = "";
-                            st += T.toFixedDef().toFixedLen(6) + "   ";
-                            for (var qpj = 1; qpj <= NTP + 1; qpj++){
-                                st += (QP[M][I][qpj]).toExponential(5).toFixedLen(12); //.toFixedDef();
-                                st += "   ";
-
-                                memOut[M - 1][moT][I][qpj - 1] = QP[M][I][qpj];
-                            }
-                            st += "\n";
-                            rBuffer = new Buffer(st);
-                            //noinspection JSUnresolvedFunction
-                            fs.writeSync(fds1[M+2-1], rBuffer, 0, rBuffer.length, null);    // +2 because ACC1, ACC2 were added
-
-                        }
-                    }
-                    if (I <= NTP) {
-                        for (M = 1; M <= 5; M++){
-                            // probably SOLVED WRITE(M+15,'(2X,F6.3,50(2X,E9.3))',REC=JNT) T,(QP(M,N,I+1),N=0,NXDST);
-                            st = "";
-                            st += T.toFixedDef().toFixedLen(6) + "   ";
-                            for (var qpn = 0; qpn <= NXDST; qpn++){
-                                st += (QP[M][qpn][I+1]).toExponential(5).toFixedLen(12); //.toFixedDef();
-                                st += "   ";
-
-                                // no need to use another representation of QP (actually G)
-                                //memOut[M-1+5][moT][I][qpn] = QP[M][qpn][I+1];
-                            }
-                            st += "\n";
-                            rBuffer = new Buffer(st);
-                            //noinspection JSUnresolvedFunction
-                            fs.writeSync(fds2[M-1], rBuffer, 0, rBuffer.length, null);
-
-                        }
-                    }
-                }
-
-                //COUNT = COUNT + 1;
-
-                //console.warn("countout tick:", (Date.now() - countoutStart) + " ms");
-            }
-            */
-
             function getLayerNumberByCoordinate(X){
                 var L,BS,BE, ans;   // integer
                 var Bobj;
@@ -682,7 +486,7 @@ define(function (require, exports, module) {
                     rBuffer = new Buffer("T="+ T.toString() + "\n");
                     fs.writeSync(fds[M], rBuffer, rBuffer.length, null);
                     st = "L, X/TETA, ";
-                    for (var i = 1; i < NTP+1; i++) st += TP[i].toString() + " ";
+                    for (var i = 1; i <= NTP+1; i++) st += TP[i].toString() + " ";
                     st += "\n";
                     rBuffer = new Buffer(st);
                     fs.writeSync(fds[M], rBuffer, rBuffer.length, null);
@@ -693,11 +497,13 @@ define(function (require, exports, module) {
                         K = Math.round(X/DX);
                         L = getLayerNumberByCoordinate(X);
 
-                        for (J = 1; J < NTP+1; J++) {
+                        // TODO ask Harry to check it out
+                        for (J = 0; J < NTP+1; J++) {
                             // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J)+1);
                             var g2 = matrix.getColUnSafe(LG[L], M);
                             var g3 = [];
-                            for (var g3i = 0; g3i < G.length; g3i++) g3.push(G[g3i][K][ITP[J]+1]);
+                            //for (var g3i = 0; g3i < G.length; g3i++) g3.push(G[g3i][K][ITP[J]+1]);
+                            g3 = matrix.getColUnSafe3x(G, K, ITP[J+1]+1);
                             //g2 = matrix.vectorTranspose(g2);
                             g2 = [g2];
                             g3 = matrix.vectorTranspose(g3);
@@ -706,7 +512,7 @@ define(function (require, exports, module) {
                         }
 
                         st = L.toString() + " " + (X*R).toString() + " ";
-                        for (J = 1; J < NTP+1; J++) st += GOUT[M][I][J].toString() + " ";
+                        for (J = 0; J < NTP+1; J++) st += GOUT[M][I][J].toString() + " ";
                         st += "\n";
                         rBuffer = new Buffer(st);
                         fs.writeSync(fds[M], rBuffer, rBuffer.length, null);
@@ -748,6 +554,7 @@ define(function (require, exports, module) {
                 var cb1, cb2;
 
                 U = MatMult.createArray(10, NFI-1);
+                MatMult.fillArray(U, 0);
 
                 // ГРАНИЦЫ СЛОЁВ
                 if (L < NL-1) {

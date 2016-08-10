@@ -239,7 +239,7 @@ define(function (require, exports, module) {
                         // 0 - Heaviside function
                         // 1 - exponent
                         // 2 - sinus * gauss
-                        EPUR: 2,
+                        EPUR: 0,
 
                         NL: 1,
                         layers: [
@@ -276,14 +276,14 @@ define(function (require, exports, module) {
                         INDEX: 0,
                         FRIC: 0,        // friction coefficient
 
-                        TM: 1,          // special time (/0.0004 ~ C0 afaik)
+                        TM: 10,          // special time (/0.0004 ~ C0 afaik)
                         DT: 0.05,       // special
                         DFI: 2.0,       // degree
                         DX: 0.05,       // special
                         //NTP: 11, // it is calculated further NTP = printPoints.length
                         printPoints: [ 0,5,10,15,30,40,45,60,90,120,135,180 ],
                         STEP: 0.05,     // special
-                        STEPX: 0.05,    // special
+                        STEPX: 0.1,    // special
                         DELTA: 1,
 
                         rtetN: 2,
