@@ -6,11 +6,17 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
+
 var clientCalc = require('./routes/clientCalc');
-var bblClientCalc = require('./routes/BBLclientCalc');
 var calcTime = require('./routes/calcTime');
-var memoutRouter = require('./routes/memout');
 var filesList = require('./routes/filesList');
+
+var memoutRouter = require('./routes/memout');
+
+var BBLfilesList = require('./routes/BBLfilesList');
+var BBLclientCalc = require('./routes/BBLclientCalc');
+var BBLviewRoute = require('./routes/BBLviewRoute');
+
 var restartServer = require('./routes/restartServer');
 
 var crypto = require('crypto');
@@ -36,12 +42,21 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/calc', clientCalc);
-app.use('/c', bblClientCalc);
-app.use('/calcTime', calcTime);
+
+app.use('/BBLfilesList', BBLfilesList);
+app.use('/c', BBLclientCalc);
+app.use('/v', BBLviewRoute);
+
 app.use('/memout', memoutRouter);
-app.use('/restartServer', restartServer);
+
+app.use('/calc', clientCalc);
+app.use('/bb', function(req, res){
+    res.render("bb", { host: req.headers.host});
+});
 app.use('/filesList', filesList);
+app.use('/calcTime', calcTime);
+
+app.use('/restartServer', restartServer);
 
 app.getHash = function(password){
     var hash = crypto.createHash('sha512');
@@ -66,26 +81,24 @@ var BBup = BB.BBup;
 //var BBup = require(path.join(__dirname, 'public', 'javascripts', 'BBup.js'));
 //BBup.run();
 
-app.use('/runcalc', function(req, res){
-    BBup.run({});
-    res.redirect("/");
-});
-
 var Datatone = BB.Datatone;
 //var Datatone = require(path.join(__dirname, 'public', 'javascripts', 'Datatone.js')).Datatone;
 var data = new Datatone();
-app.use('/stopcalc', function(req, res){
-    data.breakCalculation = true;
 
-    res.redirect("/");
-});
+//app.use('/runcalc', function(req, res){
+//    BBup.run({});
+//    res.redirect("/");
+//});
 
-app.use('/t', function(req, res){
-    res.render("t");
-});
-app.use('/bb', function(req, res){
-    res.render("bb", { host: req.headers.host});
-});
+//app.use('/stopcalc', function(req, res){
+//    data.breakCalculation = true;
+//
+//    res.redirect("/");
+//});
+//
+//app.use('/t', function(req, res){
+//    res.render("t");
+//});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

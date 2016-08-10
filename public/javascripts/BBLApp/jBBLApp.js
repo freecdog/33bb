@@ -2,15 +2,17 @@
  * Created by jaric on 13.07.2016.
  */
 
-(function (angular){
-
+define(["angular"], function(angular){
     "use strict";
 
     console.log("angular is here:", angular);
 
     var jBBLApp = angular.module('jBBLApp', [
-        'jBBLControllers'
-    ]);
+        "jBBLControllers"
+    ]).config([function(){
+        // app configuration goes here
+    }]);
     console.log("jBBLApp", jBBLApp);
 
-})(angular);
+    return jBBLApp;
+});

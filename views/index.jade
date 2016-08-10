@@ -1,24 +1,26 @@
-extends layout
-
-block content
-    h1= title
-    p Welcome to #{title}
-    p
-        h1
-            a(href='/c') multiple layer client calculations (/c)
-    p
-        h1
-            a(href='/s') multiple layer results (/s)
-    p
-    p
-        a(href='/runcalc') Run (server side, /runcalc)
-    p
-        a(href='/stopcalc') Stop (server side, /stopcalc)
-    p
-        a(href='/t') Test (/t)
-    p
-        h1
-            a(href='/calc') single layer client calculations (/calc)
-    p
-        h1
-            a(href='/bb') single layer results (/bb)
+doctype html
+html
+    head
+        title= "33bb"
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        h1 33bb
+        p
+            h1
+                a(href='/c') multiple layer client calculations (/c)
+        p
+            h1
+                a(href='/v') multiple layer results (/v)
+        p
+        //p
+        //    a(href='/runcalc') Run (server side, /runcalc)
+        //p
+        //    a(href='/stopcalc') Stop (server side, /stopcalc)
+        //p
+        //    a(href='/t') Test (/t)
+        p
+            h1
+                a(href='/calc') single layer client calculations (/calc)
+        p
+            h1
+                a(href='/bb') single layer results (/bb)

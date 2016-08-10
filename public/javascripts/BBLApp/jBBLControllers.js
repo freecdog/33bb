@@ -18,28 +18,38 @@
         return check;
     }
 
-    jBBLControllers.controller('jBBLLoaderController', ['$scope', '$http', '$window', function($scope, $http, $window) {
+    jBBLControllers.controller('jBBLLoaderController', ['$scope', '$http', function($scope, $http) {
         var self = this;
         init();
-
-        var url = $window.location.href;
-        var addressArr = url.split("/");
 
         function init(){
             console.log('jBBLLoaderController is here');
             console.warn('there should be a search option, see jade file');
 
+            self.filesLoaded = false;
+
             $http({
                 method: 'GET',
-                //url: addressArr[0] + "//" + addressArr[2] + '/filesList'
-                url: '/filesList'
+                url: '/BBLfilesList'
             }).then(function successCallback(response) {
                 self.allFiles = response.data.allFiles;
-                console.warn(response, self.allFiles);
+                self.allFilesSTR = [];
+                for (var i = 0; i < self.allFiles.length; i++) self.allFilesSTR.push(self.allFiles[i].path);
+                console.warn(response, self.allFiles, self.allFilesSTR);
+
+                self.filesLoaded = true;
             }, function errorCallback(response) {
                 console.error(response);
             });
         }
+
+        self.searchString = "";
+        $scope.$watch(function(){
+            return self.searchString;
+        }, function() {
+            console.log(self.searchString);
+        });
+
     }]);
 
     jBBLControllers.controller('jBBLController', ['$scope', '$window', function($scope, $window) {

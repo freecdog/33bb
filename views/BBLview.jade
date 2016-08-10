@@ -1,0 +1,18 @@
+//
+   Created by jaric on 10.08.2016.
+
+doctype html
+html
+    head
+        meta(name="viewport", content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes")
+        title= "BBL view"
+        script(data-main="javascripts/BBLviewBootstrap", src="/javascripts/require.js")
+        link(rel='stylesheet' href='/bootstrap/css/bootstrap.css')
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        div(ng-controller="jBBLLoaderController as Loader")
+            div(ng-show="Loader.filesLoaded")
+                input(ng-model="Loader.searchString" type="text")
+
+                div(ng-repeat="file in Loader.allFiles | filter: { path: Loader.searchString } track by $index ")
+                    h4() {{file.path}}
