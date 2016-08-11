@@ -97,136 +97,13 @@ define(function (require, exports, module) {
             var B1,B2, X,RZ; // float //FI,
             var I;
 
-            var fileData;
-            var lastIndex;
-            function jParse(varType, shift, symb, len, src){
-                shift = shift || 1;
-                symb = symb || '=';
-                len = len || 10;
-                src = src || fileData;
-
-                var pnt = src.indexOf(symb, lastIndex) + shift;
-                var ans;
-                if (varType == 'float')
-                    ans = parseFloat(src.substr(pnt, len));
-                else if (varType == 'int')
-                    ans = parseInt(src.substr(pnt, len));
-                else if (varType == 'bool')
-                    ans = charToBoolean(src.substr(pnt, len));
-                else
-                    ans = src.substr(pnt, len);
-                //lastIndex = pnt + shift + len;
-                lastIndex = pnt + ans.toString().length;
-
-                return ans;
-            }
-            // TODO, create specialized module and move method into it
-            function loadFromJSONFile(extendedObject, filePath){
-                console.log('reading from',filePath);
-                var fs = require('fs');
-
-                try {
-                    //noinspection JSUnresolvedFunction
-                    fileData = fs.readFileSync(filePath, {encoding: "utf8"});
-                    // some hack with first symbol =/
-                    fileData = fileData.replace(/^\uFEFF/, '');
-                    // parsing file to JSON object
-                    var jsonData = JSON.parse(fileData);
-
-                    if (jsonData){
-                        var objectFieldsCounter = 0;
-                        for (var property in jsonData) {
-                            if (jsonData.hasOwnProperty(property)) {
-                                objectFieldsCounter++;
-
-                                extendedObject[property] = jsonData[property];
-                            }
-                        }
-                        console.log("Loaded fields:", objectFieldsCounter);
-                        //console.log("Current object:", extendedObject);
-                    } else {
-                        console.log('No json data in file');
-                    }
-                } catch (e) {
-                    console.log("error:", e);
-                }
-            }
-
             var inputData = {};
             function loadData(source){
                 if (source == 'json'){
-                    //loadFromJSONFile(inputData, 'public/dat/BBLinput.json');
+                    console.error("this method", source, "is not available here");
                 }
                 else if (source == 'dat'){
-                    /*
-                    // helpful method for reading
-                    lastIndex = 0;
-
-                    var BBLinputPath = 'BBLdat/BBLinput.dat'; // looks like path depends on app.js for server side
-                    //noinspection JSUnresolvedFunction
-                    fileData = fs.readFileSync(BBLinputPath, {encoding: 'utf8'});
-                    //fs.readFile(BBLinputPath, {encoding: 'utf8'}, function(err, fileData){
-                    //if (err) throw err;
-                    console.log(fileData);
-                    console.log("=============================");
-                    inputData.ALFA = jParse('int');
-
-                    inputData.SPLIT = jParse('bool', 4, '=', 1);
-                    inputData.RZ = jParse('float');
-                    inputData.X = jParse('float');
-                    inputData.RO2 = jParse('float');
-                    inputData.C2 = jParse('float');
-                    inputData.GAPOIS = jParse('bool', 3, '=', 1);
-                    inputData.POIS = jParse('float');
-                    inputData.GAMMA = jParse('float');
-                    inputData.XDESTR = jParse('float');
-
-                    inputData.EPUR  = jParse('int');
-
-                    jParse('float', 1, '*', 1);
-
-                    if (inputData.SPLIT) {
-                        inputData.waveShapes = [];
-                        inputData.waveShapes[0].LS = jParse('float');
-                        inputData.waveShapes[0].RC1 = jParse('float');
-                        inputData.waveShapes[0].C1 = jParse('float');
-                        inputData.waveShapes[0].C0 = jParse('float');
-                        inputData.waveShapes[0].RO0 = jParse('float');
-                        inputData.waveShapes[0].FILL = jParse('str', 2, '=', 5);
-                    }
-
-                    jParse('float', 1, '*', 1);
-
-                    inputData.INDEX = jParse('int');
-                    inputData.FRIC = jParse('float');
-                    inputData.M0 = jParse('float');
-
-                    jParse('float', 1, '*', 1);
-
-                    inputData.TM = jParse('float');
-                    inputData.DT = jParse('float');
-                    inputData.DFI = jParse('float');
-
-                    inputData.DX = jParse('float');
-                    inputData.NTP = jParse('float');    // probably it would be redefined by length of printPoints array
-
-                    //inputData.TP = new Array(inputData.NTP+2);
-                    inputData.printPoints = [];
-                    for (var itTP = 0; itTP < inputData.NTP; itTP++) {
-                        if (itTP == 0)
-                            inputData.printPoints.push(jParse('float'));
-                            //inputData.TP[itTP + 1] = jParse('float');
-                        else
-                            inputData.printPoints.push(jParse('float', 1, ',', 10));
-                            //inputData.TP[itTP + 1] = jParse('float', 1, ',', 10);
-                    }
-                    inputData.OMG = jParse('float');
-                    inputData.BET = jParse('float');
-                    inputData.STEP = jParse('float');
-                    inputData.STEPX = jParse('float');
-                    inputData.DELTA = jParse('int');
-
-                    console.log("NO DATA FOR RTET, NO DATA FOR RTET, NO DATA FOR RTET");*/
+                    console.error("this method", source, "is not available here");
                 }
                 else {
                     // default config
@@ -303,6 +180,7 @@ define(function (require, exports, module) {
 
                 }
 
+                // TODO refactor this part, no need to use "userInput"
                 // apply user input config
                 if (params.userInput) {
                     if (params.userData !== undefined && params.userData !== null){
@@ -338,7 +216,7 @@ define(function (require, exports, module) {
 
                     TP[parseInt(ppIt) +1] = inputData.printPoints[ppIt];
                 }
-                console.warn("TP", TP);
+                //console.warn("TP", TP);
 
                 STEP = inputData.STEP;
                 STEPX = inputData.STEPX;

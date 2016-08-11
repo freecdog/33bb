@@ -10,9 +10,10 @@ html
         link(rel='stylesheet' href='/bootstrap/css/bootstrap.css')
         link(rel='stylesheet', href='/stylesheets/style.css')
     body
-        div(ng-controller="jBBLLoaderController as Loader")
-            div(ng-show="Loader.filesLoaded")
-                input(ng-model="Loader.searchString" type="text")
 
-                div(ng-repeat="file in Loader.allFiles | filter: { path: Loader.searchString } track by $index ")
-                    h4() {{file.path}}
+        div(ng-controller="jBBLfileListController as fileList" ng-show="fileList.visible")
+            input(ng-model="fileList.searchString" type="text" class="form-control" placeholder="Search")
+
+            div(ng-repeat="file in fileList.allFiles | filter: { path: fileList.searchString } track by $index ")
+                a()
+                    h4(ng-click="fileList.loadDataFile(file)") {{file.path}}
