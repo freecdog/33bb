@@ -942,10 +942,9 @@ matrix.getRow = function(M, n) {
 }
 
 // difference between getCol and getColUnSafe is in negative elements of array
-matrix.getColUnSafe = function(M, n, k) {
-    if (k !== undefined) console.error("Useless parameter, probably getColUnSafe3x should be used");
+matrix.getColUnSafe = function(M, n) {
     var result = [];
-    if (n < 0 || n >= M[0].length) {
+    if (n >= M[0].length) {
         throw new Error('The specified column must be between 0 and the number of columns - 1.');
     }
     for (var i=0; i<M.length; i++) {

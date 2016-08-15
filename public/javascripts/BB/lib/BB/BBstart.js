@@ -19,7 +19,7 @@ define(function (require, exports, module) {
     //(function(exports){
 
         // TODO remove SPLIT parametr totally (BBinput, BBstart), at least now we don't need to use special layer between object and environment
-        // TODO move to config RTET vars (from N to NOEDGE)
+        // TODO auto testing of BBup (it means BBstart + BBcount)
 
         'use strict';
 
@@ -38,7 +38,8 @@ define(function (require, exports, module) {
         //var FUNC2 = BB.FUNC2;
         //var MatMult = BB.MatMult;
 
-        // TODO what numbers library is called: BB/lib/node_modules/numbers or numbersAMD?
+        // SOLVED what numbers library is called: BB/lib/node_modules/numbers or numbersAMD?
+        // as it mentioned in require bootstrap file numbersAMD (BB/lib/node_modules/numbers is deleted now)
         var numbers = require('numbers');
         var fs = require('fs');
 

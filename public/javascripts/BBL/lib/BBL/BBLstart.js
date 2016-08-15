@@ -19,7 +19,8 @@ define(function (require, exports, module) {
     //(function(exports){
 
         // TODO remove SPLIT parametr totally (BBLinput, BBLstart), at least now we don't need to use special layer between object and environment
-        // TODO move to config RTET vars (from N to NOEDGE)
+        // TODO auto testing of BBLup (it means BBLstart + BBLcount)
+        // TODO you can parallel all calculations by parameters (0..genSize), but there would not be any matrix calculations
 
         'use strict';
 
@@ -234,10 +235,6 @@ define(function (require, exports, module) {
             loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
             data.inputData = inputData;
 
-            // TODO I need simple configurator for client side.
-            // At first launch, client will take configuration from server BBLinput.json
-            // and save it to localStorage, after will take config from localStorage.
-            // Also there should be button to restore settings to default values.
             console.log((new Date()) - startProcProfiler, "ms to complete loadData");
 
             ALFA = ALFA * Math.PI / 180;
@@ -449,7 +446,6 @@ define(function (require, exports, module) {
         }
         BBLstart.STARTPROC = STARTPROC;
 
-        // TODO do it asynchronously
         function GEOMPROC(){
             //var BBL = require('../BBL');
             var FUNC2 = BBL.FUNC2;

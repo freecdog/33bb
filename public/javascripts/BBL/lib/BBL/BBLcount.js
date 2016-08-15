@@ -24,11 +24,11 @@ define(function (require, exports, module) {
         console.log("BBLcount is starting");
 
         // global on the server, window in the browser
-        var root, previous_BBcount;
+        var root, previous_BBLcount;
 
         root = this;
         if (root != null) {
-            previous_BBcount = root.BBcount;
+            previous_BBLcount = root.BBLcount;
         }
 
         var async = require('async');
