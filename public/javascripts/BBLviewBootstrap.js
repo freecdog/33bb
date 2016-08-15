@@ -40,7 +40,7 @@ requirejs.config({
             deps:['angular']
         },
         'jBBLControllers': {
-            deps: ['jBBLApp']
+            deps: ['jBBLApp', 'THREE', 'Stats', 'dat']
         }
     }
 });

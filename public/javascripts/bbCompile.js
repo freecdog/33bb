@@ -141,7 +141,7 @@ define(function (require, exports, module) {
             var vertexPositions = [];
             var vertexColors = [];
 
-            var cmin = Number.MAX_VALUE, cmax = -Number.MAX_VALUE;
+            var cmin, cmax;
             countMinMax();
 
             var amplifyColors = false;
@@ -815,6 +815,7 @@ define(function (require, exports, module) {
             }
 
             function convertCortesianToPolar(screenWidth, screenHeight, pointerX, pointerY, invertY){
+                // TODO probably should be done method Cortesian to Mizes
                 var screenX = screenWidth;
                 var screenX2 = screenX / 2;
                 var screenY = screenHeight;

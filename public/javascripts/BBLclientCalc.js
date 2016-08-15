@@ -59,6 +59,7 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         //dataToSend.G = data.G;
         //dataToSend.inputData = data.inputData;
         // to prevent data copy, using black list for params I don't want to send to server
+        // TODO blackList = ["cavform", "files", "fds", "G"];
         var blackList = ["cavform"];
         for (var param in data){
             if (!data.hasOwnProperty(param)) continue;
@@ -80,7 +81,7 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         // 360x5_30s_4xd_epur0_45deg_circleCube_config(19min)
         var name = buildName(data);
 
-
+        console.warn("dataToSend", dataToSend);
         // TODO use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
         ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
             console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);

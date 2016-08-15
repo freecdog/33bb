@@ -239,7 +239,12 @@ define(function (require, exports, module) {
             //}
 
             INITLOAD();
-            data.G = G;
+
+            var memoutCounter = 0;
+            var memout = [];
+            data.memout = memout;
+            data.HI = HI;
+            data.LO = LO;
 
             jStepsCnt = 0;
             async.whilst(
@@ -509,6 +514,18 @@ define(function (require, exports, module) {
                         fs.writeSync(fds[M], rBuffer, rBuffer.length, null);
                     }
                 }
+
+                var mRec = MatMult.createArray(genSize, Math.round(CHECK/STEPX)+1, NTP+1);
+                for (var m0 = 0, m0len = GOUT.length; m0 < m0len; m0++){
+                    for (var m1 = 0, m1len = GOUT[m0].length; m1 < m1len; m1++) {
+                        mRec[m0][m1] = GOUT[m0][m1].slice(0);
+                        //for (var m2 = 0, m2len = GOUT[m0][m1].length; m2 < m2len; m2++) {
+                        //    mRec[m0][m1][m2] = GOUT[m0][m1][m2];
+                        //}
+                    }
+                }
+                memout[memoutCounter] = mRec;
+                memoutCounter++;
             }
 
             function INITLOAD(){

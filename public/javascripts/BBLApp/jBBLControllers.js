@@ -49,17 +49,21 @@
                 url: '/memout' + fileObject.path
             }).then(function successCallback(response) {
                 console.warn("response", response);
-                var sceneInputData = response.data.inputData;
+                //var sceneInputData = response.data.inputData;
+                //
+                //var sceneInput = {
+                //    userInput: true,
+                //    userData: sceneInputData
+                //};
+                //var BBLstart = BBL.BBLstart;
+                //BBLstart.STARTPROC(sceneInput, function(){
+                //    data.G = response.data.G;
+                    angular.extend(data, response.data);
 
-                var sceneInput = {
-                    userInput: true,
-                    userData: sceneInputData
-                };
-
-                var BBLstart = BBL.BBLstart;
-                BBLstart.STARTPROC(sceneInput, function(){
                     console.warn("Datatone", data);
-                });
+
+                    window.canvasBootstrap();
+                //});
             }, function errorCallback(response) {
                 self.visible = true;
                 console.error(response);
@@ -74,13 +78,248 @@
     jBBLControllers.controller('jBBLcanvasHolderController', ['$scope', 'BBL', function($scope, BBL){
         var self = this;
 
+        var THREE, Stats, dat, data;
+        var stats;
+        var scene, camera, renderer, canvasHolder, axisHelper, geometry;
+        var rendererSize;
+        var N, initTime, schemeIndex, mem, visualisationSchemeIndex, angles,
+            axisX, axisY, axisX2, axisY2, defZ,
+            vertexPositions, vertexColors,
+            cmin, cmax,
+            amplifyColors, amplifyCoef,
+            timeStepsCount;
+        var memout;
+
         init();
 
         function init(){
             console.log('jBBLcanvasHolderController is here');
 
             self.visible = false;
+
+            data = new BBL.Datatone();
+            initThree();
+            stats = initStats();
+            initDat();
+            initParams();
+
+            scene = initScene();
+            camera = initCamera();
+            renderer = initRenderer();
+            canvasHolder = initCanvasHolder();
+            canvasHolder.appendChild( renderer.domElement );
+
+            axisHelper = initAxisHelper();
+            scene.add( axisHelper );
+
+            var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
+            canvasHolder.appendChild(zeroDegreeText);
+            var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
+            canvasHolder.appendChild(ninetyDegreeText);
+
+            window.addEventListener("resize", function(){
+                zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
+                zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
+
+                ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
+                ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
+            });
+
+            geometry = initGeometry();
         }
+        function createText(text, left, top, width, height){
+            left = left || 0;
+            top = top || 0;
+            width = width || 23;
+            height = height || 17;
+            var generatedText = document.createElement('div');
+            generatedText.style.position = 'absolute';
+            //generatedText.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+            generatedText.style.width = width + 'px';
+            generatedText.style.height = height + 'px';
+            //generatedText.style.backgroundColor = "blue";
+            generatedText.innerHTML = text;
+            generatedText.style.left = left + 'px';
+            generatedText.style.top = top + 'px';
+
+            return generatedText;
+        }
+
+        function initThree(){
+            THREE = require('THREE');
+
+            if (!THREE) {
+                console.error('there is no three.js: ', THREE);
+            }
+        }
+
+        function initStats(){
+            Stats = require('Stats');
+
+            var stats = createStats();
+            return stats;
+        }
+        function createStats() {
+            var statsHolder = document.getElementById('statsHolder');
+            var stats = new Stats(statsHolder);
+            stats.setMode(1); // 0: fps, 1: ms
+
+            //stats.domElement.style.position = 'absolute';
+            //stats.domElement.style.left = '0px';
+            //stats.domElement.style.top = '0px';
+            statsHolder.appendChild(stats.domElement);
+            //document.body.appendChild(stats.domElement);
+
+            return stats;
+        }
+
+        function initDat(){
+            dat = require('dat');   // dat.GUI
+        }
+
+        function initParams(){
+            N = 3;  // number of components per vertex
+
+            initTime = 0;
+
+            // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
+            schemeIndex = 2;
+
+            visualisationSchemeIndex = 2;
+
+            axisX = 2;
+            axisY = 2;   // length of axises
+            axisX2 = axisX / 2;
+            axisY2 = axisY / 2;
+            defZ = 1.0;
+
+            axisX = axisY = 1;
+            axisX2 = axisY2 = 0;
+
+            vertexPositions = [];
+            vertexColors = [];
+
+            amplifyColors = false;
+            amplifyCoef = 1.3;
+        }
+        function initParamsWithData(){
+            mem = data.memout[schemeIndex];
+            countMinMax();
+
+            // converting TP to correct array of angles (indexed from 0)
+            angles = [];
+            for (var cang in data.TP) {
+                if (data.TP.hasOwnProperty(cang)) {
+                    if (data.TP[cang] != null) angles.push(data.TP[cang]);
+                }
+            }
+            //console.log("angles:", angles);
+
+            timeStepsCount = Math.round(data.TM / data.STEP) + 1;
+            console.log("timeStepsCount:", timeStepsCount);
+        }
+
+        function initScene(){
+            var scene = new THREE.Scene();
+            return scene;
+        }
+        function initCamera(){
+            var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000); //PerspectiveCamera( 75, 400.0 / 300.0, 0.1, 1000 );
+            camera.position.z = 10;
+            return camera;
+        }
+
+        function initRenderer(){
+
+            var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+            renderer.setClearColor( 0x000000, 0);
+            //renderer.setSize( 380-100, 300 );
+            //renderer.setSize( window.innerWidth - 100, window.innerHeight );
+            rendererSize = {
+                width: Math.min(window.innerWidth, window.innerHeight)-50,
+                height: Math.min(window.innerWidth, window.innerHeight)-50
+            };
+            renderer.setSize(rendererSize.width, rendererSize.height);
+            //renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.position = 'inherit';
+            if ( window.innerWidth / window.innerHeight < 1 ) {
+                renderer.domElement.style.right = '50px';
+            } else {
+                renderer.domElement.style.right = '50px';
+            }
+            renderer.domElement.style.bottom = '10px';
+
+            renderer.domElement.addEventListener("click", clickOnCanvas);
+
+            return renderer;
+        }
+        function clickOnCanvas(){
+            console.warn("clickOnCanvas, I do nothing");
+        }
+
+        function initCanvasHolder(){
+            var canvasHolder = document.getElementById("mainCanvasHolder");
+            if (!canvasHolder){
+                console.warn("canvasHolder was not found, appending renderer to document.body");
+                canvasHolder = document.body;
+            }
+
+            return canvasHolder;
+        }
+
+        function initAxisHelper(){
+            var axisHelper = new THREE.AxisHelper( 5 );
+            return axisHelper;
+        }
+
+        function initGeometry(){
+            var geometry = new THREE.BufferGeometry();
+
+            geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
+            geometry.addAttribute( 'color',  new THREE.BufferAttribute( [], N ) );
+
+            return geometry;
+        }
+
+        // USEFUL METHODS
+
+        function countMinMax(){
+            cmin = Number.MAX_VALUE;
+            cmax = -Number.MAX_VALUE;
+            for (var m0 in mem){
+                for (var m1 in mem[m0]){
+                    for (var m2 in mem[m0][m1]){
+                        cmin = Math.min(cmin, mem[m0][m1][m2]);
+                        cmax = Math.max(cmax, mem[m0][m1][m2]);
+                    }
+                }
+            }
+            console.log("cmin:", cmin, "; cmax:", cmax);
+        }
+
+        // RENDER
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            render();
+            stats.update();
+        }
+
+        // GLOBAL METHODS
+
+        function bootstrap(){
+            initParamsWithData();
+
+            animate();
+
+            self.visible = true;
+        }
+        window.canvasBootstrap = bootstrap;
     }]);
 
 

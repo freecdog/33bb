@@ -175,7 +175,7 @@ function isValidFile(filename){
     var filenameNormLen = filenameNorm.length;
     var matchesEnd = ['json'];
     //var matchesBegin = ['def00'];
-    var nameContains = ['def00'];
+    var nameContains = ['def00', 'bbl'];
 
     var filenameEnding, meLength, filenameBegining, mbLength;
     for (var i = 0, len = matchesEnd.length; i < len; i++){
@@ -191,13 +191,15 @@ function isValidFile(filename){
             //        break;
             //    }
             //}
+            var isContainsAll = true;
             for (var k = 0, klen = nameContains.length; k < klen; k++){
-                if (filenameNorm.indexOf(nameContains[k]) != -1){
-                    isValid = true;
+                if (filenameNorm.indexOf(nameContains[k]) == -1){
+                    isContainsAll = false;
                     break;
                 }
             }
 
+            isValid = isContainsAll;
             if (isValid) break;
         }
     }
