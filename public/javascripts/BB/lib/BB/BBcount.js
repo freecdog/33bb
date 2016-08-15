@@ -335,7 +335,7 @@ define(function (require, exports, module) {
 
             async.whilst(
                 function(){
-                    var calcNext = (T <= TM);
+                    var calcNext = (T <= TM + 1e-6);
 
                     if (data.breakCalculation === true){
                         data.breakCalculation = false;

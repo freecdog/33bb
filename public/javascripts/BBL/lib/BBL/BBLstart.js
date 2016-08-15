@@ -65,14 +65,14 @@ define(function (require, exports, module) {
             S,TET0,TET1,TET2,TET3,L1,R,LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
             RC0, C0, HTOTAL;    // float
-        var H = Math.PI / 180;
+        var H = Math.PI / 180, DELTA = 1;
         var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
         var Q,FIX,FIXP,FIXM,
             FIY,FIYM,FIYP,
             FG,FR,FL, BOUNDARYS, LAUX, LG; // [Layers,5, 5] of float
         var ALIM,IM = new Complex(0.0,1.0); // complex
-        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,DELTA,NL,L; // integer
+        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,NL,L; // integer
         var layers = [];
         var LE = [], LRO = [], LNU = [], LH = [], C = [], LB = [], LRC = []; // of float
         var LK = [],NSTEP = []; // of integer
@@ -111,14 +111,14 @@ define(function (require, exports, module) {
                         ALFA: 0,        // degree
                         RZ: 2.55E-02,   // metres
                         X: 10,          // metres
-                        XDESTR: 1.5,    // metres
+                        XDESTR: 0.5,    // metres
 
                         // 0 - Heaviside function
                         // 1 - exponent
                         // 2 - sinus * gauss
-                        EPUR: 0,
+                        EPUR: 2,
 
-                        NL: 1,
+                        NL: 2,
                         layers: [
                             {
                                 E: 5.79e10,
@@ -127,10 +127,10 @@ define(function (require, exports, module) {
                                 H: 1.5
                             },
                             {
-                                E: 5.79e10,
-                                RO: 2.7e3,
-                                NU: 0.35,
-                                H: 1.22
+                                E: 1.23e10,
+                                RO: 2.59e3,
+                                NU: 0.3,
+                                H: 1.0
                             },
                             {
                                 E: 5.45e10,
@@ -139,10 +139,10 @@ define(function (require, exports, module) {
                                 H: 1.0
                             }
                             //{
-                            //    E: 1.23e10,
-                            //    RO: 2.59e3,
-                            //    NU: 0.3,
-                            //    H: 1.0
+                            //    E: 5.79e10,
+                            //    RO: 2.7e3,
+                            //    NU: 0.35,
+                            //    H: 0.5
                             //}
                         ],
 
@@ -158,15 +158,14 @@ define(function (require, exports, module) {
                         DFI: 2.0,       // degree
                         DX: 0.05,       // special
                         //NTP: 11, // it is calculated further NTP = printPoints.length
-                        printPoints: [ 0,5,10,15,30,40,45,60,90,120,135,180 ],
+                        printPoints: [ 0,5,10,15,30,40,45,60,90,120,335,355 ],
                         STEP: 0.05,     // special
-                        STEPX: 0.1,    // special
-                        DELTA: 1,
+                        STEPX: 0.05,    // special
 
                         rtetN: 2,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
-                        rtetA: 2.05,
+                        rtetA: 1.0,
                         rtetB: 4.05,
                         rtetC: 4.5,
                         rtetVortex: 0,
@@ -220,7 +219,6 @@ define(function (require, exports, module) {
 
                 STEP = inputData.STEP;
                 STEPX = inputData.STEPX;
-                DELTA = inputData.DELTA;
 
                 rtetN = inputData.rtetN;
                 rtetN1 = inputData.rtetN1;
@@ -283,7 +281,7 @@ define(function (require, exports, module) {
             RC0 = LRC[0] / C0;
 
             if (EPUR == 0) {
-                S0 = 1;
+                S0 = 1.0;
             } else if (EPUR == 1) {
                 // TODO again Harry changed something
                 X = X / RZ;
@@ -624,6 +622,7 @@ define(function (require, exports, module) {
             ATAR[0] = TET0;
             ADF[0] = 0;
             NI = Math.round(DFI / H);
+            DFI = NI * H;
             NFI = 0;
             K1 = 0;
             while (true) {
@@ -703,6 +702,8 @@ define(function (require, exports, module) {
             var LBD;    // of real[10,10]
             var SS;     // of real[4,10]
 
+            var A,B;    // float
+
             LBD = MatMult.createArray(10, 10);
             SS = MatMult.createArray(4, 10);
 
@@ -710,18 +711,17 @@ define(function (require, exports, module) {
             MatMult.fillArray(BOUNDARYS, 0);
 
             for (L = NL-2; L >= 0; L--){
-                MatMult.fillArray(SS, 0);
-                //for (var c0 = 0; c0 < 4; c0++)
-                //    for (var c1 = 0; c1 < 10; c1++) SS[c0][c1] = 0;
+                A = C[L] / C[L+1];
+                B = LRC[L] / LRC[L+1];
 
-                SS[0][0]=C[L+1];	SS[0][5]=-C[L];
-                SS[1][1]=C[L+1];	SS[1][6]=-C[L];
-                SS[2][2]=LRC[L+1];	SS[2][7]=-LRC[L];
-                SS[3][4]=LRC[L+1];	SS[3][9]=-LRC[L];
+                MatMult.fillArray(SS, 0);
+
+                SS[0][0]=1;	SS[0][5]=-A;
+                SS[1][1]=1;	SS[1][6]=-A;
+                SS[2][2]=1;	SS[2][7]=-B;
+                SS[3][4]=1;	SS[3][9]=-B;
 
                 MatMult.fillArray(LBD, 0);
-                //for (var c2 = 0; c2 < 10; c2++)
-                //    for (var c3 = 0; c3 < 10; c3++) LBD[c2][c3] = 0;
 
                 //LBD(1:3,1:5)=LAUX(L+1,1:3,1:5);
                 for (var c4 = 0; c4 < 3; c4++)
@@ -796,21 +796,21 @@ define(function (require, exports, module) {
                 LAX[3][2] = 1;
                 LAX[4][4] = 1;
                 LAX[0][2] = -1;
-                LAX[2][3] = -1;
+                LAX[2][3] = 1;
                 LAX[4][1] = SG;
                 LAX[1][1] = -SG;
-                LAX[2][2] = CG;
+                LAX[2][2] = -CG;
 
-                LAY[1][4] = -1;
+                LAY[1][4] = 1;
                 LAY[0][3] = -1;
-                LAY[2][2] = -1;
+                LAY[2][2] = 1;
                 LAY[0][1] = 1;
                 LAY[3][1] = 1;
                 LAY[3][3] = 1;
                 LAY[4][4] = 1;
-                LAY[1][0] = SG;
+                LAY[1][0] = -SG;
                 LAY[4][0] = SG;
-                LAY[2][3] = CG;
+                LAY[2][3] = -CG;
 
                 Q[L][0][2] = -1;
                 Q[L][3][0] = -1;
@@ -821,11 +821,11 @@ define(function (require, exports, module) {
 
                 // FIXP(L,:,:)=.5*(ABS(M)+M);
                 FIXP[L] = matrix.scalarSafe(( matrix.addition(matrix.abs(M), M) ), 0.5);
-                // FIYP=FIXP;
-                // TODO Is it copy of values from FIXP to FIYP, but not links exchange?
-                FIYP = matrix.deepCopy(FIXP);
+                // FIYP(L,:,:)=FIXP(L,:,:);
+                FIYP[L] = matrix.deepCopy(FIXP[L]);
                 FIXM[L] = matrix.scalarSafe(( matrix.addition(matrix.abs(M), matrix.negative(M)) ), 0.5);
-                FIYM = matrix.deepCopy(FIXM);
+                // FIYM(L,:,:)=FIXM(L,:,:);
+                FIYM[L] = matrix.deepCopy(FIXM[L]);
                 FIXP[L] = matrix.multiply(FIXP[L], LAX);
                 FIXM[L] = matrix.multiply(FIXM[L], LAX);
                 FIYP[L] = matrix.multiply(FIYP[L], LAY);
@@ -865,12 +865,6 @@ define(function (require, exports, module) {
                 E[2][4] = 1;
                 LAX = matrix.inverse(LAX);
                 E = matrix.multiply(E, LAX);
-
-                //for (J = 1 - 1; J <= 2 - 1; J++) {
-                //    for (var k1 = 0; k1 < LBD[J].length; k1++) {
-                //        M[J][k1] = -LBD[J][k1];
-                //    }
-                //}
 
                 for (J = 0; J < 5; J++) {
                     if (J < 2) {
@@ -1010,89 +1004,6 @@ define(function (require, exports, module) {
 
             //noinspection JSUnresolvedFunction
             fs.closeSync(fd);
-        }
-
-        function STARTOUT(){
-            var I, J, K, JNT; // integer
-            var X; // float
-            var ARS1 = ['ACC1.dat', 'ACC2.dat', 'V_1.dat','V_2.dat','S11.dat','S22.dat','S12.dat'];
-            var ARS2 = ['V01.dat','V02.dat','S011.dat','S022.dat','S012.dat'];
-            var STR = [];
-
-            var fds1 = [];
-            var fds2 = [];
-            var recBuffer, recStr;
-            var path;
-
-            var iStart = 9;
-            for (I = iStart; I <= 15; I++) {
-                path = 'BBLdat/_' + ARS1[I-iStart]; // looks like path depends on app.js for server side
-                //noinspection JSUnresolvedFunction
-                fds1.push( fs.openSync(path, 'w') );
-
-                // TODO H. have clear file loop here, but I don't think it's necessary here.
-
-                X = 0;
-                for (K = 1; K <= NTP + 1; K++) {
-                    STR.push(TP[K]);
-                }
-
-                // TODO STR(JTP)=STR(JTP)//'*';  what is this???
-
-                for (J=0; J <= NXDST; J++){
-                    JNT = J * NTIME + 1;
-                    // TODO moved cursor of file. But general idea is put current value of X and T values in the heads.
-
-                    recBuffer = new Buffer('X= ' + X.toFixedDef() + '\n');
-                    //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds1[I-iStart], recBuffer, 0, recBuffer.length, null);
-
-                    recStr = '';
-                    for (var c1 = 0, lenStr = STR.length; c1 < lenStr; c1++) recStr += STR[c1] + ' ';
-                    recBuffer = new Buffer('T ' + recStr + '\n');
-                    //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds1[I-iStart], recBuffer, 0, recBuffer.length, null);
-
-                    X = X + STEPX;
-                }
-
-                //fs.closeSync(fds1[I-iStart]);
-            }
-
-            STR = [];
-            for (I = 16; I <= 20; I++){
-                path = 'BBLdat/_' + ARS2[I-16]; // looks like path depends on app.js for server side
-                //noinspection JSUnresolvedFunction
-                fds2.push( fs.openSync(path, 'w') );
-
-                // TODO H. have clear file loop here, but I don't think it's necessary here.
-
-                for (K = 0; K <= NXDST; K++) {
-                    //STR.push(TP[K]);
-                    STR.push((K * STEPX).toFixedDef());
-                }
-
-                for (J = 1; J <= NTP + 1; J++) {
-                    // TODO moved coursor of file. But general idea is put current value of T and Thetta values in the heads.
-
-                    JNT = (J-1) * NTIME + 1;
-
-                    recBuffer = new Buffer('TETA= ' + TP[J].toFixedDef() + '\n');
-                    //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
-
-                    recStr = '';
-                    for (var c2 = 0, lenStr2 = STR.length; c2 < lenStr2; c2++) recStr += STR[c2] + ' ';
-                    recBuffer = new Buffer('T ' + recStr + '\n');
-                    //noinspection JSUnresolvedFunction
-                    fs.writeSync(fds2[I-16], recBuffer, 0, recBuffer.length, null);
-                }
-
-                //fs.closeSync(fds2[I-16]);
-            }
-
-            data.fds1 = fds1;
-            data.fds2 = fds2;
         }
 
         // Node.js
