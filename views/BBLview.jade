@@ -17,3 +17,5 @@ html
             div(ng-repeat="file in fileList.allFiles | filter: { path: fileList.searchString } track by $index ")
                 a()
                     h4(ng-click="fileList.loadDataFile(file)") {{file.path}}
+
+        div(ng-controller="jBBLcanvasHolderController as canvasHolder")

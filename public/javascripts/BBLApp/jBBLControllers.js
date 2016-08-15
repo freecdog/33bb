@@ -71,7 +71,17 @@
 
     }]);
 
+    jBBLControllers.controller('jBBLcanvasHolderController', ['$scope', 'BBL', function($scope, BBL){
+        var self = this;
 
+        init();
+
+        function init(){
+            console.log('jBBLcanvasHolderController is here');
+
+            self.visible = false;
+        }
+    }]);
 
 
     jBBLControllers.factory('BBL', [function () {
@@ -94,11 +104,11 @@
             var data = new BBL.Datatone();
         }
 
-        function runSTARTPROC(){
-            //BBL.BBLstart.STARTPROC({}, function(){
-            //    console.warn("Datatone", data);
-            //});
-        }
+        //function runSTARTPROC(){
+        //    BBL.BBLstart.STARTPROC({}, function(){
+        //        console.warn("Datatone", data);
+        //    });
+        //}
         //this.runSTARTPROC = runSTARTPROC;
 
         return BBL;
@@ -132,7 +142,7 @@
     }]);
 
 
-
+    // old stuff goes under
 
     jBBLControllers.controller('jBBLController', ['$scope', '$window', function($scope, $window) {
         var self = this;
