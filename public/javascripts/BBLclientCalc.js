@@ -59,8 +59,8 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         //dataToSend.G = data.G;
         //dataToSend.inputData = data.inputData;
         // to prevent data copy, using black list for params I don't want to send to server
-        // TODO blackList = ["cavform", "files", "fds", "G"];
-        var blackList = ["cavform"];
+        // TODO blackList = ["files", "fds"];
+        var blackList = ["files", "fds"];
         for (var param in data){
             if (!data.hasOwnProperty(param)) continue;
             var allowToSend = true;

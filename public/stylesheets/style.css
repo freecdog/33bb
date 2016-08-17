@@ -14,3 +14,15 @@ a {
 .dg .c select {
     color: #222;
 }
+
+#timeScroll {
+    border: 3px solid #ffd5cd;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    width: 500px;
+    height: 30px;
+}
+
+#timeInner {
+    width: 10000px;
+}

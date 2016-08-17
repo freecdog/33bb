@@ -154,7 +154,7 @@ define(function (require, exports, module) {
                         INDEX: 0,
                         FRIC: 0,        // friction coefficient
 
-                        TM: 1,          // special time (/0.0004 ~ C0 afaik)
+                        TM: 20,          // special time (/0.0004 ~ C0 afaik)
                         DT: 0.05,       // special
                         DFI: 2.0,       // degree
                         DX: 0.05,       // special
