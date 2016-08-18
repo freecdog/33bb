@@ -44,24 +44,77 @@
         function init(){
             console.log("jClientInputCalcController init");
 
+            userData = {};
+
+            initBBL();
+            initCharts(BBL, data);
+
+            // TODO commented because it used to infinite recalculation loop initCharts -> changed data -> initCharts -> ...
+            //angular.extend(userData, {
+            //    TM: data.TM,
+            //    XDESTR: data.XDESTR,
+            //    EPUR: data.EPUR,
+            //    INDEX: data.INDEX,
+            //    ALFA: data.ALFA,
+            //    rtetN: data.rtetN,
+            //    rtetA: data.rtetA,
+            //    rtetB: data.rtetB,
+            //
+            //    rtetN1: data.rtetN1,
+            //    rtetN2: data.rtetN2,
+            //    rtetC: data.rtetC,
+            //    rtetVortex: data.rtetVortex,
+            //    rtetNoEdge: data.rtetNoEdge,
+            //
+            //    needRealValues: data.needRealValues
+            //});
             userData = {
-                //TM: 30,
-                //XDESTR: 4,
-                //EPUR: 2,
+                TM: 5,
+                ALFA: 0,
+
                 //INDEX: 0,
-                //ALFA: 0,
-                //rtetN: 4,
-                //rtetA: 2,
-                //rtetB: 4,
-                //
-                //rtetN1: 1.3,
-                //rtetN2: 1.2,
-                //rtetC: 4.5,
-                //rtetVortex: 0,
-                //rtetNoEdge: true,
-                //
-                //needRealValues: true
+                //XDESTR: 4,
+                NL: 2,
+                layers: [
+                    {
+                        E: 5.79e10,
+                        RO: 2.7e3,
+                        NU: 0.35,
+                        H: 2.0
+                    },
+                    {
+                        E: 1.23e10,
+                        RO: 2.59e3,
+                        NU: 0.3,
+                        H: 2.0
+                    },
+                    {
+                        E: 5.45e10,
+                        RO: 2.667e3,
+                        NU: 0.26,
+                        H: 1.0
+                    },
+                    {
+                        E: 5.79e10,
+                        RO: 2.7e3,
+                        NU: 0.35,
+                        H: 0.5
+                    }
+                ],
+
+                EPUR: 2,
+                rtetN: 2,
+                rtetA: 2.0,
+                rtetB: 4.0,
+                rtetN1: 1.3,
+                rtetN2: 1.2,
+                rtetC: 4.5,
+                rtetVortex: 0,
+                rtetNoEdge: true,
+
+                needRealValues: true
             };
+
             inputObject = {
                 userInput: true,
                 userData: userData
@@ -69,14 +122,12 @@
 
             self.inputParams = userData;
             self.visibility = true;
-
-            initBBL();
-            initCharts(BBL, data);
         }
 
         function startCalculactions(){
             self.visibility = false;
 
+            console.log("inputObject params", inputObject);
             BBL.BBLup.run(inputObject, $window.runCallback);
         }
         this.startCalculactions = startCalculactions;
@@ -119,8 +170,15 @@
             //console.warn('angles', angles, data.TP);
 
             var vertices = initPositionVertices(angleStep);
-            var verticesField = [];
-            for (var vfi = 0; vfi < vertices.length; vfi++) verticesField.push(vertices[vfi] + data.XDESTR);
+            var verticesFields = [];
+            var verticesFieldsWidth = 0;
+            for (var vfi = 0; vfi < data.NL; vfi++) {
+                verticesFieldsWidth += data.layers[vfi].H;
+                verticesFields[vfi] = [];
+                for (var vfj = 0; vfj < vertices.length; vfj++) {
+                    verticesFields[vfi].push(vertices[vfj] + verticesFieldsWidth);
+                }
+            }
             //console.warn('vertices', vertices);
 
             function initAngles(){
@@ -147,9 +205,38 @@
                 return vertexPositions;
             }
 
+            var datasetTemplate = {
+                label: "",
+                backgroundColor: "rgba(255,181,198,0)",
+                borderColor: "rgba(179,181,198,1)",
+                pointBackgroundColor: "rgba(179,181,198,1)",
+                pointBorderColor: "#fff",
+                pointHoverBackgroundColor: "#fff",
+                pointHoverBorderColor: "rgba(179,181,198,1)",
+                data: []
+            };
+
             if (objectShapeDomObject){
                 objectShapeChartData.labels = angles;
-                objectShapeChartData.datasets[0].data = vertices;
+
+                objectShapeChartData.datasets.length = 0;   // clear
+
+                objectShapeChartData.datasets.push({
+                    label: "Object shape R(θ)",
+                    backgroundColor: "rgba(179,181,198,0.2)",
+                    borderColor: "rgba(179,181,198,1)",
+                    pointBackgroundColor: "rgba(179,181,198,1)",
+                    pointBorderColor: "#fff",
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: "rgba(179,181,198,1)",
+                    data: vertices
+                });
+
+                for (var di = 0; di < data.NL; di++) {
+                    var diDataset = angular.copy(datasetTemplate);
+                    diDataset.data = verticesFields[di];
+                    objectShapeChartData.datasets.push(diDataset);
+                }
                 objectShapeChartObject.update();
             } else {
                 objectShapeDomObject = document.getElementById("objectShape");
@@ -178,6 +265,13 @@
                         //}
                     ]
                 };
+                for (var si = 0; si < data.NL; si++){
+                    var currentDataset = angular.copy(datasetTemplate);
+                    currentDataset.data = verticesFields[si];
+                    objectShapeChartData.datasets.push(currentDataset);
+                }
+                console.warn("objectShapeChartData", objectShapeChartData);
+
                 objectShapeChartOptions = {
                     scale: {
                         ticks: {

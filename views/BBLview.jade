@@ -18,6 +18,9 @@ html
                 a()
                     h4(ng-click="fileList.loadDataFile(file)") {{file.path}}
 
+        div(ng-controller="jBBLloadingController as loading" ng-show="loading.visible")
+            img(src="/images/30_2.gif")
+
         div(ng-controller="jBBLcanvasHolderController as canvasHolder" ng-show="canvasHolder.visible")
             div(id="statsHolder")
             div(class="container")

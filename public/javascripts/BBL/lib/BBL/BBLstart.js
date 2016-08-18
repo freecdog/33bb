@@ -112,7 +112,7 @@ define(function (require, exports, module) {
                         ALFA: 0,        // degree
                         RZ: 2.55E-02,   // metres
                         X: 10,          // metres
-                        XDESTR: 0.5,    // metres
+                        XDESTR: 2,    // metres, TODO XDESTR should be changed to layers[0].H
 
                         // 0 - Heaviside function
                         // 1 - exponent
@@ -125,26 +125,26 @@ define(function (require, exports, module) {
                                 E: 5.79e10,
                                 RO: 2.7e3,
                                 NU: 0.35,
-                                H: 1.5
+                                H: 2
                             },
                             {
                                 E: 1.23e10,
                                 RO: 2.59e3,
                                 NU: 0.3,
-                                H: 1.0
+                                H: 2.0
                             },
                             {
                                 E: 5.45e10,
                                 RO: 2.667e3,
                                 NU: 0.26,
                                 H: 1.0
+                            },
+                            {
+                                E: 5.79e10,
+                                RO: 2.7e3,
+                                NU: 0.35,
+                                H: 0.5
                             }
-                            //{
-                            //    E: 5.79e10,
-                            //    RO: 2.7e3,
-                            //    NU: 0.35,
-                            //    H: 0.5
-                            //}
                         ],
 
                         // 0 - cavity
@@ -154,7 +154,7 @@ define(function (require, exports, module) {
                         INDEX: 0,
                         FRIC: 0,        // friction coefficient
 
-                        TM: 20,          // special time (/0.0004 ~ C0 afaik)
+                        TM: 22,          // special time (/0.0004 ~ C0 afaik)
                         DT: 0.05,       // special
                         DFI: 2.0,       // degree
                         DX: 0.05,       // special
@@ -168,8 +168,8 @@ define(function (require, exports, module) {
                         rtetN: 2,
                         rtetN1: 1.3,
                         rtetN2: 1.2,
-                        rtetA: 1.0,
-                        rtetB: 4.05,
+                        rtetA: 2.0,
+                        rtetB: 4.0,
                         rtetC: 4.5,
                         rtetVortex: 0,
                         rtetNoEdge: true,
@@ -192,6 +192,8 @@ define(function (require, exports, module) {
                         }
                     }
                 }
+
+                inputData.XDESTR = inputData.layers[0].H;
 
                 ALFA = inputData.ALFA;
                 RZ = inputData.RZ;

@@ -19,7 +19,24 @@
     }
     function noop(){}
 
-    jBBLControllers.controller('jBBLfileListController', ['$scope', '$http', 'BBLdataFiles', 'BBL', function($scope, $http, BBLdataFiles, BBL) {
+    jBBLControllers.controller('jBBLloadingController', ['$rootScope', function($rootScope) {
+        var self = this;
+
+        init();
+
+        function init(){
+            console.log('jBBLloadingController is here');
+
+            self.visible = false;
+        }
+
+        $rootScope.$on('loadingChanged', function(event, params){
+            self.visible = params.visible;
+        });
+    }]);
+
+
+    jBBLControllers.controller('jBBLfileListController', ['$rootScope','$scope', '$http', 'BBLdataFiles', 'BBL', function($rootScope, $scope, $http, BBLdataFiles, BBL) {
         var self = this;
 
         var data;
@@ -42,6 +59,7 @@
             //console.warn(fileObject);
 
             self.visible = false;
+            $rootScope.$broadcast('loadingChanged', {visible: true});
 
             // TODO loading bar (0... in progress... 100%)
             $http({
@@ -62,10 +80,14 @@
 
                     console.warn("Datatone", data);
 
-                    window.canvasBootstrap();
+                    $rootScope.$broadcast('dataHaveBeenLoaded');
+                    $rootScope.$broadcast('loadingChanged', {visible: false});
+
                 //});
             }, function errorCallback(response) {
                 self.visible = true;
+                $rootScope.$broadcast('loadingChanged', {visible: false});
+
                 console.error(response);
             });
 
@@ -75,25 +97,44 @@
 
     }]);
 
-    jBBLControllers.controller('jBBLscrollController', ['$scope', 'BBL', function($scope, BBL){
+    jBBLControllers.controller('jBBLscrollController', ['$rootScope','$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
         self.scrollPos = 0;
+
+        var data;
 
         var scrollDiv = document.getElementById("timeScroll");
         scrollDiv.addEventListener("wheel", wheelAction);
         function wheelAction(event){
-            var delta = event.wheelDelta;
-            console.log(scrollDiv.scrollLeft);
-            self.scrollPos = scrollDiv.scrollLeft;
-            //console.log(event, delta);
-            //console.log(event.clientX, event.layerX, event.offsetX, event.pageX, event.screenX, event.x);
-            this.scrollLeft -= (delta);
-            //event.preventDefault();
-            $scope.$digest();
+            if (data === undefined) data = new BBL.Datatone();
+
+            if (data.TM === undefined) {
+                // still not loaded
+                console.warn("data are not loaded", data);
+            } else {
+                var delta = event.wheelDelta;
+                this.scrollLeft -= (delta);
+
+                // http://stackoverflow.com/a/5704386
+                var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
+                //self.scrollPos = scrollDiv.scrollLeft;
+                var params = {
+                    scrollPos: scrollDiv.scrollLeft,
+                    scrollMax: scrollMax,
+                    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax) )
+                };
+                self.scrollPos = params.scrollStep;
+                $rootScope.$broadcast('wheelEvent', params);
+                console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
+
+                $scope.$digest();
+
+                //event.preventDefault();
+            }
         }
     }]);
 
-    jBBLControllers.controller('jBBLcanvasHolderController', ['$scope', 'BBL', function($scope, BBL){
+    jBBLControllers.controller('jBBLcanvasHolderController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
 
         var THREE, Stats, dat, data, RTET, MatMult;
@@ -114,6 +155,14 @@
         var memout;
 
         init();
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            bootstrap();
+        });
+
+        $rootScope.$on('wheelEvent', function(event,params){
+            initColorVertices( params.scrollStep );
+        });
 
         function init(){
             console.log('jBBLcanvasHolderController is here');
@@ -869,7 +918,6 @@
 
             self.visible = true;
         }
-        window.canvasBootstrap = bootstrap;
     }]);
 
 
