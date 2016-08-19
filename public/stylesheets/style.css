@@ -16,11 +16,11 @@ a {
 }
 
 #timeScroll {
-    border: 3px solid #ffd5cd;
+    border: 0px solid #ffd5cd;
     overflow-x: scroll;
     overflow-y: hidden;
-    width: 500px;
-    height: 30px;
+    width: 100%;
+    height: 100%;
 }
 
 #timeInner {
