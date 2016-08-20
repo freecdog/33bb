@@ -155,15 +155,18 @@ define(function (require, exports, module) {
                         FRIC: 0,        // friction coefficient
 
                         TM: 22,          // special time (/0.0004 ~ C0 afaik)
-                        DT: 0.05,       // special
+                        DT: 0.1,       // special
                         DFI: 2.0,       // degree
-                        DX: 0.05,       // special
+                        DX: 0.1,       // special
                         //NTP: 11, // it is calculated further NTP = printPoints.length
                         //printPoints: [ 0,5,10,15,30,40,45,60,90,120,335,355 ],
-                        printPoints: [ 0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90, 95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180, 185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270, 275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355 ],
+                        printPoints: [ 0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,
+                            95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,
+                            185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,
+                            275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360 ],
 
-                        STEP: 0.05,     // special
-                        STEPX: 0.05,    // special
+                        STEP: 0.1,     // special
+                        STEPX: 0.1,    // special
 
                         rtetN: 2,
                         rtetN1: 1.3,
@@ -585,6 +588,75 @@ define(function (require, exports, module) {
         }
 
         function STEPFI(){
+            //var BBL = require('../BBL');
+            var MatMult = BBL.MatMult;
+            var FUNC2 = BBL.FUNC2;
+
+            var I,J,M; // integer
+            var TET,TETA; // real
+
+            TET = 180 * TET0 / Math.PI;
+            for (J = 1; J <= NTP; J++) {
+                if (TP[J] >= TET) {
+                    //if (TP[J] == TET) {
+                    if ( compareWithEps(TP[J], TET) ) {
+                        NTP = NTP - 1;
+                    } else {
+                        for (I = NTP; I >= J; I--){
+                            TP[I+1] = TP[I];
+                        }
+                        TP[J] = TET;
+                    }
+                    JTP = J;
+                    for (I = 1; I <= J-1; I++){
+                        TP[I] = 360 + TP[I];
+                    }
+                    break;
+                }
+            }
+
+            NFI = Math.round(2*Math.PI / DFI);
+            DFI = 2*Math.PI / NFI;
+            NFI = NFI + 1;
+
+            // ALLOCATE (TAR(0:NFI),COURB(0:NFI),FAR(0:NFI),LONG(0:NFI));
+            TAR = MatMult.createArray(NFI+1);
+            COURB = MatMult.createArray(NFI+1);
+            FAR = MatMult.createArray(NFI+1);
+            LONG = MatMult.createArray(NFI+1);
+            for (I = 0; I <= NFI; I++){
+                TETA = TET0 + I * DFI;
+                TAR[I] = TETA;
+                var courbTeta, longTeta, rcurbTetaAns;
+                rcurbTetaAns = FUNC2.RCURB(TETA, courbTeta, longTeta);
+                COURB[I] = rcurbTetaAns.A;
+                LONG[I] = rcurbTetaAns.B;
+                FAR[I] = FUNC2.ATN(TETA) - ALFA;
+            }
+            I = 0;
+            J = JTP;
+            while (true){
+                if (J == NTP+2) {
+                    J = 1;
+                    if (J == JTP) break;
+                }
+                TET = TP[J] * Math.PI/180;
+                for (M = I; M <= NFI; M++){
+                    if (TET <= TAR[M]){
+                        I = M + 1;
+                        ITP[J] = M;
+                        break;
+                    }
+                }
+                J++;
+                if (J == JTP) break;
+            }
+            for (J = 1; J <= JTP-1; J++){
+                TP[J] = TP[J] - 360;
+            }
+        }
+
+        function STEPFI_OLD(){
             //var BBL = require('../BBL');
             var FUNC2 = BBL.FUNC2;
 

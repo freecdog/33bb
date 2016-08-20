@@ -125,7 +125,7 @@
                 };
                 self.scrollPos = params.scrollStep;
                 $rootScope.$broadcast('wheelEvent', params);
-                console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
+                //console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
 
                 $scope.$digest();
 
@@ -204,7 +204,7 @@
 
             geometry = initGeometry();
 
-            extraAngleFix = true;
+            extraAngleFix = false;
         }
         function createText(text, left, top, width, height){
             // TODO using angular and still document.createElement()?
@@ -307,8 +307,8 @@
 
             showControlPoints = false;
             controlPoints = [
-                { radius: data.XDESTR + data.rtetA, angle: 0 },
-                { radius: data.XDESTR + data.rtetB, angle: 90 },
+                { radius: data.XDESTR + data.rtetA / data.geomprocR, angle: 0 },
+                { radius: data.XDESTR + data.rtetB / data.geomprocR, angle: 90 },
                 { radius: 5, angle: 30 }
             ];
             nearestPoints = [];
@@ -335,7 +335,7 @@
             var radiuses = [];
             for (var i = 0, ilen = angles.length; i < ilen; i++){
                 var angle = angles[i] * Math.PI / 180;
-                radiuses[i] = RTET(angle);
+                radiuses[i] = RTET(angle) / data.geomprocR;
             }
             return radiuses;
         }
@@ -445,8 +445,8 @@
         function derivativeR0(T){
             // from FUNC2.RCURB()
             var DR1, R0, R1, DT = 0.0000000001;
-            R1 = RTET(T + DT);
-            R0 = RTET(T - DT);
+            R1 = RTET(T + DT) / data.geomprocR;
+            R0 = RTET(T - DT) / data.geomprocR;
             DR1 = (R1 - R0) / (2 * DT);
             return DR1;
         }
@@ -456,7 +456,7 @@
 
             var theta = Th * Math.PI / 180;
 
-            var R0 = RTET(theta);
+            var R0 = RTET(theta) / data.geomprocR;
             var DR1 = derivativeR0(theta);
             var sinGamma = DR1 / (Math.sqrt( R0*R0 + DR1*DR1 ));
             var cosGamma = R0 / (Math.sqrt( R0*R0 + DR1*DR1 ));
