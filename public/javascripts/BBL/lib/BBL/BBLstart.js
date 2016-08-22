@@ -185,7 +185,7 @@ define(function (require, exports, module) {
 
                 }
 
-                // TODO refactor this part, no need to use "userInput"
+                // TODO refactor this part, no need to use "userInput" only "userData"
                 // apply user input config
                 if (params.userInput) {
                     if (params.userData !== undefined && params.userData !== null){

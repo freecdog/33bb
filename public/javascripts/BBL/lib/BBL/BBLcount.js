@@ -264,7 +264,7 @@ define(function (require, exports, module) {
 
                     FICTCELLS(GAF1, GAF2);
 
-                    console.log("T =", T);
+                    console.log("T = " + T.toFixed(2));
 
                     LK[0] = NX - Math.round(HTOTAL/DX);
                     X = 0;
@@ -299,7 +299,8 @@ define(function (require, exports, module) {
                             }
                             var g0mult = matrix.multiply(FG[NL-1], g0);
                             for (var g0m = 0; g0m < G.length; g0m++)
-                                for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
+                                //for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
+                                for (var g0n = 0; g0n <= NFI; g0n++)
                                     G[g0m][0][g0n] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
                             // GA(:,0,0:NFI)=G(:,0,0:NFI);
                             for (var i3 = 0; i3 < GA.length; i3++)
@@ -308,9 +309,9 @@ define(function (require, exports, module) {
                         }
 
                         if (L == 0){
-                            // GA(:,LK(L)+1,1:NFI-1)=G(:,GABE+1,1:NFI-1);
+                            // GA(:,LK(L)+1,0:NFI)=G(:,GABE+1,0:NFI);
                             for (var i6 = 0; i6 < GA.length; i6++)
-                                for (var i7 = 1; i7 < NFI; i7++)
+                                for (var i7 = 0; i7 <= NFI; i7++)
                                     GA[i6][LK[L]+1][i7] = G[i6][GABE+1][i7];
                         }
 
@@ -338,6 +339,10 @@ define(function (require, exports, module) {
                                 LOM = LONG[I] / R;
                                 FIM = FAR[I];
 
+                                var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
+                                var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
+                                var constMatrix3 = matrix.scalarSafe(Q[L], DT * LM);
+
                                 JX = X;
                                 for (J = 1; J <= LK[L]; J++){
                                     KJ = GABS - 1 + J;
@@ -345,13 +350,21 @@ define(function (require, exports, module) {
                                     P = 1 / ((1 + COM * (JX - DX/2)) * LOM);
                                     PP = COM / (1 + COM * (JX - DX/2));
                                     // LAX=DT*LM/DX*FIX(L,:,:)+DT*LM*P/DFI*FIY(L,:,:)+DT*LM*PP*Q(L,:,:)
+                                    // it seems like no speed up here
                                     LAX = matrix.addition(
                                         matrix.addition(
-                                            matrix.scalarSafe(FIX[L], DT * LM / DX),
-                                            matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
+                                            constMatrix1,
+                                            matrix.scalarSafe(constMatrix2, P)
                                         ),
-                                        matrix.scalarSafe(Q[L], DT * LM * PP)
+                                        matrix.scalarSafe(constMatrix3, PP)
                                     );
+                                    //LAX = matrix.addition(
+                                    //    matrix.addition(
+                                    //        matrix.scalarSafe(FIX[L], DT * LM / DX),
+                                    //        matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
+                                    //    ),
+                                    //    matrix.scalarSafe(Q[L], DT * LM * PP)
+                                    //);
                                     LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
 
                                     // W=LX.x.GA(:,J,I);
@@ -419,6 +432,7 @@ define(function (require, exports, module) {
                             }
 
                         }   // if T > 0
+                        GA.length = 0;
                     }   // for L
 
                     WT = T >= TOUT;
@@ -490,17 +504,17 @@ define(function (require, exports, module) {
                         L = getLayerNumberByCoordinate(X);
 
                         // TODO ask Harry to check it out
-                        for (J = 0; J < NTP+1; J++) {
+                        for (J = 1; J <= NTP+1; J++) {
                             // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J)+1);
                             var g2 = matrix.getColUnSafe(LG[L], M);
                             var g3 = [];
                             //for (var g3i = 0; g3i < G.length; g3i++) g3.push(G[g3i][K][ITP[J]+1]);
-                            g3 = matrix.getColUnSafe3x(G, K, ITP[J+1]);
+                            g3 = matrix.getColUnSafe3x(G, K, ITP[J]);
                             //g2 = matrix.vectorTranspose(g2);
                             g2 = [g2];
                             g3 = matrix.vectorTranspose(g3);
                             var g2mult = matrix.multiply(g2, g3);
-                            GOUT[M][I][J] = g2mult[0][0];
+                            GOUT[M][I][J-1] = g2mult[0][0];
                         }
 
                         st = L.toString() + " " + (X*R).toString() + " ";

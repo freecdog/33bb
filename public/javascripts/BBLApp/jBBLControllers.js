@@ -35,7 +35,6 @@
         });
     }]);
 
-
     jBBLControllers.controller('jBBLfileListController', ['$rootScope','$scope', '$http', 'BBLdataFiles', 'BBL', function($rootScope, $scope, $http, BBLdataFiles, BBL) {
         var self = this;
 
@@ -99,39 +98,121 @@
 
     jBBLControllers.controller('jBBLscrollController', ['$rootScope','$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
-        self.scrollPos = 0;
 
         var data;
-
         var scrollDiv = document.getElementById("timeScroll");
-        scrollDiv.addEventListener("wheel", wheelAction);
-        function wheelAction(event){
+
+        init();
+
+        function init(){
+            self.visible = false;
+            self.scrollPos = 0;
+
+            scrollDiv.addEventListener("scroll", scrollAction);
+            scrollDiv.addEventListener("wheel", wheelAction);
+            scrollDiv.style.left = "0px";
+            scrollDiv.style.top = "0px";
+            scrollDiv.style.width = "100%";
+            scrollDiv.style.height = "100%";
+        }
+
+        function scrollAction(){
+            //console.log("scroll");
             if (data === undefined) data = new BBL.Datatone();
 
             if (data.TM === undefined) {
                 // still not loaded
                 console.warn("data are not loaded", data);
             } else {
-                var delta = event.wheelDelta;
-                this.scrollLeft -= (delta);
 
                 // http://stackoverflow.com/a/5704386
                 var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
-                //self.scrollPos = scrollDiv.scrollLeft;
                 var params = {
                     scrollPos: scrollDiv.scrollLeft,
                     scrollMax: scrollMax,
-                    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax) )
+                    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax))
                 };
-                self.scrollPos = params.scrollStep;
-                $rootScope.$broadcast('wheelEvent', params);
-                //console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
 
+                $rootScope.$broadcast('scrollEvent', params);
+
+                self.scrollPos = (params.scrollStep * data.DT).toFixed(2) + " s";
                 $scope.$digest();
-
-                //event.preventDefault();
             }
         }
+        function wheelAction(event){
+            //console.log("wheel");
+            //if (data === undefined) data = new BBL.Datatone();
+            //
+            //if (data.TM === undefined) {
+            //    // still not loaded
+            //    console.warn("data are not loaded", data);
+            //} else {
+                var delta = event.wheelDelta;
+                // actually, this and scrollDiv are equal
+                scrollDiv.scrollLeft -= (delta);
+
+                // http://stackoverflow.com/a/5704386
+                //var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
+                //self.scrollPos = scrollDiv.scrollLeft;
+                //var params = {
+                //    scrollPos: scrollDiv.scrollLeft,
+                //    scrollMax: scrollMax,
+                //    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax) )
+                //};
+                //self.scrollPos = params.scrollStep;
+                // commented because of extra scroll event fired when wheeling
+                //$rootScope.$broadcast('wheelEvent', params);
+                //console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
+
+                // commented because of extra scroll event fired when wheeling
+                //$scope.$digest();
+
+                //event.preventDefault();
+            //}
+        }
+
+        //$rootScope.$broadcast('dataHaveBeenLoaded');
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            self.visible = true;
+        });
+
+    }]);
+
+    jBBLControllers.controller('jBBLmemoutController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
+        var self = this;
+        var data;
+
+        init();
+
+        function init(){
+            self.visible = false;
+
+            self.currentTabIndex = 2;
+
+            self.dataNames = window.dataNames;
+
+            data = new BBL.Datatone();
+            self.data = data;
+        }
+
+        function isSet(index){
+            return index === self.currentTabIndex;
+        }
+        this.isSet = isSet;
+
+        function setTab(index){
+            self.currentTabIndex = index;
+        }
+        this.setTab = setTab;
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            self.timeValues = [];
+            for (var i = 0; i < data.memout[0].length; i++) self.timeValues.push(i * data.STEP);
+            self.radiusValues = [];
+            for (var j = 0; j < data.memout[0][0].length; j++) self.radiusValues.push(j * data.STEPX);
+
+            self.visible = true;
+        });
     }]);
 
     jBBLControllers.controller('jBBLcanvasHolderController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
@@ -161,7 +242,7 @@
             bootstrap();
         });
 
-        $rootScope.$on('wheelEvent', function(event,params){
+        $rootScope.$on('scrollEvent', function(event,params){
             initColorVertices( params.scrollStep );
         });
 
@@ -188,19 +269,6 @@
 
             axisHelper = initAxisHelper();
             scene.add( axisHelper );
-
-            var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop - 100);
-            canvasHolder.appendChild(zeroDegreeText);
-            var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2 - 100);
-            canvasHolder.appendChild(ninetyDegreeText);
-
-            window.addEventListener("resize", function(){
-                zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
-                zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
-
-                ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
-                ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
-            });
 
             geometry = initGeometry();
 
@@ -265,7 +333,7 @@
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
             schemeIndex = 2;
 
-            visualisationSchemeIndex = 2;
+            visualisationSchemeIndex = 2;   // 2 == blue-white-red
 
             axisX = 2;
             axisY = 2;   // length of axises
@@ -279,7 +347,7 @@
             vertexPositions = [];
             vertexColors = [];
 
-            amplifyColors = false;
+            amplifyColors = true;
             amplifyCoef = 1.3;
         }
         function initParamsWithData(){
@@ -299,6 +367,7 @@
                     if (data.TP[cang] != null) angles.push(data.TP[cang]);
                 }
             }
+            data.angles = angles;
             //console.log("angles:", angles);
             radiuses = getAllRadiusesForAngles(angles);
 
@@ -330,6 +399,20 @@
 
             mesh = new THREE.Mesh( geometry, material );
             scene.add(mesh);
+
+            var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
+            canvasHolder.appendChild(zeroDegreeText);
+            var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
+            canvasHolder.appendChild(ninetyDegreeText);
+
+            window.addEventListener("resize", function(){
+                zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
+                zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
+
+                ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
+                ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
+            });
+
         }
         function getAllRadiusesForAngles(angles){
             var radiuses = [];
@@ -694,7 +777,8 @@
                 }
             }
             memout.length = 0;   // clear array
-            memout = newMemout;
+            angular.extend(memout, newMemout);
+            //memout = newMemout;
             console.log("reorder memout:", (Date.now() - tstart), "ms", "; Total elements:", lenTime * lenParam * lenCoord * lenAngle);
         }
 
@@ -715,8 +799,8 @@
             //renderer.setSize( 380-100, 300 );
             //renderer.setSize( window.innerWidth - 100, window.innerHeight );
             rendererSize = {
-                width: Math.min(window.innerWidth, window.innerHeight)-50,
-                height: Math.min(window.innerWidth, window.innerHeight)-50
+                width: Math.min(window.innerWidth, window.innerHeight)-75,
+                height: Math.min(window.innerWidth, window.innerHeight)-75
             };
             renderer.setSize(rendererSize.width, rendererSize.height);
             //renderer.domElement.style.position = 'absolute';
