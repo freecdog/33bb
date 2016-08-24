@@ -24,7 +24,7 @@ a {
     left: 50px;
     width: 500px;
     height: 500px;
-    z-index: 999;
+    z-index: 1;
 }
 
 #scrollValue{
@@ -35,4 +35,11 @@ a {
 
 #timeInner {
     width: 10000px;
+}
+
+#buttonShowDataTable{
+    position: absolute;
+    top: 70px;
+    left: 0px;
+    z-index: 10;
 }

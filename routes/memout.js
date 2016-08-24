@@ -44,7 +44,7 @@ function escapeRegExp(str) {
 function replaceAll(str, find, replace) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
-function DateToStr(){
+function currentDateToStr(){
     var d = new Date();
     var year = d.getUTCFullYear().toString();
     var month = d.getUTCMonth()+1;  // months are counted from 0
@@ -95,7 +95,7 @@ router.post('/', function(req, res){
 
 router.post('/:name', function(req, res) {
     var name = req.params.name;
-    var date = DateToStr();
+    var date = currentDateToStr();
     console.log("date:", date);
 
     var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.json');

@@ -69,7 +69,7 @@
             //    needRealValues: data.needRealValues
             //});
             userData = {
-                TM: 5,
+                TM: 1,
                 ALFA: 0,
 
                 //INDEX: 0,

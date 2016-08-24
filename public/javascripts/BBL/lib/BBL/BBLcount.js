@@ -476,7 +476,8 @@ define(function (require, exports, module) {
                 var L, ans;   // integer
                 ans=0;
                 for (L = NL-1; L > 0; L--){
-                    if (X < HI[L]*DX){
+                    // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
+                    if (X < HI[L]*DX + 1e-6){
                         ans = L;
                         return ans;
                     }
@@ -505,16 +506,20 @@ define(function (require, exports, module) {
 
                         // TODO ask Harry to check it out
                         for (J = 1; J <= NTP+1; J++) {
-                            // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J)+1);
-                            var g2 = matrix.getColUnSafe(LG[L], M);
-                            var g3 = [];
-                            //for (var g3i = 0; g3i < G.length; g3i++) g3.push(G[g3i][K][ITP[J]+1]);
-                            g3 = matrix.getColUnSafe3x(G, K, ITP[J]);
-                            //g2 = matrix.vectorTranspose(g2);
-                            g2 = [g2];
-                            g3 = matrix.vectorTranspose(g3);
-                            var g2mult = matrix.multiply(g2, g3);
-                            GOUT[M][I][J-1] = g2mult[0][0];
+                            if (needRealValues){
+                                // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J));
+                                var ans = 0;
+                                for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * G[lgi][K][ITP[J]];
+                                GOUT[M][I][J-1] = ans;
+
+                                //var g2 = [matrix.getColUnSafe(LG[L], M)];
+                                //var g3 = matrix.transpose([matrix.getColUnSafe3x(G, K, ITP[J])]);
+                                //var g2mult = matrix.multiply(g2, g3);
+                                //GOUT[M][I][J-1] = g2mult[0][0];
+                            } else {
+                                // GOUT(M,I,J)=G(M,K,ITP(J));
+                                GOUT[M][I][J-1] = G[M][K][ITP[J]];
+                            }
                         }
 
                         st = L.toString() + " " + (X*R).toString() + " ";
@@ -583,6 +588,7 @@ define(function (require, exports, module) {
                         for (var c4 = 0; c4 <= NFI; c4++) U[c3][c4] = G[c3-5][LO[L]][c4];
                     //U(1:10,0:NFI)=BOUNDARYS(L,1:10,:).x.U(:,0:NFI);
                     U = matrix.multiply(BOUNDARYS[L], U);
+                    //U = alternativeMultiply(BOUNDARYS[L], U);
 
                     // A2(L,1:5,0:NFI)=U(1:5,0:NFI);
                     for (var c5 = 0; c5 < 5; c5++){
@@ -599,6 +605,21 @@ define(function (require, exports, module) {
                 }
 
             }
+            function alternativeMultiply(A,B){
+                var C = MatMult.createArray(A.length, B[0].length);
+                var sum = 0;
+                for (var i = 0; i < C.length; i++){
+                    for (var j = 0; j < C[0].length; j++){
+                        sum = 0;
+                        for (var k = 0; k < A[0].length; k++){
+                            sum += A[i][k]*B[k][j];
+                        }
+                        C[i][j] = sum;
+                    }
+                }
+                return C;
+            }
+
 
             function CALCBOUNDARIES(A,B){
                 // INTEGER,DIMENSION(NL),INTENT(OUT)::A,B

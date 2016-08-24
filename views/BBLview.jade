@@ -14,7 +14,7 @@ html
         div(ng-controller="jBBLfileListController as fileList" ng-show="fileList.visible")
             input(ng-model="fileList.searchString" type="text" class="form-control" placeholder="Search")
 
-            div(ng-repeat="file in fileList.allFiles | orderBy: 'path' | filter: { path: fileList.searchString } track by $index ")
+            div(ng-repeat="file in fileList.allFiles | orderBy: '-path' | filter: { path: fileList.searchString } track by $index ")
                 a()
                     h4(ng-click="fileList.loadDataFile(file)") {{file.path}}
 
@@ -33,8 +33,13 @@ html
                 div(id="timeInner")
                     span &nbsp;
 
-        //-div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
-            div(class="container")
+        div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
+            a(
+                id="buttonShowDataTable"
+                class="btn-sm btn-primary"
+                ng-click="memoutView.toggleDataTable()"
+            ) Show data table
+            div(class="container" ng-show="memoutView.showData")
                 div(class="row")
                     p some filling
                     p some filling
@@ -63,13 +68,13 @@ html
                                     table(class="table table-striped table-hover")
                                         tbody
                                             thead
-                                                th
-                                                    span T \ ∠
+                                                th(style="min-width: 75px;")
+                                                    span X \ ∠
                                                 th(ng-repeat="angleValue in memoutView.data.angles track by $index" class="active text-right")
                                                     span {{angleValue.toFixed(6)}}
                                             tr(ng-repeat="currentRadius in memoutView.data.memout[$parent.$index][$index] track by $index" )
                                                 td
-                                                    span {{(memoutView.radiusValues[$index]).toFixed(2)}}
+                                                    span {{memoutView.getLayerNumberByCoordinate(memoutView.data.STEPX * $index)}} {{(memoutView.radiusValues[$index]).toFixed(2)}}
                                                 td(ng-repeat="currentAngle in memoutView.data.memout[$parent.$parent.$index][$parent.$index][$index] track by $index" )
                                                     span {{memoutView.data.memout[$parent.$parent.$parent.$index][$parent.$parent.$index][$parent.$index][$index].toExponential(2)}}
 
