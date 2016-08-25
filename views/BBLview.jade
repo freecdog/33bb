@@ -15,8 +15,9 @@ html
             input(ng-model="fileList.searchString" type="text" class="form-control" placeholder="Search")
 
             div(ng-repeat="file in fileList.allFiles | orderBy: '-path' | filter: { path: fileList.searchString } track by $index ")
-                a()
-                    h4(ng-click="fileList.loadDataFile(file)") {{file.path}}
+                h4
+                    a(ng-click="fileList.loadDataFile(file)") {{file.path}}
+
 
         div(ng-controller="jBBLloadingController as loading" ng-show="loading.visible")
             img(src="/images/30_2.gif" width="100%")
@@ -32,6 +33,10 @@ html
             div(id="timeScroll")
                 div(id="timeInner")
                     span &nbsp;
+
+        div(ng-controller="jBBLcanvasController as canvasCTRL" ng-show="canvasCTRL.visible")
+            div(id="buttonsGroup" class="btn-group")
+                a(ng-repeat="schemeIndex in [1,2,3,4,5]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeSchemeIndex($index)") {{schemeIndex}}
 
         div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
             a(

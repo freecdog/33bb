@@ -178,6 +178,31 @@
 
     }]);
 
+    jBBLControllers.controller('jBBLcanvasController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
+        var self = this;
+        var data;
+
+        init();
+
+        function init(){
+            self.visible = false;
+
+            data = new BBL.Datatone();
+            self.data = data;
+        }
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            self.visible = true;
+        });
+
+        function changeSchemeIndex(schemeIndex){
+            //console.warn(schemeIndex);
+            $rootScope.$broadcast('changeSchemeIndex', {schemeIndex: schemeIndex});
+        }
+        this.changeSchemeIndex = changeSchemeIndex;
+
+    }]);
+
     jBBLControllers.controller('jBBLmemoutController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
         var data;
@@ -1053,6 +1078,14 @@
         }
 
         // GLOBAL METHODS
+
+        $rootScope.$on('changeSchemeIndex', function(event, params){
+            schemeIndex = params.schemeIndex;
+            mem.length = 0;
+            angular.extend(mem, data.memout[schemeIndex]);
+            countMinMax();
+            initColorVertices(initTime);
+        });
 
         function bootstrap(){
             initParamsWithData();

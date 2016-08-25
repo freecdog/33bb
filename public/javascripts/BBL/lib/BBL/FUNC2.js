@@ -55,8 +55,8 @@ define(function (require, exports, module) {
             // SOLVED, если окружность, то return, иначе комментируем эту строчку
             // SOLVED if we are using simple circle, we should change radius in configuration file
 
-            // TODO comment next line ( RTET = A; return RTET; )
-            RTET = A; return RTET;
+            // SOLVED comment next line ( RTET = A; return RTET; )
+            //RTET = A; return RTET;
 
             function repeatedFunction(angle, power, epsilon){
                 var ans;
