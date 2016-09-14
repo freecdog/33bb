@@ -906,7 +906,7 @@ define(function (require, exports, module) {
                 this.autoUpdateTimer = 0;
                 this.autoUpdateInterval = 10;
                 this.canvasVisible = showCanvas;
-                this.realTime = (-data.XDESTR * 1.1).toFixed(2);
+                this.realTime = getTimeByTimeIndex(initTime).toFixed(2); //(-data.XDESTR * 1.1).toFixed(2);
                 this.amplifyColors = amplifyColors;
                 this.amplifyCoef = amplifyCoef;
                 this.showControlPoints = showControlPoints;
@@ -977,7 +977,8 @@ define(function (require, exports, module) {
                 };
 
                 this.changeTime = function(){
-                    controls.realTime = getTimeByTimeIndex(controls.timeStep).toFixed(2);
+//                    controls.realTime = getTimeByTimeIndex(controls.timeStep).toFixed(2);
+                    controls.realTime = getTimeByTimeIndex(controls.timeStep).toFixed(2) + " (" + (getTimeByTimeIndex(controls.timeStep) * data.LC).toFixed(6) + ")";
                     controls.updateGUIwithName('realTime');
 
                     initColorVertices( Math.round(controls.timeStep) );

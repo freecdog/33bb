@@ -201,6 +201,13 @@
         }
         this.changeSchemeIndex = changeSchemeIndex;
 
+        function changeVisualisationSchemeIndex(visualisationSchemeIndex){
+            //console.warn(visualisationSchemeIndex);
+            visualisationSchemeIndex += 1;
+            $rootScope.$broadcast('changeVisualisationSchemeIndex', {visualisationSchemeIndex: visualisationSchemeIndex});
+        }
+        this.changeVisualisationSchemeIndex = changeVisualisationSchemeIndex;
+
     }]);
 
     jBBLControllers.controller('jBBLmemoutController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
@@ -1087,6 +1094,11 @@
             mem.length = 0;
             angular.extend(mem, data.memout[schemeIndex]);
             countMinMax();
+            initColorVertices(initTime);
+        });
+
+        $rootScope.$on('changeVisualisationSchemeIndex', function(event, params){
+            visualisationSchemeIndex = params.visualisationSchemeIndex;
             initColorVertices(initTime);
         });
 

@@ -26,7 +26,8 @@ html
             div(id="statsHolder")
             div(class="container")
                 div(class="row")
-                    div(id="mainCanvasHolder")
+                    div(class="text-center")
+                        div(id="mainCanvasHolder")
 
         div(ng-controller="jBBLscrollController as scroll" ng-show="scroll.visible")
             input(id="scrollValue" type="text" ng-model="scroll.scrollPos")
@@ -35,8 +36,12 @@ html
                     span &nbsp;
 
         div(ng-controller="jBBLcanvasController as canvasCTRL" ng-show="canvasCTRL.visible")
-            div(id="buttonsGroup" class="btn-group")
+            div(id="buttonsGroupSchemeIndex" class="btn-group")
+                a(class="btn btn-sm btn-primary") scheme
                 a(ng-repeat="schemeIndex in [1,2,3,4,5]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeSchemeIndex($index)") {{schemeIndex}}
+            div(id="buttonsGroupVisualisationSchemeIndex" class="btn-group")
+                a(class="btn btn-sm btn-primary") visScheme
+                a(ng-repeat="visualisationSchemeIndex in [1,2]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)") {{visualisationSchemeIndex}}
 
         div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
             a(
