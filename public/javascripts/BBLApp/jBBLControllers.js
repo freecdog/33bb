@@ -380,7 +380,7 @@
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
             schemeIndex = 2;
 
-            visualisationSchemeIndex = 2;   // 2 == blue-white-red
+            visualisationSchemeIndex = 2;   // 1 == rainbow, 2 == blue-white-red
 
             axisX = 2;
             axisY = 2;   // length of axises
@@ -404,7 +404,10 @@
             initTime = 0;
 
             reorderMemout();
-            mem = memout[schemeIndex];
+            //mem = memout[schemeIndex];
+            mem = [];
+            mem.length = 0;
+            angular.extend(mem, data.memout[schemeIndex]);
             countMinMax();
 
             // converting TP to correct array of angles (indexed from 0)
