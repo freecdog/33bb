@@ -105,6 +105,8 @@
         init();
 
         function init(){
+            data = new BBL.Datatone();
+
             self.visible = false;
             self.scrollPos = 0;
 
@@ -116,64 +118,53 @@
             scrollDiv.style.height = "100%";
         }
 
+        function getScrollData(){
+            if (data === undefined) {
+                console.warn("data are not loaded", data);
+                return null;
+            }
+
+            // http://stackoverflow.com/a/5704386
+            var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
+            var scrollData = {
+                scrollPos: scrollDiv.scrollLeft,
+                scrollMax: scrollMax,
+                scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax))
+            };
+            return scrollData;
+        }
         function scrollAction(){
             //console.log("scroll");
-            if (data === undefined) data = new BBL.Datatone();
+            //if (data === undefined) data = new BBL.Datatone();
 
-            if (data.TM === undefined) {
+            if (data === undefined) {
                 // still not loaded
                 console.warn("data are not loaded", data);
             } else {
-
-                // http://stackoverflow.com/a/5704386
-                var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
-                var params = {
-                    scrollPos: scrollDiv.scrollLeft,
-                    scrollMax: scrollMax,
-                    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax))
-                };
-
+                var params = { scrollData: getScrollData() };
                 $rootScope.$broadcast('scrollEvent', params);
 
-                self.scrollPos = (params.scrollStep * data.DT).toFixed(2) + " s";
+                self.scrollPos = (params.scrollData.scrollStep * data.DT).toFixed(2) + " s";
                 $scope.$digest();
             }
         }
         function wheelAction(event){
             //console.log("wheel");
-            //if (data === undefined) data = new BBL.Datatone();
-            //
-            //if (data.TM === undefined) {
-            //    // still not loaded
-            //    console.warn("data are not loaded", data);
-            //} else {
-                var delta = event.wheelDelta;
-                // actually, this and scrollDiv are equal
-                scrollDiv.scrollLeft -= (delta);
-
-                // http://stackoverflow.com/a/5704386
-                //var scrollMax = scrollDiv.scrollWidth - scrollDiv.clientWidth;
-                //self.scrollPos = scrollDiv.scrollLeft;
-                //var params = {
-                //    scrollPos: scrollDiv.scrollLeft,
-                //    scrollMax: scrollMax,
-                //    scrollStep: Math.round(data.TM / data.STEP * (scrollDiv.scrollLeft / scrollMax) )
-                //};
-                //self.scrollPos = params.scrollStep;
-                // commented because of extra scroll event fired when wheeling
-                //$rootScope.$broadcast('wheelEvent', params);
-                //console.log(scrollDiv.scrollLeft, [scrollDiv], scrollMax, (scrollDiv.scrollLeft/scrollMax*100).toFixed(2));
-
-                // commented because of extra scroll event fired when wheeling
-                //$scope.$digest();
-
-                //event.preventDefault();
-            //}
+            var delta = event.wheelDelta;
+            // actually, this and scrollDiv are equal
+            scrollDiv.scrollLeft -= (delta);
         }
 
         //$rootScope.$broadcast('dataHaveBeenLoaded');
         $rootScope.$on('dataHaveBeenLoaded', function(event){
             self.visible = true;
+        });
+
+        $rootScope.$on('getScrollData', function(event, params){
+            //console.warn("$rootScope.$on getScrollData");
+
+            var scrollData = getScrollData();
+            params.callback(scrollData);
         });
 
     }]);
@@ -207,6 +198,16 @@
             $rootScope.$broadcast('changeVisualisationSchemeIndex', {visualisationSchemeIndex: visualisationSchemeIndex});
         }
         this.changeVisualisationSchemeIndex = changeVisualisationSchemeIndex;
+
+        function hideStats(){
+            console.log("hideStats");
+            var statsHolderDiv = document.getElementById("statsHolder");
+            statsHolderDiv.style.visibility = "hidden";
+
+            var buttonHideStatsDiv = document.getElementById("buttonHideStats");
+            buttonHideStatsDiv.style.visibility = "hidden";
+        }
+        this.hideStats = hideStats;
 
     }]);
 
@@ -292,13 +293,7 @@
 
         init();
 
-        $rootScope.$on('dataHaveBeenLoaded', function(event){
-            bootstrap();
-        });
-
-        $rootScope.$on('scrollEvent', function(event,params){
-            initColorVertices( params.scrollStep );
-        });
+        // core functions
 
         function init(){
             console.log('jBBLcanvasHolderController is here');
@@ -1073,6 +1068,23 @@
         }
         //for (var testI = 0; testI <= 1; testI += 1/12) console.warn("RGB", testI, getBlueWhiteRedColor(testI));
 
+        function bootstrap(){
+            initParamsWithData();
+
+            animate();
+
+            self.visible = true;
+        }
+
+        function recievedScrollData(scrollData){
+            initColorVertices(scrollData.scrollStep);
+        }
+
+        function requestScrollDataAndUpdate(){
+            var params = {};
+            params.callback = recievedScrollData;
+            $rootScope.$broadcast('getScrollData', params);
+        }
 
         // RENDER
 
@@ -1087,28 +1099,32 @@
             stats.update();
         }
 
-        // GLOBAL METHODS
+        // Events
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            bootstrap();
+        });
+
+        $rootScope.$on('scrollEvent', function(event,params){
+            initColorVertices( params.scrollData.scrollStep );
+        });
 
         $rootScope.$on('changeSchemeIndex', function(event, params){
             schemeIndex = params.schemeIndex;
             mem.length = 0;
             angular.extend(mem, data.memout[schemeIndex]);
             countMinMax();
-            initColorVertices(initTime);
+
+            //initColorVertices(initTime);
+            requestScrollDataAndUpdate();
         });
 
         $rootScope.$on('changeVisualisationSchemeIndex', function(event, params){
             visualisationSchemeIndex = params.visualisationSchemeIndex;
-            initColorVertices(initTime);
+            //initColorVertices(initTime);
+            requestScrollDataAndUpdate();
         });
 
-        function bootstrap(){
-            initParamsWithData();
-
-            animate();
-
-            self.visible = true;
-        }
     }]);
 
 

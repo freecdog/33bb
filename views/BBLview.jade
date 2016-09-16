@@ -30,12 +30,14 @@ html
                         div(id="mainCanvasHolder")
 
         div(ng-controller="jBBLscrollController as scroll" ng-show="scroll.visible")
-            input(id="scrollValue" type="text" ng-model="scroll.scrollPos")
+            input(id="scrollValue" type="text" class="input-sm" ng-model="scroll.scrollPos")
             div(id="timeScroll")
                 div(id="timeInner")
                     span &nbsp;
 
         div(ng-controller="jBBLcanvasController as canvasCTRL" ng-show="canvasCTRL.visible")
+            a(id="buttonHideStats" class="btn btn-default" ng-click="canvasCTRL.hideStats()") X
+
             div(id="buttonsGroupSchemeIndex" class="btn-group")
                 a(class="btn btn-sm btn-primary") scheme
                 a(ng-repeat="schemeIndex in [1,2,3,4,5]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeSchemeIndex($index)") {{schemeIndex}}

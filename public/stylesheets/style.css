@@ -39,21 +39,28 @@ a {
 
 #buttonShowDataTable{
     position: absolute;
-    top: 80px;
+    top: 85px;
     left: 0px;
     z-index: 10;
 }
 
 #buttonsGroupSchemeIndex {
     position: absolute;
-    top: 110px;
+    top: 115px;
     left: 0px;
     z-index: 10;
 }
 
 #buttonsGroupVisualisationSchemeIndex {
     position: absolute;
-    top: 140px;
+    top: 150px;
     left: 0px;
+    z-index: 10;
+}
+
+#buttonHideStats {
+    position: absolute;
+    top: 0px;
+    left: 80px;
     z-index: 10;
 }
