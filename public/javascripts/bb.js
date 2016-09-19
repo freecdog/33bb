@@ -121,17 +121,18 @@ requirejs(['BB', 'bbCompile', 'bulkedData', 'Chart'], function(BB, bbCompile, bu
 
     function createAnchor(url){
         var divObject = document.createElement("DIV");
+        var h4Object = document.createElement("H4");
         var aObject = document.createElement("A");
-        var h3Object = document.createElement("H4");
         var textObj = document.createTextNode(url.substr(url.lastIndexOf('/'), url.length - url.lastIndexOf('/')));
         //aObject.setAttribute("href", url);
-        divObject.appendChild(aObject);
-        aObject.appendChild(h3Object);
-        h3Object.appendChild(textObj);
+        divObject.appendChild(h4Object);
+        h4Object.appendChild(aObject);
+        aObject.appendChild(textObj);
         aObject.onclick = function(e){
             //console.log("asd", e);
             setLoading(true, 0);
             ajaxWrapper('GET', null, url, startDrawing);
+            anchorsHolder.style.visibility = "hidden";
         };
         anchorsHolder.appendChild(divObject);
     }

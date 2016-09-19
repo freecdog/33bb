@@ -287,8 +287,7 @@
             controlPoints,
             nearestPoints,
             totalRadius,
-            totalRadiusOffset,
-            extraAngleFix;
+            totalRadiusOffset;
         var memout;
 
         init();
@@ -320,8 +319,6 @@
             scene.add( axisHelper );
 
             geometry = initGeometry();
-
-            extraAngleFix = false;
         }
         function createText(text, left, top, width, height){
             // TODO using angular and still document.createElement()?
@@ -384,10 +381,10 @@
 
             visualisationSchemeIndex = 2;   // 1 == rainbow, 2 == blue-white-red
 
-            axisX = 2;
-            axisY = 2;   // length of axises
-            axisX2 = axisX / 2;
-            axisY2 = axisY / 2;
+            //axisX = 2;
+            //axisY = 2;   // length of axises
+            //axisX2 = axisX / 2;
+            //axisY2 = axisY / 2;
             defZ = 1.0;
 
             axisX = axisY = 1;
@@ -421,6 +418,7 @@
             }
             data.angles = angles;
             //console.log("angles:", angles);
+            // TODO radiuses not in use
             radiuses = getAllRadiusesForAngles(angles);
 
             timeStepsCount = Math.round(data.TM / data.STEP) + 1;
@@ -442,7 +440,7 @@
             initVertices();
 
             material = new THREE.MeshBasicMaterial( {
-                //color: 0xffffff, // also if set color to 0xbbbbbb brightness will be smaller
+                //color: 0xffffff, // also if set color to 0xbbbbbb brightness will be less than normal
                 vertexColors: THREE.VertexColors,
                 side: THREE.DoubleSide  // if there is only front side it may be rotated with backside (and become invisible)
             } );
@@ -452,19 +450,24 @@
             mesh = new THREE.Mesh( geometry, material );
             scene.add(mesh);
 
+            addHUDLayersBorders(angles);
+
             var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
             canvasHolder.appendChild(zeroDegreeText);
             var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
             canvasHolder.appendChild(ninetyDegreeText);
+            // TODO using setTimeout for UI... *facepalm*
+            setTimeout(changeDegreesPositions, 200);
 
-            window.addEventListener("resize", function(){
+            window.addEventListener("resize", changeDegreesPositions);
+
+            function changeDegreesPositions(){
                 zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
                 zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
 
                 ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
                 ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
-            });
-
+            }
         }
         function getAllRadiusesForAngles(angles){
             var radiuses = [];
@@ -473,6 +476,49 @@
                 radiuses[i] = RTET(angle) / data.geomprocR;
             }
             return radiuses;
+        }
+        function addHUDLayersBorders(angles){
+            // border lines
+
+            totalRadius = calcTotalRadius();
+
+            //var lineMaterial = new THREE.LineBasicMaterial({
+            var lineMaterial = new THREE.LineDashedMaterial({
+                color: 0x00ff00,
+                dashSize: 0.025,
+                gapSize: 0.025
+            });
+            var lineGeometries = [];
+            var lines = [];
+            //var radiusInc = 0;
+            //var invertLineOrder = true;
+            var radiusInc = data.CHECK;
+
+            for (var i = 0; i < data.inputData.NL-1; i++){
+                //if (invertLineOrder)
+                //radiusInc += data.inputData.layers[i].H / data.geomprocR;
+                radiusInc -= data.inputData.layers[i].H / data.geomprocR;
+
+                var lineGeometry = new THREE.Geometry();
+                for (var j = 0; j < angles.length; j++){
+                    //var polarPoint = fromMizesToPolar(angles[j], 0);  // object
+                    //var polarPoint = fromMizesToPolar(angles[j], data.CHECK);  // overall
+                    var polarPoint = fromMizesToPolar(angles[j], radiusInc);
+                    //polarPoint.radius += data.inputData.layers[i].H / data.geomprocR;
+                    //polarPoint.radius += radiusInc;
+                    polarPoint.radius /= totalRadius;
+                    var px = polarPoint.radius * Math.sin( deg2rad(angles[j]) ) * axisX - axisX2;
+                    var py = polarPoint.radius * Math.cos( deg2rad(angles[j]) ) * axisY - axisY2;
+                    lineGeometry.vertices.push(new THREE.Vector3(px, py, defZ));
+                }
+                lineGeometry.computeLineDistances();
+                lineGeometries.push(lineGeometry);
+
+                var line = new THREE.Line(lineGeometry, lineMaterial);
+                lines.push(line);
+
+                scene.add(line);
+            }
         }
         // converts Num from diap (ds to df) to diap (dmin to dmax)
         function ctd(num, ds, df, dmin, dmax, invert){
@@ -625,7 +671,7 @@
                 }
                 //maxRadius = Math.max(maxRadius, data.cavform[c2].radius);
             }
-            console.log("maxRadius", maxRadius, maxIndex);
+            //console.log("maxRadius", maxRadius, maxIndex);
 
             // CHECK = HTOTAL + XDESTR;
             var ans = fromMizesToPolar(data.cavform[maxIndex].TETA, data.CHECK).radius;
@@ -645,31 +691,12 @@
             totalRadius = calcTotalRadius();
 
             // add Extra angle, to finish full circle
-            if (extraAngleFix) angles.push(0);
             for (var c0 = 0, c0len = Math.round(data.CHECK / data.STEPX); c0 < c0len; c0=c0+1){
                 for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
 
                     // Theta
                     var currentAngle = angles[c1];
                     var nextAngle = angles[c1+1];
-
-                    //if (!data.cavform[currentAngle] || !data.cavform[nextAngle]){
-                    //    // SOLVED findNearest works fine, but values are wrong, aren't they? Seems like values are good now
-                    //    if (!data.cavform[currentAngle]) console.warn("No angle", currentAngle);
-                    //    if (!data.cavform[nextAngle]) console.warn("No angle", nextAngle);
-                    //    objectRadius1 = findNearestCavFormAngle(currentAngle).radius;
-                    //    objectRadius2 = findNearestCavFormAngle(nextAngle).radius;
-                    //} else {
-                    //    objectRadius1 = data.cavform[currentAngle].radius;
-                    //    objectRadius2 = data.cavform[nextAngle].radius;
-                    //}
-                    objectRadius1 = radiuses[c1];
-                    objectRadius2 = radiuses[c1+1];
-                    // X
-                    r1 = objectRadius1 + c0 * data.STEPX;
-                    r2 = r1 + data.STEPX;
-                    r3 = objectRadius2 + c0 * data.STEPX;
-                    r4 = r3 + data.STEPX;
 
                     // transfer from Mizes to Polar
                     var mp1 = fromMizesToPolar(currentAngle, c0 * data.STEPX);
@@ -713,7 +740,6 @@
                     vertexPositions.push( [p4x, p4y, defZ] );
                 }
             }
-            if (extraAngleFix) angles.pop();
 
             var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
 
@@ -729,77 +755,43 @@
             //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
             vertexColors = [];
 
-            var extraAngle = false;
-            if (extraAngleFix) angles.push(0);
             // it was c0 <= c0len, but in 90degree case it led to an error
             for (var c0 = 0, c0len = Math.round(data.CHECK / data.STEPX); c0 < c0len; c0++){
                 for (var c1 = 0, c1len = angles.length-1; c1 < c1len; c1++){
-                    extraAngle = (extraAngleFix == true) && (c1 + 1 == c1len);
                     var isInvert = false;
 
                     var recTime = currentTime;
 
-                    if (extraAngle){
-                        if (visualisationSchemeIndex == 2) {
-                            // Blue White Red
-                            // 1st triangle
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][0], cmin, 0, cmax, -1, 0, 1)));
+                    if (visualisationSchemeIndex == 2) {
+                        // Blue White Red
+                        // 1st triangle
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1], cmin, 0, cmax, -1, 0, 1)));
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
 
-                            // 2nd triangle
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][0], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][0], cmin, 0, cmax, -1, 0, 1)));
-                        } else {
-                            // Rainbow color and others single colors schemes
-                            var intervalMax = 1;
-                            // HSV
-                            if (visualisationSchemeIndex == 1) intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
-
-                            // 1st triangle
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-
-                            // 2nd triangle
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-                        }
+                        // 2nd triangle
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
+                        vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
                     } else {
-                        if (visualisationSchemeIndex == 2) {
-                            // Blue White Red
-                            // 1st triangle
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
+                        // Rainbow color and others single colors schemes
+                        var intervalMax = 1;
+                        // HSV
+                        if (visualisationSchemeIndex == 1) intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
 
-                            // 2nd triangle
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
-                            vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1 + 1], cmin, 0, cmax, -1, 0, 1)));
-                        } else {
-                            // Rainbow color and others single colors schemes
-                            var intervalMax = 1;
-                            // HSV
-                            if (visualisationSchemeIndex == 1) intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
+                        // 1st triangle
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1], cmin, cmax, 0, intervalMax, isInvert)));
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
 
-                            // 1st triangle
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-
-                            // 2nd triangle
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-                            vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
-                        }
+                        // 2nd triangle
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1], cmin, cmax, 0, intervalMax, isInvert)));
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
+                        vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
                     }
 
                 }
             }
-            if (extraAngleFix) angles.pop();
 
             var colors = new Float32Array( vertexColors.length * N );
 

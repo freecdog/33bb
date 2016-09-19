@@ -101,9 +101,11 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         name += '_';
         name += data.inputData.XDESTR.toFixed(1) + 'xd';
         name += '_';
-        name += data.inputData.EPUR.toFixed(0) + 'epur';
+        name += data.inputData.EPUR.toFixed(0) + 'e';
         name += '_';
-        name += data.inputData.INDEX.toFixed(0) + 'index';
+        name += data.inputData.INDEX.toFixed(0) + 'i';
+        name += '_';
+        name += data.inputData.NL.toFixed(0) + 'NL';
         name += '_';
         name += data.inputData.ALFA.toFixed(0) + 'deg';
         name += '_';
