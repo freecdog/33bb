@@ -29,7 +29,7 @@ a {
 
 #scrollValue{
     position: absolute;
-    top: 50px;
+    top: 0px;
     left: 0px;
 }
 
@@ -39,23 +39,23 @@ a {
 
 #buttonShowDataTable{
     position: absolute;
-    top: 85px;
+    top: 35px;
     left: 0px;
     z-index: 10;
 }
 
 #buttonsGroupSchemeIndex {
-    position: absolute;
-    top: 115px;
-    left: 0px;
-    z-index: 10;
+    /*position: absolute;*/
+    /*top: 65px;*/
+    /*left: 0px;*/
+    /*z-index: 10;*/
 }
 
 #buttonsGroupVisualisationSchemeIndex {
-    position: absolute;
-    top: 150px;
-    left: 0px;
-    z-index: 10;
+    /*position: absolute;*/
+    /*top: 100px;*/
+    /*left: 0px;*/
+    /*z-index: 10;*/
 }
 
 #buttonHideStats {
@@ -63,4 +63,10 @@ a {
     top: 0px;
     left: 80px;
     z-index: 10;
+}
+
+#settingsPanel {
+    position: absolute;
+    z-index: 10;
+    top: 40px;
 }

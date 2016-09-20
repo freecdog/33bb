@@ -8,7 +8,7 @@ define(["angular"], function(angular){
     console.log("angular is here:", angular);
 
     var jBBLApp = angular.module('jBBLApp', [
-        "jBBLControllers"
+        "jBBLControllers", "ui.bootstrap"
     ]).config([function(){
         // app configuration goes here
     }]);

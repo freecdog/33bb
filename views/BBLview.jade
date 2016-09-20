@@ -23,7 +23,7 @@ html
             img(src="/images/30_2.gif" width="100%")
 
         div(ng-controller="jBBLcanvasHolderController as canvasHolder" ng-show="canvasHolder.visible")
-            div(id="statsHolder")
+            //-div(id="statsHolder")
             div(class="container")
                 div(class="row")
                     div(class="text-center")
@@ -36,21 +36,59 @@ html
                     span &nbsp;
 
         div(ng-controller="jBBLcanvasController as canvasCTRL" ng-show="canvasCTRL.visible")
-            a(id="buttonHideStats" class="btn btn-default" ng-click="canvasCTRL.hideStats()") X
+            //-a(id="buttonHideStats" class="btn btn-default" ng-click="canvasCTRL.hideStats()") X
 
-            div(id="buttonsGroupSchemeIndex" class="btn-group")
+            div(id="settingsPanel" class="panel panel-default")
+                div(class="panel-heading")
+                    div(class="panel-title")
+                        div(class="btn" ng-click="canvasCTRL.isSettingsCollapsed = !canvasCTRL.isSettingsCollapsed") Settings
+                div(collapse="canvasCTRL.isSettingsCollapsed")
+                    div(class="panel-body")
+                        div(class="input-group")
+                            span(class="input-group-addon") Схема данных
+                            span(class="input-group-btn")
+                                button(ng-repeat="schemeIndex in canvasCTRL.dataNames" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeSchemeIndex($index)") {{schemeIndex}}
+
+                        p
+                            div(class="input-group")
+                                span(class="input-group-addon") Тип визуализации
+                                span(class="input-group-btn")
+                                    button(ng-repeat="visualisationSchemeIndex in ['Rainbow', 'HSV','Red-White-Blue']" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)") {{visualisationSchemeIndex}}
+
+                        //-p
+                            button(class="btn btn-sm" ng-class="{'btn-primary': canvasCTRL.data.settings.filter.enabled, 'btn-default': !canvasCTRL.data.settings.filter.enabled}" ng-click="canvasCTRL.toggleFilterState()") Toggle filter
+                            div(class="btn-group")
+                                button(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index== canvasCTRL.data.settings.filter.leftBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index >= canvasCTRL.data.settings.filter.rightBorder}" ng-repeat=" leftBorder in canvasCTRL.filterPartsValues" ng-click=" canvasCTRL.changeFilterLeftBorder($index)") {{leftBorder}}
+                            div(class="btn-group")
+                                button(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index==canvasCTRL.data.settings.filter.rightBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index  <  canvasCTRL.data.settings.filter.leftBorder}" ng-repeat="rightBorder in canvasCTRL.filterPartsValues" ng-click="canvasCTRL.changeFilterRightBorder($index)") {{rightBorder}}
+
+                        div(class="panel panel-default")
+                            div(class="panel-body")
+                                button(class="btn btn-sm" ng-class="{'btn-primary': canvasCTRL.data.settings.filter.enabled, 'btn-default': !canvasCTRL.data.settings.filter.enabled}" ng-click="canvasCTRL.toggleFilterState()") Toggle filter
+                                div(class="btn-group")
+                                    button(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index== canvasCTRL.data.settings.filter.leftBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index >= canvasCTRL.data.settings.filter.rightBorder}" ng-repeat=" leftBorder in canvasCTRL.filterPartsValues" ng-click=" canvasCTRL.changeFilterLeftBorder($index)") {{leftBorder}}
+                                div(class="btn-group")
+                                    button(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index==canvasCTRL.data.settings.filter.rightBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index <= canvasCTRL.data.settings.filter.leftBorder}" ng-repeat="rightBorder in canvasCTRL.filterPartsValues" ng-click="canvasCTRL.changeFilterRightBorder($index)") {{rightBorder}}
+
+                        p Amplify settings?
+
+                        p show control points
+
+                        p show control points graphs
+
+                        p show memout, memout settings
+
+                        p show epure
+
+            //-div(id="buttonsGroupSchemeIndex" class="btn-group")
                 a(class="btn btn-sm btn-primary") scheme
                 a(ng-repeat="schemeIndex in [1,2,3,4,5]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeSchemeIndex($index)") {{schemeIndex}}
-            div(id="buttonsGroupVisualisationSchemeIndex" class="btn-group")
+            //-div(id="buttonsGroupVisualisationSchemeIndex" class="btn-group")
                 a(class="btn btn-sm btn-primary") visScheme
                 a(ng-repeat="visualisationSchemeIndex in [1,2]" href="#" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)") {{visualisationSchemeIndex}}
 
         div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
-            a(
-                id="buttonShowDataTable"
-                class="btn-sm btn-primary"
-                ng-click="memoutView.toggleDataTable()"
-            ) Show data table
+            //-a(id="buttonShowDataTable" class="btn-sm btn-primary" ng-click="memoutView.toggleDataTable()") Show data table
             div(class="container" ng-show="memoutView.showData")
                 div(class="row")
                     p some filling

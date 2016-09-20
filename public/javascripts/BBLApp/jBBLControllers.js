@@ -173,6 +173,8 @@
         var self = this;
         var data;
 
+        this.isSettingsCollapsed = true;
+
         init();
 
         function init(){
@@ -180,6 +182,8 @@
 
             data = new BBL.Datatone();
             self.data = data;
+
+            self.dataNames = window.dataNames;
         }
 
         $rootScope.$on('dataHaveBeenLoaded', function(event){
@@ -194,10 +198,28 @@
 
         function changeVisualisationSchemeIndex(visualisationSchemeIndex){
             //console.warn(visualisationSchemeIndex);
-            visualisationSchemeIndex += 1;
             $rootScope.$broadcast('changeVisualisationSchemeIndex', {visualisationSchemeIndex: visualisationSchemeIndex});
         }
         this.changeVisualisationSchemeIndex = changeVisualisationSchemeIndex;
+
+        // filter settings
+        this.filterPartsValues = new Array(data.settings.filter.parts+1);
+        for (var fi = 0; fi < this.filterPartsValues.length; fi++) this.filterPartsValues[fi] = fi;
+        function toggleFilterState(){
+            //console.warn("toggleFilterState");
+            data.settings.filter.enabled = !data.settings.filter.enabled;
+        }
+        this.toggleFilterState = toggleFilterState;
+        function changeFilterLeftBorder(leftBorderIndex){
+            //console.warn("toggleFilterState");
+            data.settings.filter.leftBorder = leftBorderIndex;
+        }
+        this.changeFilterLeftBorder = changeFilterLeftBorder;
+        function changeFilterRightBorder(rightBorderIndex){
+            //console.warn("toggleFilterState");
+            data.settings.filter.rightBorder = rightBorderIndex;
+        }
+        this.changeFilterRightBorder = changeFilterRightBorder;
 
         function hideStats(){
             console.log("hideStats");
@@ -273,22 +295,21 @@
     jBBLControllers.controller('jBBLcanvasHolderController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
 
-        var THREE, Stats, dat, data, RTET, MatMult;
-        var stats;
+        var THREE, dat, data, RTET, MatMult;
+        //var Stats, stats;
         var scene, camera, renderer, canvasHolder, axisHelper, geometry, material, mesh;
         var rendererSize;
-        var N, initTime, schemeIndex, mem, visualisationSchemeIndex, angles, radiuses,
+        var mem, angles, radiuses,
             axisX, axisY, axisX2, axisY2, defZ,
             vertexPositions, vertexColors,
             cmin, cmax,
-            amplifyColors, amplifyCoef,
             timeStepsCount,
-            showControlPoints,
             controlPoints,
             nearestPoints,
             totalRadius,
             totalRadiusOffset;
         var memout;
+        var settings;
 
         init();
 
@@ -304,11 +325,15 @@
 
             MatMult = BBL.MatMult;
 
-            initThree();
-            stats = initStats();
-            initDat();
+            settings = {};
+            data.settings = settings;
+            initSettings();
+
             initParams();
 
+            initThree();
+            //stats = initStats();
+            initDat();
             scene = initScene();
             camera = initCamera();
             renderer = initRenderer();
@@ -371,16 +396,29 @@
             dat = require('dat');   // dat.GUI
         }
 
-        function initParams(){
-            N = 3;  // number of components per vertex
+        function initSettings() {
+            $scope.settings = settings;
 
-            initTime = 0;
+            settings.initTime = 0;
 
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
-            schemeIndex = 2;
+            settings.schemeIndex = 2;
 
-            visualisationSchemeIndex = 2;   // 1 == rainbow, 2 == blue-white-red
+            settings.visualisationSchemeIndex = 2;   // 0 == rainbow, 1 == HSV, 2 == blue-white-red
 
+            settings.amplifyColors = false;
+            settings.amplifyCoef = 1.3;
+
+            settings.showControlPoints = false;
+
+            settings.filter = {
+                enabled: true,
+                parts: 20,
+                leftBorder: 2,
+                rightBorder: 13
+            };
+        }
+        function initParams(){
             //axisX = 2;
             //axisY = 2;   // length of axises
             //axisX2 = axisX / 2;
@@ -392,22 +430,17 @@
 
             vertexPositions = [];
             vertexColors = [];
-
-            amplifyColors = true;
-            amplifyCoef = 1.3;
         }
         function initParamsWithData(){
-            // with Data means that BBL.Datatone is available with memout
-
-            //initTime = Math.round(data.TM / data.STEP);
-            initTime = 0;
+            // "with Data" means that BBL.Datatone is available with memout
 
             reorderMemout();
-            //mem = memout[schemeIndex];
+            //mem = memout[settings.schemeIndex];
             mem = [];
             mem.length = 0;
-            angular.extend(mem, data.memout[schemeIndex]);
+            angular.extend(mem, data.memout[settings.schemeIndex]);
             countMinMax();
+            //filterMinMax();
 
             // converting TP to correct array of angles (indexed from 0)
             angles = [];
@@ -424,7 +457,6 @@
             timeStepsCount = Math.round(data.TM / data.STEP) + 1;
             console.log("timeStepsCount:", timeStepsCount);
 
-            showControlPoints = false;
             controlPoints = [
                 { radius: data.XDESTR + data.rtetA / data.geomprocR, angle: 0 },
                 { radius: data.XDESTR + data.rtetB / data.geomprocR, angle: 90 },
@@ -522,6 +554,10 @@
         }
         // converts Num from diap (ds to df) to diap (dmin to dmax)
         function ctd(num, ds, df, dmin, dmax, invert){
+            // after filter adding there is a new case that "num" might be less than "ds" or more than "df"
+            if (num < ds) num = ds;
+            if (num > df) num = df;
+
             var diap = Math.abs(df - ds);
             var delta = Math.abs(dmax - dmin);
             var ans = (delta / diap) * (num-ds) + dmin;
@@ -680,7 +716,7 @@
         }
         function initVertices(){
             initPositionVertices();
-            initColorVertices(initTime);
+            initColorVertices(settings.initTime);
         }
         function initPositionVertices(){
             vertexPositions = [];
@@ -741,6 +777,7 @@
                 }
             }
 
+            var N = 3;  // number of components per vertex
             var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
 
             for ( var i = 0, len = vertexPositions.length; i < len; i++ ) {
@@ -752,7 +789,6 @@
             geometry.computeBoundingSphere();
         }
         function initColorVertices(currentTime){
-            //if (controls && !controls.autoPlay) console.log("initialization of color vertices, time:", currentTime, "; visualisation scheme index:", visualisationSchemeIndex);
             vertexColors = [];
 
             // it was c0 <= c0len, but in 90degree case it led to an error
@@ -762,7 +798,7 @@
 
                     var recTime = currentTime;
 
-                    if (visualisationSchemeIndex == 2) {
+                    if (settings.visualisationSchemeIndex == 2) {
                         // Blue White Red
                         // 1st triangle
                         vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1], cmin, 0, cmax, -1, 0, 1)));
@@ -777,7 +813,7 @@
                         // Rainbow color and others single colors schemes
                         var intervalMax = 1;
                         // HSV
-                        if (visualisationSchemeIndex == 1) intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
+                        if (settings.visualisationSchemeIndex == 1) intervalMax = 0.94117647;   // 240 / 255 = 0.94117647, because we don't need red color for both min and max values
 
                         // 1st triangle
                         vertexColors.push(getColorFromValue(ctd(mem[recTime][c0 + 1][c1], cmin, cmax, 0, intervalMax, isInvert)));
@@ -793,6 +829,7 @@
                 }
             }
 
+            var N = 3;  // number of components per vertex
             var colors = new Float32Array( vertexColors.length * N );
 
             for ( var i = 0, len = vertexColors.length; i < len; i++ ) {
@@ -882,6 +919,7 @@
         function initGeometry(){
             var geometry = new THREE.BufferGeometry();
 
+            var N = 3;  // number of components per vertex
             geometry.addAttribute( 'position',  new THREE.BufferAttribute( [], N ) );
             geometry.addAttribute( 'color',  new THREE.BufferAttribute( [], N ) );
 
@@ -902,19 +940,63 @@
                 }
             }
             console.log("cmin:", cmin, "; cmax:", cmax);
+
+            if (settings.filter.enabled) {
+                filterMinMax();
+            }
+        }
+        function filterMinMax(){
+            var startTime = Date.now();
+
+            var prevCmin = cmin;
+            var prevCmax = cmax;
+
+            var parts = settings.filter.parts;
+            var distance = Math.abs(cmax-cmin);
+            var step = distance / parts;
+            var stepsValues = [];
+            stepsValues.push(cmin);
+            for (var i = 0; i < parts; i++) stepsValues.push(cmin + (i+1)*step);
+
+            var valuesInStep = new Array(parts);
+            for (var vi = 0; vi < parts; vi++) valuesInStep[vi] = 0;
+
+            for (var m0 in mem){
+                for (var m1 in mem[m0]){
+                    for (var m2 in mem[m0][m1]){
+                        var value = mem[m0][m1][m2];
+                        for (var j = 1, jlen = stepsValues.length; j < jlen; j++) {
+                            if (value < stepsValues[j]){
+                                valuesInStep[j-1]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //cmin = stepsValues[6];
+            //cmax = stepsValues[parts-2]; // cmax - step;
+            cmin = stepsValues[settings.filter.leftBorder];
+            cmax = stepsValues[settings.filter.rightBorder];
+
+
+            var extraAns = "https://plot.ly/alpha/workspace/\n";
+            for (var k = 0; k < valuesInStep.length; k++) extraAns += valuesInStep[k].toString() + "\n";
+            console.warn(((Date.now()-startTime)).toString() + " ms", "filtered cmin:", cmin, "; cmax:", cmax, valuesInStep, extraAns, stepsValues);
         }
 
         function getColorFromValue(value){
-            if (visualisationSchemeIndex == 1) {
+            if (settings.visualisationSchemeIndex == 1) {
                 return getRainbowColorHSV(value);
-            } else if (visualisationSchemeIndex == 2) {
+            } else if (settings.visualisationSchemeIndex == 2) {
                 return getBlueWhiteRedColor(value);
             } else {
-                if (visualisationSchemeIndex == 0) return getRainbowColor(value);
-                else if (visualisationSchemeIndex == 3) return getGrayColor(value);
-                else if (visualisationSchemeIndex == 4) return getRedBlackColor(value);
-                else if (visualisationSchemeIndex == 5) return getGreenBlackColor(value);
-                else if (visualisationSchemeIndex == 6) return getBlueBlackColor(value);
+                if (settings.visualisationSchemeIndex == 0) return getRainbowColor(value);
+                else if (settings.visualisationSchemeIndex == 3) return getGrayColor(value);
+                else if (settings.visualisationSchemeIndex == 4) return getRedBlackColor(value);
+                else if (settings.visualisationSchemeIndex == 5) return getGreenBlackColor(value);
+                else if (settings.visualisationSchemeIndex == 6) return getBlueBlackColor(value);
             }
         }
         function getGrayColor(value){
@@ -945,8 +1027,8 @@
             var power;
 
             // amplify colors
-            if (amplifyColors){
-                value *= amplifyCoef;
+            if (settings.amplifyColors){
+                value *= settings.amplifyCoef;
                 if (value < borB) value = borB;
                 if (value > borR) value = borR;
                 //if (value > 0) SRC_r *= 4; if (SRC_r > 1) SRC_r = 1;
@@ -1068,13 +1150,13 @@
             self.visible = true;
         }
 
-        function recievedScrollData(scrollData){
+        function receivedScrollData(scrollData){
             initColorVertices(scrollData.scrollStep);
         }
 
         function requestScrollDataAndUpdate(){
             var params = {};
-            params.callback = recievedScrollData;
+            params.callback = receivedScrollData;
             $rootScope.$broadcast('getScrollData', params);
         }
 
@@ -1088,7 +1170,7 @@
             requestAnimationFrame( animate );
 
             render();
-            stats.update();
+            //stats.update();
         }
 
         // Events
@@ -1102,20 +1184,29 @@
         });
 
         $rootScope.$on('changeSchemeIndex', function(event, params){
-            schemeIndex = params.schemeIndex;
+            settings.schemeIndex = params.schemeIndex;
             mem.length = 0;
-            angular.extend(mem, data.memout[schemeIndex]);
+            angular.extend(mem, data.memout[settings.schemeIndex]);
             countMinMax();
 
-            //initColorVertices(initTime);
             requestScrollDataAndUpdate();
         });
 
         $rootScope.$on('changeVisualisationSchemeIndex', function(event, params){
-            visualisationSchemeIndex = params.visualisationSchemeIndex;
-            //initColorVertices(initTime);
+            settings.visualisationSchemeIndex = params.visualisationSchemeIndex;
             requestScrollDataAndUpdate();
         });
+
+        // TODO decide what is better $watch or $broadcast($on)
+        $scope.$watch('settings.filter', function(newValue, oldValue) {
+            console.log("settings.filter changed to", newValue, "; from", oldValue);
+            countMinMax();
+            requestScrollDataAndUpdate();
+        }, true);
+
+        //$scope.$watch('settings', function(newValue, oldValue) {
+        //    console.warn(newValue, oldValue);
+        //}, true);
 
     }]);
 
