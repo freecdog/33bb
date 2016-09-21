@@ -65,6 +65,7 @@ html
                         div(class="panel panel-default")
                             div(class="panel-body")
                                 button(class="btn btn-sm" ng-class="{'btn-primary': canvasCTRL.data.settings.filter.enabled, 'btn-default': !canvasCTRL.data.settings.filter.enabled}" ng-click="canvasCTRL.toggleFilterState()") Toggle filter
+                                br
                                 div(class="btn-group")
                                     button(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index== canvasCTRL.data.settings.filter.leftBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index >= canvasCTRL.data.settings.filter.rightBorder}" ng-repeat=" leftBorder in canvasCTRL.filterPartsValues" ng-click=" canvasCTRL.changeFilterLeftBorder($index)") {{leftBorder}}
                                 div(class="btn-group")

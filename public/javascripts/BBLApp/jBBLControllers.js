@@ -539,8 +539,8 @@
                     //polarPoint.radius += data.inputData.layers[i].H / data.geomprocR;
                     //polarPoint.radius += radiusInc;
                     polarPoint.radius /= totalRadius;
-                    var px = polarPoint.radius * Math.sin( deg2rad(angles[j]) ) * axisX - axisX2;
-                    var py = polarPoint.radius * Math.cos( deg2rad(angles[j]) ) * axisY - axisY2;
+                    var px = polarPoint.radius * Math.sin( deg2rad(polarPoint.phi) ) * axisX - axisX2;
+                    var py = polarPoint.radius * Math.cos( deg2rad(polarPoint.phi) ) * axisY - axisY2;
                     lineGeometry.vertices.push(new THREE.Vector3(px, py, defZ));
                 }
                 lineGeometry.computeLineDistances();
@@ -661,7 +661,7 @@
         // TODO it could be movedto FUNC2 with name SinGamma
         function derivativeR0(T){
             // from FUNC2.RCURB()
-            var DR1, R0, R1, DT = 0.0000000001;
+            var DR1, R0, R1, DT = 0.0001;
             R1 = RTET(T + DT) / data.geomprocR;
             R0 = RTET(T - DT) / data.geomprocR;
             DR1 = (R1 - R0) / (2 * DT);
@@ -980,10 +980,10 @@
             cmin = stepsValues[settings.filter.leftBorder];
             cmax = stepsValues[settings.filter.rightBorder];
 
-
             var extraAns = "https://plot.ly/alpha/workspace/\n";
             for (var k = 0; k < valuesInStep.length; k++) extraAns += valuesInStep[k].toString() + "\n";
-            console.warn(((Date.now()-startTime)).toString() + " ms", "filtered cmin:", cmin, "; cmax:", cmax, valuesInStep, extraAns, stepsValues);
+            console.log(((Date.now()-startTime)).toString() + " ms", "filtered cmin:", cmin, "; cmax:", cmax, valuesInStep, stepsValues);
+            //console.warn(((Date.now()-startTime)).toString() + " ms", "filtered cmin:", cmin, "; cmax:", cmax, valuesInStep, extraAns, stepsValues);
         }
 
         function getColorFromValue(value){
@@ -1142,12 +1142,34 @@
         }
         //for (var testI = 0; testI <= 1; testI += 1/12) console.warn("RGB", testI, getBlueWhiteRedColor(testI));
 
+        function testMizesToPolar(){
+            var points = [];
+            var fixedRadius = 4;
+            for (var i = 0; i <= 360; i = i + 5){
+                var polarPoint = fromMizesToPolar(i, fixedRadius);
+                points.push(polarPoint);
+            }
+            //console.warn("testMizesToPolar", points);
+            var ansStr ="";
+            for (var j = 0; j < points.length; j++){
+                ansStr += points[j].phi.toFixed(3) + " " + points[j].radius.toFixed(3) + "\n";
+            }
+            var ansStr2 = "";
+            for (var k = 0; k < ansStr.length; k++){
+                if (ansStr[k] == ".") ansStr2 += ",";
+                else ansStr2 += ansStr[k];
+            }
+            console.warn(ansStr2);
+        }
+
         function bootstrap(){
             initParamsWithData();
 
             animate();
 
             self.visible = true;
+
+            //testMizesToPolar();
         }
 
         function receivedScrollData(scrollData){
