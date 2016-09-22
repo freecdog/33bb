@@ -47,6 +47,7 @@ define(function (require, exports, module) {
             camera.position.z = 10;
 
             var showCanvas = true;
+            var showCentralObject = false;
 
             var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
             renderer.setClearColor( 0x000000, 0);
@@ -451,6 +452,38 @@ define(function (require, exports, module) {
                     }
                 }
 
+                // central object
+                if (showCentralObject) {
+                    for (var c2 = 0, c2len = angles.length - 1; c2 < c2len; c2++) {
+                        currentAngle = angles[c2];
+                        nextAngle = angles[c2 + 1];
+
+                        // transfer from Mizes to Polar
+                        var cmp2 = fromMizesToPolar(currentAngle, 0);
+                        var cmp4 = fromMizesToPolar(nextAngle, 0);
+
+                        var ccurrentAngle2 = cmp2.phi;
+                        var cnextAngle2 = cmp4.phi;
+                        r2 = cmp2.radius;
+                        r4 = cmp4.radius;
+
+                        // normalization of radiuses
+                        r2 = r2 / totalRadius;
+                        r4 = r4 / totalRadius;
+
+                        // zero degree angle is on the top
+                        p1x = r2 * Math.sin(deg2rad(ccurrentAngle2)) * axisX - axisX2;
+                        p1y = r2 * Math.cos(deg2rad(ccurrentAngle2)) * axisY - axisY2;
+                        p3x = r4 * Math.sin(deg2rad(cnextAngle2)) * axisX - axisX2;
+                        p3y = r4 * Math.cos(deg2rad(cnextAngle2)) * axisY - axisY2;
+
+                        // 1st triangle
+                        vertexPositions.push([p1x, p1y, defZ]);
+                        vertexPositions.push([0, 0, defZ]);
+                        vertexPositions.push([p3x, p3y, defZ]);
+                    }
+                }
+
                 var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
 
                 for ( var i = 0, len = vertexPositions.length; i < len; i++ ) {
@@ -509,6 +542,21 @@ define(function (require, exports, module) {
                             vertexColors.push( getColorFromValue( ctd( mem[recTime][c0][c1+1] ,cmin, cmax, 0,1, isInvert) ) );
                         }
 
+                    }
+                }
+
+                // central object
+                if (showCentralObject) {
+                    for (var c2 = 0, c2len = angles.length - 1; c2 < c1len; c2++) {
+                        var fixR = 0.5;
+                        var fixG = 0.5;
+                        var fixB = 0.5;
+                        vertexColors.push([fixR, fixG, fixB]);
+                        vertexColors.push([fixR, fixG, fixB]);
+                        vertexColors.push([fixR, fixG, fixB]);
+                        //vertexColors.push( [0.5, 1, 0.5] );
+                        //vertexColors.push( [Math.random(), Math.random(), Math.random()] );
+                        //vertexColors.push( [0.5, 1, 0.5] );
                     }
                 }
 
@@ -916,6 +964,8 @@ define(function (require, exports, module) {
                 this.showMemOutData = false;
                 this.showEpureData = false;
                 this.invertCPData = false;
+                this.lightBackground = false;
+                this.showCentralObject = showCentralObject;
 
                 this.updateGUIdisplays = function(){
                     if (gui !== undefined) {
@@ -1041,6 +1091,25 @@ define(function (require, exports, module) {
                     console.warn("testing");
                     setControlPointsData(controls.showCPData, controls.invertCPData);
                 };
+
+                this.changeBackground = function(){
+                    //console.warn("whiteBackground");
+                    var body = document.body;
+                    if (controls.lightBackground){
+                        body.style.background = "#ddd";
+                        body.style.color = "#222";
+                    } else {
+                        body.style.background = "#222";
+                        body.style.color = "#fff";
+                    }
+                };
+
+                this.changeVisibilityCentralObject = function(){
+                    showCentralObject = controls.showCentralObject;
+                    initPositionVertices();
+                    //initColorVertices(initTime);
+                    controls.changeTime();
+                };
             };
 
             var gui = new dat.GUI({autoPlace: false});
@@ -1080,6 +1149,8 @@ define(function (require, exports, module) {
             gui.add(controls, 'showMemOutData').onChange(controls.changeVisibilityMemOutData);
             gui.add(controls, 'showEpureData').onChange(controls.changeVisibilityEpureData);
             gui.add(controls, 'invertCPData').onChange(controls.invertCPDataButtonChange);
+            gui.add(controls, 'lightBackground').onChange(controls.changeBackground);
+            gui.add(controls, 'showCentralObject').onChange(controls.changeVisibilityCentralObject);
 
             function initStats() {
                 var stats = new Stats();
