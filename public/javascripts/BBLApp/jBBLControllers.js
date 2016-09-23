@@ -173,8 +173,6 @@
         var self = this;
         var data;
 
-        this.isSettingsCollapsed = true;
-
         init();
 
         function init(){
@@ -184,6 +182,8 @@
             self.data = data;
 
             self.dataNames = window.dataNames;
+
+            self.data.settings.isShown = false;
         }
 
         $rootScope.$on('dataHaveBeenLoaded', function(event){
@@ -221,6 +221,16 @@
         }
         this.changeFilterRightBorder = changeFilterRightBorder;
 
+        this.amplifyValues = [1,1.3,1.5,1.7,2,3];
+        function toggleAmplifyState(){
+            data.settings.amplifyColors = !data.settings.amplifyColors;
+        }
+        this.toggleAmplifyState = toggleAmplifyState;
+        function changeAmplifyValue(index){
+            data.settings.amplifyCoef = self.amplifyValues[index];
+        }
+        this.changeAmplifyValue = changeAmplifyValue;
+
         function hideStats(){
             console.log("hideStats");
             var statsHolderDiv = document.getElementById("statsHolder");
@@ -250,6 +260,8 @@
 
             data = new BBL.Datatone();
             self.data = data;
+
+            $scope.settings = data.settings;
         }
 
         function toggleDataTable(){
@@ -269,13 +281,73 @@
         this.setTab = setTab;
 
         $rootScope.$on('dataHaveBeenLoaded', function(event){
-            self.timeValues = [];
-            for (var i = 0; i < data.memout[0].length; i++) self.timeValues.push(i * data.STEP);
-            self.radiusValues = [];
-            for (var j = 0; j < data.memout[0][0].length; j++) self.radiusValues.push(j * data.STEPX * data.geomprocR);
+            formLimitedData();
+            formDescartData();
 
             self.visible = true;
         });
+
+        function formLimitedData(){
+            var limitedData = [];
+            data.limitedData = limitedData;
+
+            var totalAmount = data.memout.length * data.memout[0].length * data.memout[0][0].length * data.memout[0][0][0].length;
+
+            self.timeIndicies = [];
+            self.timeValues = [];
+            for (var i = 0; i < data.memout[0].length; i++) {
+                var timeValue = i * data.STEP;
+
+                if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || i+1 == data.memout[0].length) {
+                    self.timeIndicies.push(i);
+                    self.timeValues.push(timeValue);
+                }
+            }
+
+            self.radiusIndicies = [];
+            self.radiusValues = [];
+            for (var j = 0; j < data.memout[0][0].length; j++) {
+                self.radiusIndicies.push(j);
+                self.radiusValues.push(j * data.STEPX * data.geomprocR);
+            }
+
+            self.angleIndicies = [];
+            self.angleValues = [];
+            for (var k = 0; k < data.angles.length; k++) {
+                if (data.angles[k] % 15 == 0){
+                    self.angleIndicies.push(k);
+                    self.angleValues.push(data.angles[k]);
+                }
+            }
+
+            var limitedAmount = data.memout.length * self.timeIndicies.length * self.radiusIndicies.length * self.angleIndicies.length;
+
+            //-console.warn("totalAmount", totalAmount, "limitedAmount", limitedAmount, self.timeValues, self.radiusValues, self.angleValues);
+        }
+
+        function formDescartData(){
+            // Coordinate system of René Descartes or Cartesian coordinate system
+            console.warn("formDescartData. I do nothing");
+            console.log("n/d n/d n/d  1   1  n/d n/d n/d");
+            console.log("n/d n/d  1   1   1   1  n/d n/d");
+            console.log("n/d  1   1  n/d n/d  1   1  n/d");
+            console.log(" 0   0  n/d n/d n/d n/d  0   0 ");
+            console.log(" 0   0  n/d n/d n/d n/d  0   0 ");
+            console.log("n/d  0   0  n/d n/d  0   0  n/d");
+            console.log("n/d n/d  0   0   0   0  n/d n/d");
+            console.log("n/d n/d n/d  0   0  n/d n/d n/d");
+        }
+
+        function isNumberDecimalEqualTo(number, value){
+            return compareWithEps(getDecimal(number), value);
+        }
+        function compareWithEps(num1, num2, eps){
+            eps = eps || 1e-6;
+            return (Math.abs(num1 - num2) < eps);
+        }
+        function getDecimal(num) {
+            return Math.abs( num%1); // num > 0 ? (num % 1) : (-num % 1));
+        }
 
         function getLayerNumberByCoordinate(X){
             var L, ans;   // integer
@@ -290,6 +362,13 @@
             return ans;
         }
         this.getLayerNumberByCoordinate = getLayerNumberByCoordinate;
+
+        $scope.$watch('settings.showMemoutTable', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showMemoutTable changed to", newValue, "; from", oldValue);
+            toggleDataTable();
+        });
     }]);
 
     jBBLControllers.controller('jBBLcanvasHolderController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
@@ -413,10 +492,14 @@
 
             settings.filter = {
                 enabled: true,
-                parts: 20,
-                leftBorder: 2,
-                rightBorder: 13
+                parts: 10,
+                leftBorder: 3,
+                rightBorder: 10
             };
+
+            settings.showMemoutTable = false;
+
+            settings.showCentralObject = false;
         }
         function initParams(){
             //axisX = 2;
@@ -777,6 +860,38 @@
                 }
             }
 
+            // central object
+            if (settings.showCentralObject){
+                for (var c2 = 0, c2len = angles.length - 1; c2 < c2len; c2++) {
+                    currentAngle = angles[c2];
+                    nextAngle = angles[c2 + 1];
+
+                    // transfer from Mizes to Polar
+                    var cmp2 = fromMizesToPolar(currentAngle, 0);
+                    var cmp4 = fromMizesToPolar(nextAngle, 0);
+
+                    var ccurrentAngle2 = cmp2.phi;
+                    var cnextAngle2 = cmp4.phi;
+                    r2 = cmp2.radius;
+                    r4 = cmp4.radius;
+
+                    // normalization of radiuses
+                    r2 = r2 / totalRadius;
+                    r4 = r4 / totalRadius;
+
+                    // zero degree angle is on the top
+                    p1x = r2 * Math.sin(deg2rad(ccurrentAngle2)) * axisX - axisX2;
+                    p1y = r2 * Math.cos(deg2rad(ccurrentAngle2)) * axisY - axisY2;
+                    p3x = r4 * Math.sin(deg2rad(cnextAngle2)) * axisX - axisX2;
+                    p3y = r4 * Math.cos(deg2rad(cnextAngle2)) * axisY - axisY2;
+
+                    // 1st triangle
+                    vertexPositions.push([p1x, p1y, defZ]);
+                    vertexPositions.push([0, 0, defZ]);
+                    vertexPositions.push([p3x, p3y, defZ]);
+                }
+            }
+
             var N = 3;  // number of components per vertex
             var vertices = new Float32Array( vertexPositions.length * N ); // three components per vertex
 
@@ -826,6 +941,21 @@
                         vertexColors.push(getColorFromValue(ctd(mem[recTime][c0][c1 + 1], cmin, cmax, 0, intervalMax, isInvert)));
                     }
 
+                }
+            }
+
+            // central object
+            if (settings.showCentralObject) {
+                for (var c2 = 0, c2len = angles.length - 1; c2 < c1len; c2++) {
+                    var fixR = 0.5;
+                    var fixG = 0.5;
+                    var fixB = 0.5;
+                    vertexColors.push([fixR, fixG, fixB]);
+                    vertexColors.push([fixR, fixG, fixB]);
+                    vertexColors.push([fixR, fixG, fixB]);
+                    //vertexColors.push( [0.5, 1, 0.5] );
+                    //vertexColors.push( [Math.random(), Math.random(), Math.random()] );
+                    //vertexColors.push( [0.5, 1, 0.5] );
                 }
             }
 
@@ -1225,6 +1355,23 @@
             countMinMax();
             requestScrollDataAndUpdate();
         }, true);
+
+        $scope.$watch('settings.amplifyColors', function(newValue, oldValue) {
+            console.log("settings.amplifyColors changed to", newValue, "; from", oldValue);
+            requestScrollDataAndUpdate();
+        });
+        $scope.$watch('settings.amplifyCoef', function(newValue, oldValue) {
+            console.log("settings.amplifyCoef changed to", newValue, "; from", oldValue);
+            requestScrollDataAndUpdate();
+        });
+
+        $scope.$watch('settings.showCentralObject', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showCentralObject changed to", newValue, "; from", oldValue);
+            initPositionVertices();
+            requestScrollDataAndUpdate();
+        });
 
         //$scope.$watch('settings', function(newValue, oldValue) {
         //    console.warn(newValue, oldValue);
