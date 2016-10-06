@@ -16,7 +16,7 @@ html
 
             div(ng-repeat="file in fileList.allFiles | orderBy: '-path' | filter: { path: fileList.searchString } track by $index ")
                 h4
-                    a(ng-click="fileList.loadDataFile(file)") {{file.path}}
+                    a(ng-click="fileList.loadDataFile(file)") {{file.path.substr(22, file.path.length - 22 - 5)}}
 
 
         div(ng-controller="jBBLloadingController as loading" ng-show="loading.visible")
@@ -41,9 +41,9 @@ html
             div(id="settingsPanel")
                 div(class="col-xs-11 col-sm-7 col-md-5 col-lg-4")
                     div(class="panel panel-default")
-                        div(class="panel-heading" )
+                        div(class="panel-heading" ng-click="canvasCTRL.data.settings.isShown = !canvasCTRL.data.settings.isShown")
                             div(class="panel-title" )
-                                div(class="btn" ng-click="canvasCTRL.data.settings.isShown = !canvasCTRL.data.settings.isShown") Settings
+                                div Settings
                         div(collapse="!canvasCTRL.data.settings.isShown")
                             div(class="panel-body")
                                 //-div(class="container")
@@ -59,7 +59,7 @@ html
                                     span(class="col-xs-4") Тип визуализации
                                     div(class="col-xs-8")
                                         div(class="btn-group btn-group-sm btn-group-justified")
-                                            a(ng-repeat="visualisationSchemeIndex in ['Rainbow', 'HSV','Red-W-Blue']" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)" ng-class="{'btn-success': $index==canvasCTRL.data.settings.visualisationSchemeIndex}") {{visualisationSchemeIndex}}
+                                            a(ng-repeat="visualisationSchemeIndex in ['Rnbw', 'HSV', 'RedWB', 'RZero']" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)" ng-class="{'btn-success': $index==canvasCTRL.data.settings.visualisationSchemeIndex}") {{visualisationSchemeIndex}}
 
                                 br
 
@@ -80,13 +80,6 @@ html
                                 div(class="row")
                                     div(class="panel panel-default")
                                         div(class="panel-body")
-                                            p show control points
-                                            p show control points graphs
-                                            p show epure
-
-                                div(class="row")
-                                    div(class="panel panel-default")
-                                        div(class="panel-body")
                                             button(class="btn btn-sm" ng-class="{'btn-success': canvasCTRL.data.settings.amplifyColors, 'btn-default': !canvasCTRL.data.settings.amplifyColors}" ng-click="canvasCTRL.toggleAmplifyState()") Toggle amplify
                                             br
                                             div(class="row")
@@ -95,39 +88,162 @@ html
                                                         a(class="btn btn-sm btn-primary" ng-class="{'btn-success':canvasCTRL.amplifyValues[$index] == canvasCTRL.data.settings.amplifyCoef, 'disabled': !canvasCTRL.data.settings.amplifyColors}" ng-repeat="amplifyValue in canvasCTRL.amplifyValues" ng-click=" canvasCTRL.changeAmplifyValue($index)") {{amplifyValue}}
 
                                 div(class="row")
-                                    div(class="panel panel-default")
-                                        div(class="panel-body")
-                                            div(class="form-group")
-                                                div(class="col-xs-2")
-                                                    input(ng-model="canvasCTRL.data.settings.showMemoutTable" type="checkbox" class="form-control input-md")
-                                                div(class="col-xs-10")
-                                                    h4 show data table (Mises, need config)
+                                    div(class="col-xs-12")
+                                        div(class="panel panel-default")
+                                            div(class="panel-heading")
+                                                div(class="panel-title" )
+                                                    div Features
+                                            div(class="panel-body")
+                                                //-div(class="container")
+                                                div(class="row")
+                                                    div(class="form-group")
+                                                        div(class="col-xs-2")
+                                                            input(ng-model="canvasCTRL.data.settings.showEpure" type="checkbox" class="form-control input-md")
+                                                        div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showEpure = !canvasCTRL.data.settings.showEpure")
+                                                            h4 show epure
+                                                div(class="row")
+                                                    div(class="form-group")
+                                                        div(class="col-xs-2")
+                                                            input(ng-model="canvasCTRL.data.settings.showControlPointsData" type="checkbox" class="form-control input-md")
+                                                        div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showControlPointsData = !canvasCTRL.data.settings.showControlPointsData")
+                                                            h4
+                                                                span show control points&nbsp;
+                                                                span(class="text-warning") (draw them)
+                                                div(class="row")
+                                                    div(class="form-group")
+                                                        div(class="col-xs-2")
+                                                            input(ng-model="canvasCTRL.data.settings.showMemoutTable" type="checkbox" class="form-control input-md")
+                                                        div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showMemoutTable = !canvasCTRL.data.settings.showMemoutTable")
+                                                            h4
+                                                                span show data table&nbsp;
+                                                                span(class="text-warning") (Mises, need cfg)
+                                                div(class="row")
+                                                    div(class="form-group")
+                                                        div(class="col-xs-2")
+                                                            input(ng-model="canvasCTRL.data.settings.showCentralObject" type="checkbox" class="form-control input-md")
+                                                        div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showCentralObject = !canvasCTRL.data.settings.showCentralObject")
+                                                            h4 show central object
+
+                                //-div
+                                    div(class="row")
+                                        div(class="panel panel-default")
+                                            div(class="panel-body")
+                                                div(class="form-group")
+                                                    div(class="col-xs-2")
+                                                        input(ng-model="canvasCTRL.data.settings.showEpure" type="checkbox" class="form-control input-md")
+                                                    div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showEpure = !canvasCTRL.data.settings.showEpure")
+                                                        h4 show epure
+
+                                    div(class="row")
+                                        div(class="panel panel-default")
+                                            div(class="panel-body")
+                                                div(class="form-group")
+                                                    div(class="col-xs-2")
+                                                        input(ng-model="canvasCTRL.data.settings.showControlPointsData" type="checkbox" class="form-control input-md")
+                                                    div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showControlPointsData = !canvasCTRL.data.settings.showControlPointsData")
+                                                        h4 show control points
+
+                                    div(class="row")
+                                        div(class="panel panel-default")
+                                            div(class="panel-body")
+                                                div(class="form-group")
+                                                    div(class="col-xs-2")
+                                                        input(ng-model="canvasCTRL.data.settings.showMemoutTable" type="checkbox" class="form-control input-md")
+                                                    div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showMemoutTable = !canvasCTRL.data.settings.showMemoutTable")
+                                                        h4 show data table (Mises, need config)
+
+                                    div(class="row")
+                                        div(class="panel panel-default")
+                                            div(class="panel-body")
+                                                div(class="form-group")
+                                                    div(class="col-xs-2")
+                                                        input(ng-model="canvasCTRL.data.settings.showCentralObject" type="checkbox" class="form-control input-md")
+                                                    div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showCentralObject = !canvasCTRL.data.settings.showCentralObject")
+                                                        h4 show central object
+
+        //- TODO nbsp is not a solution of HTML layout
+        div(ng-controller="jBBLepureController as epureView" ng-show="epureView.visible")
+            div(class="container")
+                div(class="row")
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                div(class="row")
+                    div(class="col-xs-12 text-center")
+                        div(data-placement="right" data-original-title="Tooltip on right") Wave epure
+                        div
+                            canvas(id="waveShape" width="800" height="800")
+
+        div(ng-controller="jBBLControlPointsController as controlPointsCtrl" ng-show="controlPointsCtrl.visible")
+            div(class="container")
+                div(class="row")
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                div(class="row")
+                    section(class="tab")
+                        ul(class="nav nav-tabs")
+                            li(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-class="{active: controlPointsCtrl.isSet($index)}" )
+                                a(href ng-click="controlPointsCtrl.setTab($index)") {{tabName}}
+
+                        //- memOut[dataLayer][time][radius][angle]
+                        div(ng-repeat="tabName in controlPointsCtrl.dataNames track by $index" ng-show="controlPointsCtrl.isSet( {{$index}} )")
+                            div(id="dataCP{{tabName}}")
 
                                 div(class="row")
-                                    div(class="panel panel-default")
-                                        div(class="panel-body")
-                                            div(class="form-group")
-                                                div(class="col-xs-2")
-                                                    input(ng-model="canvasCTRL.data.settings.showCentralObject" type="checkbox" class="form-control input-md")
-                                                div(class="col-xs-10")
-                                                    h4 show central object
+                                    div(class="col-xs-12 text-center")
+                                        canvas(id="diagramCP{{$index}}" width="800" height="800")
+
+                                //- ctrlPoints [index][layer][time] -> value
+                                table(class="table table-striped table-hover")
+                                    tbody
+                                        thead
+                                            th
+                                                span T \ Points
+                                            th(ng-repeat="pointIndex in controlPointsCtrl.ctrlPoints track by $index" )
+                                                span Point{{$index}} (R:{{controlPointsCtrl.data.controlPoints[$index].radius}}, θ:{{controlPointsCtrl.data.controlPoints[$index].angle}})
+
+                                        tr(ng-repeat="timeIndex in controlPointsCtrl.ctrlPoints[0][0] track by $index" )
+                                            td
+                                                span {{controlPointsCtrl.getTimeByTimeIndex($index).toFixed(2)}}
+                                            td(ng-repeat="pointIndex in controlPointsCtrl.ctrlPoints track by $index" )
+                                                span {{controlPointsCtrl.ctrlPoints[$index][controlPointsCtrl.currentTabIndex][$parent.$index].toFixed(6)}}
+
 
         div(ng-controller="jBBLmemoutController as memoutView" ng-show="memoutView.visible")
             //-a(id="buttonShowDataTable" class="btn-sm btn-primary" ng-click="memoutView.toggleDataTable()") Show data table
             div(class="container" ng-show="memoutView.showData")
                 div(class="row")
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
-                    p some filling
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
+                    p &nbsp;
                 div(class="row")
                     section(class="tab")
                         ul(class="nav nav-tabs")

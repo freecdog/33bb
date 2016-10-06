@@ -371,6 +371,328 @@
         });
     }]);
 
+    jBBLControllers.controller('jBBLepureController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
+        var self = this;
+        var data;
+        var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
+
+        init();
+
+        function init(){
+            self.visible = false;
+
+            data = new BBL.Datatone();
+            self.data = data;
+
+            $scope.settings = data.settings;
+        }
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            initWaveShape(data);
+        });
+
+        function initWaveShape(data){
+
+            Chart.defaults.global.defaultFontColor = '#fff';
+
+            var userData = data.inputData;
+
+            var timeSteps = [];
+            var valueSteps = [];
+
+            if (userData.EPUR == 0){
+                for (var j = -data.XDESTR ; j <= Math.floor(data.TM); j++){
+                    timeSteps.push(j);
+                    valueSteps.push( j >= 0 ? 1 : 0 );
+                }
+            } else {
+                var dataStep = 1;
+                if (userData.EPUR == 2) dataStep = 10;
+
+                for (var i = 0; i < data.waveEpure.length; i = i + dataStep){
+                    timeSteps.push(data.waveEpure[i].T);
+                    valueSteps.push(data.waveEpure[i].value);
+                }
+            }
+
+            if (waveShapeDomObject){
+                waveShapeChartData.labels = timeSteps;
+                waveShapeChartData.datasets[0].data = valueSteps;
+                waveShapeChartObject.update();
+            } else {
+                waveShapeDomObject = document.getElementById("waveShape");
+                waveShapeChartData = {
+                    labels: timeSteps,
+                    datasets: [
+                        {
+                            label: "Wave diagram S(T)",
+                            fill: false,
+                            lineTension: 0.1,
+                            backgroundColor: "rgba(75,192,192,0.4)",
+                            borderColor: "rgba(75,192,192,1)",
+                            borderCapStyle: 'butt',
+                            borderDash: [],
+                            borderDashOffset: 0.0,
+                            borderJoinStyle: 'miter',
+                            pointBorderColor: "rgba(75,192,192,1)",
+                            pointBackgroundColor: "#fff",
+                            pointBorderWidth: 1,
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                            pointHoverBorderColor: "rgba(220,220,220,1)",
+                            pointHoverBorderWidth: 2,
+                            pointRadius: 1,
+                            pointHitRadius: 10,
+                            data: valueSteps
+                        }
+                    ]
+                };
+                waveShapeChartOptions = {
+                    responsive: mobileAndTabletcheck(),
+                    maintainAspectRatio: true,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                maxTicksLimit: 30
+                            }
+                        }]
+                    }
+                };
+                waveShapeChartObject = Chart.Line(waveShapeDomObject, {
+                    data: waveShapeChartData,
+                    options: waveShapeChartOptions
+                });
+            }
+        }
+
+        function toggleEpure(){
+            self.visible = !self.visible;
+        }
+
+        $scope.$watch('settings.showEpure', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showEpure changed to", newValue, "; from", oldValue);
+            toggleEpure();
+        });
+    }]);
+
+    jBBLControllers.controller('jBBLControlPointsController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
+        var self = this;
+        var data;
+        var charts;
+
+        init();
+
+        function init(){
+            console.log("jBBLControlPointsController is here");
+
+            self.visible = false;
+
+            data = new BBL.Datatone();
+            self.data = data;
+
+            self.currentTabIndex = 2;
+
+            self.dataNames = window.dataNames;
+            //self.dataNames = [];
+
+            charts = [];
+
+            $scope.settings = data.settings;
+        }
+
+        function getTimeByTimeIndex(timeIndex){
+            var realTime = timeIndex * data.STEP;
+            return realTime;
+        }
+        this.getTimeByTimeIndex = getTimeByTimeIndex;
+
+        function setControlPointsData(invert){
+            invert = invert || false;
+
+            var ctrlPoints = [];    // ctrlPoints[index][layer][time] -> value
+            self.ctrlPoints = ctrlPoints;
+
+            for (var ctrlPointIndex = 0; ctrlPointIndex < data.controlPoints.length; ctrlPointIndex++) {
+                var ctrlPointData = [];
+                ctrlPoints[ctrlPointIndex] = ctrlPointData;
+
+                var nearestPoint = data.nearestPoints[ctrlPointIndex][0];   // [0..3]
+                //var nearestValue = data.memout[][cT][nearestPoint.radiusStepIndex][nearestPoint.angleStepIndex];
+
+                for (var dataLayerIndex = 0; dataLayerIndex < data.memout.length; dataLayerIndex++) {
+                    var ctrlLayer = [];
+                    ctrlPointData[dataLayerIndex] = ctrlLayer;
+
+                    for (var cT = 0; cT < data.memout[dataLayerIndex].length; cT++) {
+                        // TODO interpolate value
+                        var value = data.memout[dataLayerIndex][cT][nearestPoint.radiusStepIndex][nearestPoint.angleStepIndex];
+                        if (invert) value *= -1;
+                        ctrlLayer[cT] = value;
+                    }
+                }
+            }
+
+            initCharts(data, ctrlPoints);
+
+            //$scope.$digest();
+        }
+
+        function initCharts(data, ctrlPoints){
+            console.log("initCharts");
+
+            Chart.defaults.global.defaultFontColor = '#aaaaaa';
+
+            if (ctrlPoints.length > 0) {
+
+                // color.adobe.com Circus III, Honey Pot and others
+                var colorsPresets = [
+                    "rgba(255,31,61,1)",
+                    "rgba(91,227,227,1)",
+                    "rgba(83,219,80,1)",
+                    "rgba(202,57,149,1)",
+                    //"rgba(255,220,0,1)", yellow
+                    "rgba(21,16,240,1)"
+
+                    //"rgba(46,9,39,1)",
+                    //"rgba(217,0,0,1)",
+                    //"rgba(255,45,0,1)",
+                    //"rgba(255,140,0,1)",
+                    //"rgba(4,117,111,1)"
+
+                    //"rgba(16,91,99,1)",
+                    //"rgba(255,250,213,1)",
+                    //"rgba(255,211,78,1)",
+                    //"rgba(219,158,54,1)",
+                    //"rgba(189,73,50,1)"
+                ];
+
+                var timeLabels = [];
+                for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
+                    timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                }
+
+                var datasetTemplate = {
+                    label: "datasetName",
+                    fill: false,
+                    lineTension: 0.1,
+                    backgroundColor: "rgba(75,192,192,0.4)",
+                    borderColor: "rgba(75,192,192,1)",
+                    borderCapStyle: 'butt',
+                    borderDash: [],
+                    borderDashOffset: 0.0,
+                    borderJoinStyle: 'miter',
+                    pointBorderColor: "rgba(75,192,192,1)",
+                    pointBackgroundColor: "#fff",
+                    pointBorderWidth: 1,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                    pointHoverBorderColor: "rgba(220,220,220,1)",
+                    pointHoverBorderWidth: 2,
+                    pointRadius: 1,
+                    pointHitRadius: 10,
+                    //data: [Math.random(),Math.random(),Math.random()]
+                    data: [Math.random(), Math.random(), Math.random()]
+                };
+
+                if (charts.length > 0) {
+                    // SOLVED repetition. it would be nice if you manage this repetition code, but it's needed to calc all graphs
+                    // TODO It is still be better if you will not destroy graphics but use new values, but even now is much better than it was before.
+                    //waveShapeChartData.labels = timeSteps;
+                    //waveShapeChartData.datasets[0].data = valueSteps;
+                    //waveShapeChartObject.update();
+
+                    // destroying old charts
+                    for (var c1 = 0; c1 < charts.length; c1++){
+                        charts[c1].shapeChartObject.destroy();
+                    }
+                    charts.length = 0;
+                }
+
+                for (var i = 0; i < data.memout.length; i++) {
+                    var shapeDomObject, shapeChartData, shapeChartOptions, shapeChartObject;
+
+                    shapeDomObject = document.getElementById("diagramCP" + i.toString());
+                    shapeChartData = {
+                        //labels: [1,2,3],
+                        labels: timeLabels,
+                        datasets: []
+                    };
+
+                    for (var j = 0; j < ctrlPoints.length; j++) {
+                        var pointDataset = angular.copy(datasetTemplate);
+
+                        pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toFixed(3) + ", Theta: " + data.controlPoints[j].angle.toFixed(3) + ")";
+                        var pointColor = colorsPresets[j % colorsPresets.length];
+                        pointDataset.backgroundColor = pointColor;
+                        pointDataset.borderColor = pointColor;
+                        pointDataset.pointBorderColor = pointColor;
+                        pointDataset.pointHoverBackgroundColor = pointColor;
+                        pointDataset.pointHoverBorderColor = pointColor;
+
+                        pointDataset.data = ctrlPoints[j][i];
+                        shapeChartData.datasets.push(pointDataset);
+                    }
+
+                    shapeChartOptions = {
+                        responsive: mobileAndTabletcheck(),
+                        maintainAspectRatio: true,
+                        scales: {
+                            xAxes: [{
+                                ticks: {
+                                    maxTicksLimit: mobileAndTabletcheck() ? 20 : 30
+                                }
+                            }]
+                        }
+                    };
+                    shapeChartObject = Chart.Line(shapeDomObject, {
+                        data: shapeChartData,
+                        options: shapeChartOptions
+                    });
+                    //shapeChartObject = new Chart(shapeDomObject).Line(shapeChartData, shapeChartOptions);
+
+                    charts.push({
+                        shapeDomObject: shapeDomObject,
+                        shapeChartData: shapeChartData,
+                        shapeChartOptions: shapeChartOptions,
+                        shapeChartObject: shapeChartObject
+                    });
+                }
+                //console.warn(charts);
+
+            } else {
+                console.log("no charts because of lack of control points:", ctrlPoints);
+            }
+
+        }
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            setControlPointsData(false);
+        });
+
+        function toggleControlPointsData(){
+            self.visible = !self.visible;
+        }
+
+        function isSet(index){
+            return index === self.currentTabIndex;
+        }
+        this.isSet = isSet;
+
+        function setTab(index){
+            self.currentTabIndex = index;
+        }
+        this.setTab = setTab;
+
+        $scope.$watch('settings.showControlPointsData', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showControlPointsData changed to", newValue, "; from", oldValue);
+            toggleControlPointsData();
+        });
+    }]);
+
     jBBLControllers.controller('jBBLcanvasHolderController', ['$rootScope', '$scope', 'BBL', function($rootScope, $scope, BBL){
         var self = this;
 
@@ -483,7 +805,7 @@
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
             settings.schemeIndex = 2;
 
-            settings.visualisationSchemeIndex = 2;   // 0 == rainbow, 1 == HSV, 2 == blue-white-red
+            settings.visualisationSchemeIndex = 3;   // 0 == rainbow, 1 == HSV, 2 == blue-white-red, 4 == rainbow with zero
 
             settings.amplifyColors = false;
             settings.amplifyCoef = 1.3;
@@ -498,6 +820,10 @@
             };
 
             settings.showMemoutTable = false;
+
+            settings.showEpure = false;
+
+            settings.showControlPointsData = false;
 
             settings.showCentralObject = false;
         }
@@ -547,6 +873,8 @@
             ];
             nearestPoints = [];
             findNearestPoints();
+            data.controlPoints = controlPoints;
+            data.nearestPoints = nearestPoints;
             console.log("controlPoints", controlPoints, "nearestPoints", nearestPoints);
 
             totalRadius = 1.0;    // "1.0" is default value
@@ -913,8 +1241,8 @@
 
                     var recTime = currentTime;
 
-                    if (settings.visualisationSchemeIndex == 2) {
-                        // Blue White Red
+                    if (settings.visualisationSchemeIndex == 2 || settings.visualisationSchemeIndex == 3) {
+                        // Blue White Red or Rainbow With Zero in Green
                         // 1st triangle
                         vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0 + 1][c1], cmin, 0, cmax, -1, 0, 1)));
                         vertexColors.push(getColorFromValue(ctd3(mem[recTime][c0][c1], cmin, 0, cmax, -1, 0, 1)));
@@ -1123,10 +1451,14 @@
                 return getBlueWhiteRedColor(value);
             } else {
                 if (settings.visualisationSchemeIndex == 0) return getRainbowColor(value);
-                else if (settings.visualisationSchemeIndex == 3) return getGrayColor(value);
-                else if (settings.visualisationSchemeIndex == 4) return getRedBlackColor(value);
+
+                else if (settings.visualisationSchemeIndex == 3) return getRainbowColorZeroInGreen(value);
+
+                else if (settings.visualisationSchemeIndex == 4) return getGrayColor(value);
                 else if (settings.visualisationSchemeIndex == 5) return getGreenBlackColor(value);
                 else if (settings.visualisationSchemeIndex == 6) return getBlueBlackColor(value);
+                else if (settings.visualisationSchemeIndex == 7) return getRedBlackColor(value);
+
             }
         }
         function getGrayColor(value){
@@ -1271,6 +1603,68 @@
             return [SRC_r, SRC_g, SRC_b];
         }
         //for (var testI = 0; testI <= 1; testI += 1/12) console.warn("RGB", testI, getBlueWhiteRedColor(testI));
+
+        // get color from value in diap -1..1
+        function getRainbowColorZeroInGreen(value){
+
+            var piece = 0.16666666666666666666666666666667;
+            var borF = 0 * piece;  		// Fiolet
+            var borS = 1 * piece;    	// Sinij
+            var borG = 2 * piece;   	// Goluboj
+            var borZ = 3 * piece;		// Zelenij
+            var borZh = 4 * piece;		// Zheltyj
+            var borO = 5 * piece;		// Oranzhevyj
+            var borK = 6 * piece;		// Krasnyj
+
+            var SRC_r, SRC_g, SRC_b;
+            var bright;
+
+            bright = 1;
+
+            //value = (value + 1) / 2;
+            value = ctd(value, -1, 1, 0, 1, false);
+
+                //  F - S - G - Z - Zh - O - K
+            // -1...........0............1
+            if ((value >= borF) && (value < borS)) {
+                SRC_r = 1;
+                SRC_g = 0;
+                SRC_b = 1;
+                SRC_r = 1 - bright * (value - borF) / piece;
+            }
+            if ((value >= borS) && (value < borG)) {
+                SRC_r = 0;
+                SRC_g = 0;
+                SRC_b = 1;
+                SRC_g = bright * (value - borS) / piece;
+            }
+            if ((value >= borG) && (value < borZ)) {
+                SRC_r = 0;
+                SRC_g = 1;
+                SRC_b = 1;
+                SRC_b = 1 - bright * (value - borG) / piece;
+            }
+            if ((value >= borZ) && (value < borZh)) {
+                SRC_r = 0;
+                SRC_g = 1;
+                SRC_b = 0;
+                SRC_r = bright * (value - borZ) / piece;
+            }
+            if ((value >= borZh) && (value < borO)) {
+                SRC_r = 1;
+                SRC_g = 1;
+                SRC_b = 0;
+                SRC_g = 1 - 0.5 * bright * (value - borZh) / piece;
+            }
+            if ((value >= borO) && (value <= borK)) {
+                SRC_r = 1;
+                SRC_g = 0.5;
+                SRC_b = 0;
+                SRC_g = 0.5 - bright * (value - borO) / piece;
+            }
+
+            return [SRC_r, SRC_g, SRC_b];
+        }
 
         function testMizesToPolar(){
             var points = [];
