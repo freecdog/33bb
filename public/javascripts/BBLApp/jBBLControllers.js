@@ -101,6 +101,7 @@
 
         var data;
         var scrollDiv = document.getElementById("timeScroll");
+        var mainCanvasCoverDiv = document.getElementById("mainCanvasHolderCover");
 
         init();
 
@@ -116,6 +117,8 @@
             scrollDiv.style.top = "0px";
             scrollDiv.style.width = "100%";
             scrollDiv.style.height = "100%";
+
+            mainCanvasCoverDiv.addEventListener("wheel", wheelAction);
         }
 
         function getScrollData(){
@@ -671,6 +674,11 @@
             setControlPointsData(false);
         });
 
+        $rootScope.$on('updateControlPointsDiagram', function(event){
+            setControlPointsData(false);
+            $scope.$digest();
+        });
+
         function toggleControlPointsData(){
             self.visible = !self.visible;
         }
@@ -688,7 +696,7 @@
         $scope.$watch('settings.showControlPointsData', function(newValue, oldValue) {
             if (data.memout === undefined) return;
 
-            console.log("settings.showControlPointsData changed to", newValue, "; from", oldValue);
+            console.log("settings.showControlPointsData (diagrams and table) changed to", newValue, "; from", oldValue);
             toggleControlPointsData();
         });
     }]);
@@ -698,7 +706,7 @@
 
         var THREE, dat, data, RTET, MatMult;
         //var Stats, stats;
-        var scene, camera, renderer, canvasHolder, axisHelper, geometry, material, mesh;
+        var scene, camera, renderer, canvasHolder, canvasHolderCover, axisHelper, geometry, material, mesh;
         var rendererSize;
         var mem, angles, radiuses,
             axisX, axisY, axisX2, axisY2, defZ,
@@ -709,6 +717,9 @@
             nearestPoints,
             totalRadius,
             totalRadiusOffset;
+        var zeroDegreeText, ninetyDegreeText;
+        var geometryControlPoints;
+        var colorsPresets;
         var memout;
         var settings;
 
@@ -737,6 +748,7 @@
             initDat();
             scene = initScene();
             camera = initCamera();
+            canvasHolderCover = document.getElementById("mainCanvasHolderCover");
             renderer = initRenderer();
             canvasHolder = initCanvasHolder();
             canvasHolder.appendChild( renderer.domElement );
@@ -826,6 +838,8 @@
             settings.showControlPointsData = false;
 
             settings.showCentralObject = false;
+
+            settings.showBorderLines = true;
         }
         function initParams(){
             //axisX = 2;
@@ -839,6 +853,38 @@
 
             vertexPositions = [];
             vertexColors = [];
+
+            // colors
+            // color.adobe.com Circus III
+            colorsPresets = [
+                [1, 0.12109375, 0.23828125],
+                [0.35546875, 0.88671875, 0.88671875],
+                [0.32421875, 0.85546875, 0.3125],
+                //[1, 0.859375, 0], yellow
+                [0.7890625, 0.22265625, 0.58203125],
+                [0.08203125, 0.0625, 0.9375]
+                //[0.1796875, 0.03515625, 0.15234375],
+                //[0.84765625, 0, 0],
+                //[1, 0.17578125, 0],
+                //[1, 0.546875, 0],
+                //[0.015625, 0.45703125, 0.43359375]
+                //"rgba(46,9,39,1)",
+                //"rgba(217,0,0,1)",
+                //"rgba(255,45,0,1)",
+                //"rgba(255,140,0,1)",
+                //"rgba(4,117,111,1)"
+                // Honey Pot
+                //[0.0625, 0.35546875, 0.38671875],
+                //[1, 0.9765625, 0.83203125],
+                //[1, 0.82421875, 0.3046875],
+                //[0.85546875, 0.6171875, 0.2109375],
+                //[0.73828125, 0.28515625, 0.1953125]
+                //"rgba(16,91,99,1)",
+                //"rgba(255,250,213,1)",
+                //"rgba(255,211,78,1)",
+                //"rgba(219,158,54,1)",
+                //"rgba(189,73,50,1)"
+            ];
         }
         function initParamsWithData(){
             // "with Data" means that BBL.Datatone is available with memout
@@ -867,9 +913,9 @@
             console.log("timeStepsCount:", timeStepsCount);
 
             controlPoints = [
-                { radius: data.XDESTR + data.rtetA / data.geomprocR, angle: 0 },
-                { radius: data.XDESTR + data.rtetB / data.geomprocR, angle: 90 },
-                { radius: 5, angle: 30 }
+                { radius: data.CHECK + data.rtetA / data.geomprocR, angle: 0 },
+                { radius: data.CHECK + data.rtetB / data.geomprocR, angle: 90 },
+                { radius: 5 / data.geomprocR, angle: 30 }
             ];
             nearestPoints = [];
             findNearestPoints();
@@ -894,23 +940,31 @@
             scene.add(mesh);
 
             addHUDLayersBorders(angles);
+            addHUDControlPoints();
 
-            var zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
+            zeroDegreeText = createText("0°", renderer.domElement.offsetLeft + rendererSize.width/2, renderer.domElement.offsetTop);
             canvasHolder.appendChild(zeroDegreeText);
-            var ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
+            ninetyDegreeText = createText("90°", renderer.domElement.offsetLeft + rendererSize.width, renderer.domElement.offsetTop + rendererSize.height/2);
             canvasHolder.appendChild(ninetyDegreeText);
             // TODO using setTimeout for UI... *facepalm*
             setTimeout(changeDegreesPositions, 200);
+            setTimeout(changeMainCanvasCoverPosition, 200);
 
             window.addEventListener("resize", changeDegreesPositions);
+            window.addEventListener("resize", changeMainCanvasCoverPosition);
+        }
+        function changeDegreesPositions(){
+            zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
+            zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
 
-            function changeDegreesPositions(){
-                zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
-                zeroDegreeText.style.top = renderer.domElement.offsetTop.toString() + 'px';
-
-                ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
-                ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
-            }
+            ninetyDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width).toString() + 'px';
+            ninetyDegreeText.style.top = (renderer.domElement.offsetTop + rendererSize.height/2).toString() + 'px';
+        }
+        function changeMainCanvasCoverPosition(){
+            canvasHolderCover.style.left = renderer.domElement.offsetLeft.toString() + 'px';
+            canvasHolderCover.style.top = renderer.domElement.offsetTop.toString() + 'px';
+            canvasHolderCover.style.width = renderer.domElement.offsetWidth.toString() + 'px';
+            canvasHolderCover.style.height = renderer.domElement.offsetHeight.toString() + 'px';
         }
         function getAllRadiusesForAngles(angles){
             var radiuses = [];
@@ -932,10 +986,12 @@
                 gapSize: 0.025
             });
             var lineGeometries = [];
-            var lines = [];
+            var borderLines = [];
             //var radiusInc = 0;
             //var invertLineOrder = true;
             var radiusInc = data.CHECK;
+
+            self.borderLines = borderLines;
 
             for (var i = 0; i < data.inputData.NL-1; i++){
                 //if (invertLineOrder)
@@ -944,9 +1000,9 @@
 
                 var lineGeometry = new THREE.Geometry();
                 for (var j = 0; j < angles.length; j++){
-                    //var polarPoint = fromMizesToPolar(angles[j], 0);  // object
-                    //var polarPoint = fromMizesToPolar(angles[j], data.CHECK);  // overall
-                    var polarPoint = fromMizesToPolar(angles[j], radiusInc);
+                    //var polarPoint = fromMisesToPolar(angles[j], 0);  // object
+                    //var polarPoint = fromMisesToPolar(angles[j], data.CHECK);  // overall
+                    var polarPoint = fromMisesToPolar(angles[j], radiusInc);
                     //polarPoint.radius += data.inputData.layers[i].H / data.geomprocR;
                     //polarPoint.radius += radiusInc;
                     polarPoint.radius /= totalRadius;
@@ -958,10 +1014,80 @@
                 lineGeometries.push(lineGeometry);
 
                 var line = new THREE.Line(lineGeometry, lineMaterial);
-                lines.push(line);
+                borderLines.push(line);
 
                 scene.add(line);
+
+                line.visible = settings.showBorderLines;
             }
+        }
+        function toggleBorderLines(){
+            for (var i = 0; i < self.borderLines.length; i++){
+                self.borderLines[i].visible = !self.borderLines[i].visible;
+            }
+        }
+        function addHUDControlPoints(){
+            var geometryNearestPoints = new THREE.Geometry();
+            for (var nearestIndex in nearestPoints){
+                for (var nearestPointIndex in nearestPoints[nearestIndex]){
+                    var nearestPoint = nearestPoints[nearestIndex][nearestPointIndex];
+                    var nearestPointX = nearestPoint.radius/totalRadius * Math.sin(deg2rad(nearestPoint.angle)) * axisX - axisX2;
+                    var nearestPointY = nearestPoint.radius/totalRadius * Math.cos(deg2rad(nearestPoint.angle)) * axisY - axisY2;
+                    geometryNearestPoints.vertices.push(new THREE.Vector3(nearestPointX, nearestPointY, defZ));
+                }
+            }
+            var nearestPointMaterial = new THREE.PointsMaterial( { color: 0x00ff00, size: 5, sizeAttenuation: false } );
+            var nearestPointsDots = new THREE.Points( geometryNearestPoints, nearestPointMaterial );
+            // uncomment to see nearestPoints
+            //scene.add( nearestPointsDots );
+            nearestPointsDots.visible = settings.showControlPointsData;
+            self.nearestPointsDots = nearestPointsDots;
+
+            geometryControlPoints = new THREE.BufferGeometry();
+            geometryControlPoints.addAttribute( 'position',  new THREE.BufferAttribute( [], 3 ) );
+            geometryControlPoints.addAttribute( 'color',  new THREE.BufferAttribute( [], 3 ) );
+            // coords
+            var verticesCPPositions = [];
+            for (var pointIndex = 0; pointIndex < controlPoints.length; pointIndex++){
+                var controlPoint = controlPoints[pointIndex];
+                var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
+                var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
+                verticesCPPositions.push([controlPointX, controlPointY, defZ]);
+            }
+            var verticesCP = new Float32Array( verticesCPPositions.length * 3 ); // three components per vertex
+            for ( var vi = 0, len = verticesCPPositions.length; vi < len; vi++ ) {
+                for (var vj = 0; vj < 3; vj++) verticesCP[ vi*3 + vj ] = verticesCPPositions[vi][vj];
+            }
+            geometryControlPoints.attributes.position = new THREE.BufferAttribute( verticesCP, 3 );
+            geometryControlPoints.computeBoundingSphere();
+
+            var vertexCPColors = [];
+            for (var vci = 0; vci < controlPoints.length; vci++){
+                vertexCPColors.push( colorsPresets[vci%5] );
+            }
+            var colorsCP = new Float32Array( vertexCPColors.length * 3 );
+            for ( var ci = 0, clen = vertexCPColors.length; ci < clen; ci++ ) {
+                for (var ck = 0; ck < 3; ck++) colorsCP[ ci*3 + ck ] = vertexCPColors[ci][ck];
+            }
+            geometryControlPoints.attributes.color = new THREE.BufferAttribute( colorsCP, 3 );
+            var controlPointMaterial = new THREE.PointsMaterial( {
+                //color: 0xff0000,
+                size: 10,
+                sizeAttenuation: false,
+                //size: 1/rendererSize.width*100 * 1.75,
+                //transparent: true,
+                //opacity: 1,
+                vertexColors: THREE.VertexColors
+            } );
+            var controlPointsDots = new THREE.Points( geometryControlPoints, controlPointMaterial );
+            scene.add( controlPointsDots );
+            controlPointsDots.visible = settings.showControlPointsData;
+
+            self.controlPointsDots = controlPointsDots;
+        }
+        function toggleControlPoints(){
+            self.nearestPointsDots.visible = !self.nearestPointsDots.visible;
+            self.controlPointsDots.visible = !self.controlPointsDots.visible;
         }
         // converts Num from diap (ds to df) to diap (dmin to dmax)
         function ctd(num, ds, df, dmin, dmax, invert){
@@ -1009,6 +1135,7 @@
             return dist;
         }
         // TODO recalculate to Polar from Mizes
+        // TODO ask Harry, if you enter control points in Mizes (by click on screen), is it correct use calcDistance() method?
         function findNearestFourPointsToPoint(point){
             point = point || {radius: 0, angle: 0}; // angle in degree
             var nearestPoints = [
@@ -1028,10 +1155,10 @@
                                 break;
                             }
                         }
-                        if (!data.cavform[angles[c2]]) skipThis = true;
+                        //if (!data.cavform[angles[c2]]) skipThis = true;
                         if (skipThis) continue;
 
-                        var objectRadius1 = data.cavform[angles[c2]].radius;
+                        var objectRadius1 = RTET( deg2rad(point.angle) ) / data.geomprocR;
                         var r1 = objectRadius1 + c1 * data.STEPX;
                         var currentPoint = {radius: r1, angle: angles[c2]};
 
@@ -1054,20 +1181,6 @@
                 nearestPoints.push(findNearestFourPointsToPoint(controlPoints[currentControlPoint]));
             }
         }
-        function findNearestCavFormAngle(angle){
-            var minDiff = Number.MAX_VALUE;
-            var minIndex = -1;
-            for (var c0 = 0; c0 < data.cavform.length; c0++){
-                if (Math.abs(data.cavform[c0].TETA - angle) < minDiff) {
-                    minDiff = Math.abs(data.cavform[c0].TETA - angle);
-                    minIndex = c0;
-                }
-            }
-            if (minIndex != -1) return data.cavform[minIndex];
-            else {
-                console.error("no nearest angle for this angle:", angle);
-            }
-        }
         function deg2rad(angle){ return angle / 180 * Math.PI; }
         // TODO it could be movedto FUNC2 with name SinGamma
         function derivativeR0(T){
@@ -1078,7 +1191,7 @@
             DR1 = (R1 - R0) / (2 * DT);
             return DR1;
         }
-        function fromMizesToPolar(Th, X){
+        function fromMisesToPolar(Th, X){
             var ans = { phi: 0, radius: 0 };
             //return {phi: Th, radius: X};
 
@@ -1100,11 +1213,11 @@
             return ans;
         }
         //for (var mi = 0; mi <= 5; mi = mi + 0.5){
-        //    var mians = fromMizesToPolar(80, mi);
+        //    var mians = fromMisesToPolar(80, mi);
         //    console.log(mi, mians);
         //}
         //for (var mi = 0; mi <= 360; mi = mi + 5){
-        //    var mians = fromMizesToPolar(mi, data.XDESTR);
+        //    var mians = fromMisesToPolar(mi, data.XDESTR);
         //    console.log(mi, mians);
         //}
         function calcTotalRadius(){
@@ -1121,7 +1234,7 @@
             //console.log("maxRadius", maxRadius, maxIndex);
 
             // CHECK = HTOTAL + XDESTR;
-            var ans = fromMizesToPolar(data.cavform[maxIndex].TETA, data.CHECK).radius;
+            var ans = fromMisesToPolar(data.cavform[maxIndex].TETA, data.CHECK).radius;
             //return (maxRadius + data.CHECK) * totalRadiusOffset; // *1.05 to show axis
             return ans * totalRadiusOffset; // *1.05 to show axis
         }
@@ -1146,10 +1259,10 @@
                     var nextAngle = angles[c1+1];
 
                     // transfer from Mizes to Polar
-                    var mp1 = fromMizesToPolar(currentAngle, c0 * data.STEPX);
-                    var mp2 = fromMizesToPolar(currentAngle, (c0+1) * data.STEPX);
-                    var mp3 = fromMizesToPolar(nextAngle, c0 * data.STEPX);
-                    var mp4 = fromMizesToPolar(nextAngle, (c0+1) * data.STEPX);
+                    var mp1 = fromMisesToPolar(currentAngle, c0 * data.STEPX);
+                    var mp2 = fromMisesToPolar(currentAngle, (c0+1) * data.STEPX);
+                    var mp3 = fromMisesToPolar(nextAngle, c0 * data.STEPX);
+                    var mp4 = fromMisesToPolar(nextAngle, (c0+1) * data.STEPX);
 
                     currentAngle = mp1.phi;
                     var currentAngle2 = mp2.phi;
@@ -1195,8 +1308,8 @@
                     nextAngle = angles[c2 + 1];
 
                     // transfer from Mizes to Polar
-                    var cmp2 = fromMizesToPolar(currentAngle, 0);
-                    var cmp4 = fromMizesToPolar(nextAngle, 0);
+                    var cmp2 = fromMisesToPolar(currentAngle, 0);
+                    var cmp4 = fromMisesToPolar(nextAngle, 0);
 
                     var ccurrentAngle2 = cmp2.phi;
                     var cnextAngle2 = cmp4.phi;
@@ -1351,12 +1464,116 @@
             }
             renderer.domElement.style.bottom = '10px';
 
-            renderer.domElement.addEventListener("click", clickOnCanvas);
+            //renderer.domElement.addEventListener("click", clickOnCanvas);
+            canvasHolderCover.addEventListener("click", clickOnCanvas);
 
             return renderer;
         }
         function clickOnCanvas(){
-            console.warn("clickOnCanvas, I do nothing");
+            //console.warn(event);
+            var screenWidth = renderer.domElement.width;
+            var screenHeight = renderer.domElement.height;
+            var mouseX = event.offsetX; // can't set (pointX, pointY) to (1,1)
+            var mouseY = screenHeight - (event.offsetY);
+
+            if (event.shiftKey == false){
+                controlPoints.length = 0;
+            }
+            //console.warn(mouseX, mouseY, screenWidth, screenHeight);
+            controlPoints.push( convertCartesianToPolar(screenWidth, screenHeight, mouseX, mouseY) );
+            //controlPoints.push( convertCartesianToMises(screenWidth, screenHeight, mouseX, mouseY) );
+
+            var verticesCPPositions = [];
+            for (var pointIndex = 0; pointIndex < controlPoints.length; pointIndex++){
+                var controlPoint = controlPoints[pointIndex];
+                var controlPointX = controlPoint.radius/totalRadius * Math.sin(deg2rad(controlPoint.angle)) * axisX - axisX2;
+                var controlPointY = controlPoint.radius/totalRadius * Math.cos(deg2rad(controlPoint.angle)) * axisY - axisY2;
+                verticesCPPositions.push([controlPointX, controlPointY, defZ]);
+            }
+            var verticesCP = new Float32Array( verticesCPPositions.length * 3 ); // three components per vertex
+            for ( var c0 = 0, len0 = verticesCPPositions.length; c0 < len0; c0++ ) {
+                for (var j = 0; j < 3; j++) verticesCP[ c0*3 + j ] = verticesCPPositions[c0][j];
+            }
+            geometryControlPoints.attributes.position = new THREE.BufferAttribute( verticesCP, 3 );
+            geometryControlPoints.computeBoundingSphere();
+
+            var vertexCPColors = [];
+            for (var c1 = 0; c1 < controlPoints.length; c1++){
+                vertexCPColors.push( colorsPresets[c1%5] );
+            }
+            var colorsCP = new Float32Array( vertexCPColors.length * 3 );
+            for ( var c2 = 0, len2 = vertexCPColors.length; c2 < len2; c2++ ) {
+                for (var k = 0; k < 3; k++) colorsCP[ c2*3 + k ] = vertexCPColors[c2][k];
+            }
+            geometryControlPoints.attributes.color = new THREE.BufferAttribute( colorsCP, 3 );
+
+            // it is important, because data for points are fetched from nearestPoints array
+            findNearestPoints();
+
+            //setControlPointsData(controls.showCPData, controls.invertCPData);
+            $rootScope.$broadcast("updateControlPointsDiagram");
+        }
+        function convertCartesianToPolar(screenWidth, screenHeight, pointerX, pointerY, invertY){
+            // TODO ask Harry, probably should be done method Cartesian to Mises (https://en.wikipedia.org/wiki/Richard_von_Mises)
+            var screenX = screenWidth;
+            var screenX2 = screenX / 2;
+            var screenY = screenHeight;
+            var screenY2 = screenY / 2;
+
+            var mouseX = pointerX; // can't set (pointX, pointY) to (1,1)
+            var mouseY = pointerY;
+            if (invertY) mouseY = screenY - mouseY;
+
+            var pointX = (mouseX - screenX2) / screenX2;
+            var pointY = (mouseY - screenY2) / screenY2;
+            //console.warn(pointX, pointY);
+
+            var pointDistanceToCenter = Math.sqrt(pointX*pointX + pointY*pointY);
+            var pointRadius = pointDistanceToCenter * totalRadius;
+            //console.warn(pointDistanceToCenter, pointRadius);
+
+            var pointAngle = 90 - (Math.atan( pointY / pointX) ) * 180 / Math.PI;
+            if (pointX < 0) pointAngle += 180;
+            //console.warn(pointAngle);
+
+            var ans = { radius: pointRadius, angle: pointAngle};
+
+            var objectRadius = RTET( deg2rad(ans.angle) ) / data.geomprocR;
+            var fieldRadius = objectRadius + data.CHECK;
+            //console.warn(ans, objectRadius, fieldRadius);
+            ans.radius = ans.radius < fieldRadius ? (ans.radius > objectRadius ? ans.radius : objectRadius) : fieldRadius;
+
+            return ans;
+        }
+        function convertCartesianToMises(screenWidth, screenHeight, pointerX, pointerY, invertY){
+            // TODO this method is completly wrong
+            var screenX = screenWidth;
+            var screenX2 = screenX / 2;
+            var screenY = screenHeight;
+            var screenY2 = screenY / 2;
+
+            var mouseX = pointerX; // can't set (pointX, pointY) to (1,1)
+            var mouseY = pointerY;
+            if (invertY) mouseY = screenY - mouseY;
+
+            var pointX = (mouseX - screenX2) / screenX2;
+            var pointY = (mouseY - screenY2) / screenY2;
+            //console.warn(pointX, pointY);
+
+            var pointDistanceToCenter = Math.sqrt(pointX*pointX + pointY*pointY);
+            var pointRadius = pointDistanceToCenter * totalRadius;
+            //console.warn(pointDistanceToCenter, pointRadius);
+
+            var pointAngle = 90 - (Math.atan( pointY / pointX) ) * 180 / Math.PI;
+            if (pointX < 0) pointAngle += 180;
+            //console.warn(pointAngle);
+
+            var polarPoint = { radius: pointRadius, angle: pointAngle};
+            var objectRadius = RTET( deg2rad(polarPoint.angle) ) / data.geomprocR;
+            var misesPoint = fromMisesToPolar(polarPoint.angle, polarPoint.radius - objectRadius);
+
+            var ans = { radius: misesPoint.radius, angle: misesPoint.phi };
+            return ans;
         }
 
         function initCanvasHolder(){
@@ -1670,7 +1887,7 @@
             var points = [];
             var fixedRadius = 4;
             for (var i = 0; i <= 360; i = i + 5){
-                var polarPoint = fromMizesToPolar(i, fixedRadius);
+                var polarPoint = fromMisesToPolar(i, fixedRadius);
                 points.push(polarPoint);
             }
             //console.warn("testMizesToPolar", points);
@@ -1765,6 +1982,20 @@
             console.log("settings.showCentralObject changed to", newValue, "; from", oldValue);
             initPositionVertices();
             requestScrollDataAndUpdate();
+        });
+
+        $scope.$watch('settings.showBorderLines', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showBorderLines changed to", newValue, "; from", oldValue);
+            toggleBorderLines();
+        });
+
+        $scope.$watch('settings.showControlPointsData', function(newValue, oldValue) {
+            if (data.memout === undefined) return;
+
+            console.log("settings.showControlPointsData (canvas) changed to", newValue, "; from", oldValue);
+            toggleControlPoints();
         });
 
         //$scope.$watch('settings', function(newValue, oldValue) {
