@@ -177,6 +177,11 @@ define(function (require, exports, module) {
                         rtetVortex: 0,
                         rtetNoEdge: true,
 
+                        S0: 9.6,
+                        BETTA: 900,
+                        A1: 7.917,
+                        A2: 48.611,
+
                         needRealValues: true
                     };
                     //inputData.printPoints = [];
@@ -236,6 +241,11 @@ define(function (require, exports, module) {
                 rtetC = inputData.rtetC;
                 rtetVortex = inputData.rtetVortex;
                 rtetNoEdge = inputData.rtetNoEdge;
+
+                S0 = inputData.S0;
+                BETTA = inputData.BETTA;
+                A1 = inputData.A1;
+                A2 = inputData.A2;
 
                 needRealValues = inputData.needRealValues;
             }
@@ -303,13 +313,15 @@ define(function (require, exports, module) {
                 if (needRealValues){
                     // for calculation SHOULD be in MPa
 //                    S0=9.6*1E06/(C2*RC2);
-                    S0=9.6*1E06/(C0*RC0);
+
+                    //S0=9.6*1E06/(C0*RC0);
+                    S0 = S0 * 1E05 / (C0 * RC0);
                 } else {
                     S0 = 1;
                 }
-                BETTA = 900;
-                A1 = 7.917;
-                A2 = 48.611;
+                //BETTA = 900;
+                //A1 = 7.917;
+                //A2 = 48.611;
                 A2 = A1 * A1 / A2;
                 A1 = 1E03 / A1;
             } else {

@@ -112,6 +112,11 @@
                 rtetVortex: 0,
                 rtetNoEdge: true,
 
+                S0: 9.6,
+                BETTA: 900,
+                A1: 7.917,
+                A2: 48.611,
+
                 needRealValues: true
             };
 
