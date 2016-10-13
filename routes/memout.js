@@ -45,11 +45,15 @@ function replaceAll(str, find, replace) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 function currentDateToStr(){
+    // it is better to use server local time. The reason why is time=d.toLocalTimeString() so it might be a new day (by time) and old day by UTC
     var d = new Date();
-    var year = d.getUTCFullYear().toString();
-    var month = d.getUTCMonth()+1;  // months are counted from 0
+    //var year = d.getUTCFullYear().toString();
+    var year = d.getFullYear().toString();
+    //var month = d.getUTCMonth()+1;  // months are counted from 0
+    var month = d.getMonth()+1;  // months are counted from 0
     if (month < 10) month = "0" + month;
-    var day = d.getUTCDate();
+    //var day = d.getUTCDate();
+    var day = d.getDate();
     if (day < 10) day = "0" + day;
     var time = d.toLocaleTimeString();
     time = replaceAll(time, ":", "");

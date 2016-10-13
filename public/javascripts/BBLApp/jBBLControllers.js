@@ -888,6 +888,7 @@
         }
         function initParamsWithData(){
             // "with Data" means that BBL.Datatone is available with memout
+            console.time("jBBLcanvasHolderController.init");
 
             reorderMemout();
             //mem = memout[settings.schemeIndex];
@@ -952,6 +953,8 @@
 
             window.addEventListener("resize", changeDegreesPositions);
             window.addEventListener("resize", changeMainCanvasCoverPosition);
+
+            console.timeEnd("jBBLcanvasHolderController.init");
         }
         function changeDegreesPositions(){
             zeroDegreeText.style.left = (renderer.domElement.offsetLeft + rendererSize.width/2).toString() + 'px';
@@ -1196,6 +1199,8 @@
             //return {phi: Th, radius: X};
 
             var theta = Th * Math.PI / 180;
+
+            //X = X / data.geomprocR;
 
             var R0 = RTET(theta) / data.geomprocR;
             var DR1 = derivativeR0(theta);
