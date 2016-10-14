@@ -169,8 +169,8 @@ define(function (require, exports, module) {
                         STEPX: 0.1,    // special
 
                         rtetN: 2,
-                        rtetN1: 1.3,
-                        rtetN2: 1.2,
+                        rtetN1: 2,
+                        rtetN2: 2,
                         rtetA: 2.0,
                         rtetB: 4.0,
                         rtetC: 4.5,
@@ -184,9 +184,9 @@ define(function (require, exports, module) {
 
                         needRealValues: true
                     };
-                    //inputData.printPoints = [];
-                    //for (var NTPi = 0; NTPi <= 360; NTPi=NTPi+3) inputData.printPoints.push(NTPi);
-                    //inputData.NTP = inputData.printPoints.length;
+                    inputData.printPoints = [];
+                    for (var NTPi = 0; NTPi <= 360; NTPi=NTPi+2) inputData.printPoints.push(NTPi);
+                    inputData.NTP = inputData.printPoints.length;
 
                 }
 
@@ -585,6 +585,8 @@ define(function (require, exports, module) {
                         TK = 0.5 * (T1 + T2);
                     }
                 }
+
+                if (TK < Math.PI / 180) TK = 0;
 
                 AK = AK + Math.PI / 2;
                 if (K == 0) TET0 = TK;

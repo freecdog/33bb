@@ -106,11 +106,11 @@
                 rtetN: 2,
                 rtetA: 2.0,
                 rtetB: 4.0,
-                rtetN1: 1.3,
-                rtetN2: 1.2,
+                rtetN1: 2,
+                rtetN2: 2,
                 rtetC: 4.5,
                 rtetVortex: 0,
-                rtetNoEdge: true,
+                rtetNoEdge: false,
 
                 S0: 9.6,
                 BETTA: 900,
@@ -170,7 +170,7 @@
         }
 
         function initObjectShape(data){
-            var angleStep = 5;
+            var angleStep = 2;
             var angles = initAngles();
             //console.warn('angles', angles, data.TP);
 
