@@ -466,11 +466,75 @@ define(function (require, exports, module) {
 
                     console.log("COUNTPROC has end work", (new Date()) - countProcProfiler, "ms to complete COUNTPROC");
 
+                    calculateDeformations();
+
                     callback();
                 }
             );  // end of async.whilst
 
             ////}
+
+            function calculateDeformations(){
+                console.time("calculateDeformations");
+
+                var e11 = [], e22 = [], e12 = [];
+
+                var lenTime  = memout.length;
+                //var lenParam = memout[0].length;
+                var lenCoord = memout[0][0].length;
+                var lenAngle = memout[0][0][0].length;
+
+                for (var i = 0; i < lenTime; i++){
+                    var timexx = [];
+                    var timeyy = [];
+                    var timexy = [];
+
+                    for (var m = 0; m < lenCoord; m++){
+                        var coordxx = [];
+                        var coordyy = [];
+                        var coordxy = [];
+
+                        var coord = m * data.STEPX;
+                        var layer = getLayerNumberByCoordinate(coord);
+
+                        var nu = data.layers[layer].NU;
+                        var E = data.layers[layer].E;
+                        var c1 = (1 + nu) / E;
+
+                        for (var n = 0; n < lenAngle; n++){
+                            var Xx = memout[i][2][m][n];
+                            var Yy = memout[i][3][m][n];
+                            var Xy = memout[i][4][m][n];
+
+                            // exx = (1 + nu) / E * ( (1-nu)*Xx - nu*Yy )
+                            // eyy = (1 + nu) / E * ( (1-nu)*Yy - nu*Xx )
+                            // exy = 2 * (1 + nu) / E * Xy
+
+                            var exx = c1 * ( (1-nu)*Xx - nu*Yy );
+                            var eyy = c1 * ( (1-nu)*Yy - nu*Xx );
+                            var exy = 2 * c1 * Xy;
+
+                            coordxx.push(exx);
+                            coordyy.push(eyy);
+                            coordxy.push(exy);
+                        }
+
+                        timexx.push(coordxx);
+                        timeyy.push(coordyy);
+                        timexy.push(coordxy);
+                    }
+
+                    e11.push(timexx);
+                    e22.push(timeyy);
+                    e12.push(timexy);
+
+                    memout[i][5] = timexx;
+                    memout[i][6] = timeyy;
+                    memout[i][7] = timexy;
+                }
+
+                console.timeEnd("calculateDeformations");
+            }
 
             function getLayerNumberByCoordinate(X){
                 var L, ans;   // integer

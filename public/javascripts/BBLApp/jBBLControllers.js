@@ -10,7 +10,7 @@
 
     var jBBLControllers = angular.module('jBBLControllers', []);
 
-    window.dataNames = ["V_1", "V_2", "S11", "S22", "S12"];
+    window.dataNames = ["V_1", "V_2", "S11", "S22", "S12", "e11", "e22", "e12"];
     function mobileAndTabletcheck() {
         // http://stackoverflow.com/a/11381730
         var check = false;
