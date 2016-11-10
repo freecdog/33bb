@@ -35,19 +35,17 @@
 
     jBBLClientCalcControllers.controller('jClientInputCalcController', ['$scope', '$window', function($scope, $window) {
         var self = this;
-        init();
 
         var BBL, data, RTET, inputObject, userData;
         var objectShapeDomObject, objectShapeChartData, objectShapeChartOptions, objectShapeChartObject;
         var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
 
+        init();
+
         function init(){
             console.log("jClientInputCalcController init");
 
             userData = {};
-
-            initBBL();
-            initCharts(BBL, data);
 
             // TODO commented because it used to infinite recalculation loop initCharts -> changed data -> initCharts -> ...
             //angular.extend(userData, {
@@ -124,6 +122,9 @@
                 userInput: true,
                 userData: userData
             };
+
+            initBBL();
+            initCharts(BBL, data);
 
             self.inputParams = userData;
             self.visibility = true;

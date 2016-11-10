@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         var data = new Datatone();
 
         // This method is for creation object form
-        function RTET(TT) {
+        function RTET_old(TT) {
             var RTET;
             // REAL,INTENT(IN) :: TT
 
@@ -44,6 +44,74 @@ define(function (require, exports, module) {
                 C = data.rtetC,
                 VORTEX = data.rtetVortex,
                 NOEDGE = data.rtetNoEdge;
+
+            var PI2 = 2 / Math.PI, EPS = B / A;
+            var T0, T, FI, M, EPS1; // float
+
+            T0 = Math.PI * VORTEX / 180;    // solvedTODO it is zero always, isn't it???
+            // SOLVED, VORTEX can be changed MANUALLY
+            // SOLVED if VORTEX can be changed manually, it should be moved to configuration or elsewhere
+            EPS1 = B * Math.cos(T0) / C;
+            // SOLVED, если окружность, то return, иначе комментируем эту строчку
+            // SOLVED if we are using simple circle, we should change radius in configuration file
+
+            // SOLVED comment next line ( RTET = A; return RTET; )
+            //RTET = A; return RTET;
+
+            function repeatedFunction(angle, power, epsilon){
+                var ans;
+                var poweredSin = Math.pow(Math.abs(Math.sin(angle)), power);
+                var poweredCos = Math.pow(epsilon * Math.abs(Math.cos(angle)), power);
+                var poweredSum = Math.pow( poweredSin + poweredCos , (-1.0/power));
+                ans = B * poweredSum;
+                return ans;
+            }
+
+            if (NOEDGE){
+                // RTET=B*(ABS(SIN(TT))**N+(EPS*ABS(COS(TT)))**N)**(-1.0/N)
+                RTET = repeatedFunction(TT, N, EPS);
+                return RTET;
+            } else {
+                T = TT;
+                if (T > 2 * Math.PI) T = T - 2 * Math.PI;
+
+                if ((T > Math.PI / 2) && (T < 3 * Math.PI / 2)) {
+                    RTET = repeatedFunction(T, N, EPS);
+                } else {
+                    if (T >= 3 * Math.PI / 2) T = T - 2 * Math.PI;
+                    if (T < T0) {
+                        FI = (T - T0) / (1 + PI2 * T0);
+                        M = N2;
+                    } else {
+                        FI = (T - T0) / (1 - PI2 * T0);
+                        M = N1;
+                    }
+                    RTET = repeatedFunction(FI, M, EPS1);
+                }
+                return RTET;
+            }
+        }
+
+        function RTET(TT) {
+            var RTET;
+            // REAL,INTENT(IN) :: TT
+
+            //var N = 2, N1 = 1.3, N2 = 1.2, A = 2.05, B = 4.05, C = 4.5, VORTEX = 0;
+            //var NOEDGE = true;
+
+            var N = data.rtetN,
+                N1 = data.rtetN1,
+                N2 = data.rtetN2,
+                A = data.rtetA,
+                B = data.rtetB,
+                C = data.rtetC,
+                D = 1,
+                VORTEX = data.rtetVortex,
+                NOEDGE = data.rtetNoEdge;
+
+            //    A
+            // D     B
+            //    C
 
             var PI2 = 2 / Math.PI, EPS = B / A;
             var T0, T, FI, M, EPS1; // float
