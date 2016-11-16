@@ -301,7 +301,8 @@
             for (var i = 0; i < data.memout[0].length; i++) {
                 var timeValue = i * data.STEP;
 
-                if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || i+1 == data.memout[0].length) {
+                //if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || i+1 == data.memout[0].length) {
+                if (timeValue % 5 == 0 || i+1 == data.memout[0].length) {
                     self.timeIndicies.push(i);
                     self.timeValues.push(timeValue);
                 }

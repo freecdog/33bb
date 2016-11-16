@@ -169,19 +169,48 @@ function readFolderRecursive(item, level, exclusions, cb) {
     });
 }
 
+//function isValidFile(filename){
+//    var isValid = false;
+//    var filenameNorm = filename.toLowerCase();
+//    var filenameNormLen = filenameNorm.length;
+//    var matches = ['json'];
+//
+//    var filenameEnding, mLength;
+//    for (var i = 0, len = matches.length; i < len; i++){
+//        mLength = matches[i].length;
+//        filenameEnding = filenameNorm.substr(filenameNormLen - mLength, mLength);
+//        if (filenameEnding == matches[i]){
+//            isValid = true;
+//            break;
+//        }
+//    }
+//
+//    return isValid;
+//}
+
 function isValidFile(filename){
     var isValid = false;
     var filenameNorm = filename.toLowerCase();
     var filenameNormLen = filenameNorm.length;
-    var matches = ['json'];
+    var matchesEnd = ['json'];
+    var nameContains = ['def01'];
 
-    var filenameEnding, mLength;
-    for (var i = 0, len = matches.length; i < len; i++){
-        mLength = matches[i].length;
-        filenameEnding = filenameNorm.substr(filenameNormLen - mLength, mLength);
-        if (filenameEnding == matches[i]){
-            isValid = true;
-            break;
+    var filenameEnding, meLength;
+    for (var i = 0, len = matchesEnd.length; i < len; i++){
+        meLength = matchesEnd[i].length;
+        filenameEnding = filenameNorm.substr(filenameNormLen - meLength, meLength);
+        if (filenameEnding == matchesEnd[i]){
+
+            var isContainsAll = true;
+            for (var k = 0, klen = nameContains.length; k < klen; k++){
+                if (filenameNorm.indexOf(nameContains[k]) == -1){
+                    isContainsAll = false;
+                    break;
+                }
+            }
+
+            isValid = isContainsAll;
+            if (isValid) break;
         }
     }
 
