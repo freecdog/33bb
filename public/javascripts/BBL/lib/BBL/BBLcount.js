@@ -475,6 +475,7 @@ define(function (require, exports, module) {
             ////}
 
             function calculateDeformations(){
+                // From book Filonenko-Borodich M.M. Teoriya uprugosti (str. 138)
                 console.time("calculateDeformations");
 
                 var e11 = [], e22 = [], e12 = [];
