@@ -145,6 +145,10 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
     var domCurrentTime = document.getElementById("currentTime");
     domCurrentTime.innerHTML = "current time";
 
+    var domCurrentS0 = document.getElementById("currentS0");
+    var domCurrentGeomprocS = document.getElementById("currentGeomprocS");
+    var domCurrentGeomprocR = document.getElementById("currentGeomprocR");
+
     var doCheckTime = true;
     var checkInterval = 1000;
     var lastDiff = 0;
@@ -186,6 +190,10 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         }
         if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min left";
         domCurrentTime.innerHTML = str;
+
+        domCurrentS0.innerHTML = domCurrentS0.innerHTML.substr(0, 4) + " " + data.S0;
+        domCurrentGeomprocS.innerHTML = domCurrentGeomprocS.innerHTML.substr(0, 3) + " " + data.geomprocS;
+        domCurrentGeomprocR.innerHTML = domCurrentGeomprocR.innerHTML.substr(0, 3) + " " + data.geomprocR;
 
         if (data.currentT > 0 && Math.abs(parseInt(data.currentT) - data.currentT ) < 1e-6) {
             var url = window.location.href;

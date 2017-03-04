@@ -285,26 +285,19 @@ html
         div(ng-controller="jClientCalcController as CalcCtrl")
             div(class="container" ng-show="true")
 
-                div(class="row")
-                    div(id="fontSetter" style="float: right;")
-                        h5(ng-click="CalcCtrl.changeBodyFontSize(12)") Aa
-                        h4(ng-click="CalcCtrl.changeBodyFontSize(14)") Aa
-                        h3(ng-click="CalcCtrl.changeBodyFontSize(16)") Aa
+                //-div(class="row")
+                    div(style="float: right;")
                         h5(ng-click="CalcCtrl.calcAllWatchers()") calc all watchers
 
                 div(class="row")
                     //-h3 S0 = {{CalcCtrl.data.inputData.needRealValues ? CalcCtrl.data.S0 *CalcCtrl.data.C2*CalcCtrl.data.RC2*1E-06 : CalcCtrl.data.S0}}
-                    h3 S0 = {{CalcCtrl.data.inputData.needRealValues ? CalcCtrl.data.S0 : CalcCtrl.data.S0}}
+                    h3(id="currentS0") S0 = {{CalcCtrl.data.inputData.needRealValues ? CalcCtrl.data.S0 : CalcCtrl.data.S0}}
                 div(class="row")
-                    h3 S = {{CalcCtrl.data.geomprocS}}
+                    h3(id="currentGeomprocS") S = {{CalcCtrl.data.geomprocS}}
                 div(class="row")
-                    h3 L = {{CalcCtrl.data.geomprocR}}
+                    h3(id="currentGeomprocR") R = {{CalcCtrl.data.geomprocR}}
 
-                div(class="row")
-                    h3(class="text-warning") memOut isn't source of data for now
-                    h3(class="text-warning") Uncomment what you need otherwise loading takes about minute and a half (with $scope.$digest() twice faster)
-
-                div(class="row")
+                //-div(class="row")
                     a(class="btn btn-primary" ng-click="this.showCavform = !this.showCavform") BBLdat/_Cavform.dat (expand/collapse)
                     table(ng-show="this.showCavform" class="table table-striped table-hover")
                         tbody

@@ -102,6 +102,7 @@
         var data;
         var scrollDiv = document.getElementById("timeScroll");
         var mainCanvasCoverDiv = document.getElementById("mainCanvasHolderCover");
+        var scrollInner = document.getElementById("timeInner");
 
         init();
 
@@ -111,6 +112,8 @@
             self.visible = false;
             self.scrollPos = 0;
 
+            window.addEventListener("resize", changeScrollInnerWidth);
+
             scrollDiv.addEventListener("scroll", scrollAction);
             scrollDiv.addEventListener("wheel", wheelAction);
             scrollDiv.style.left = "0px";
@@ -119,6 +122,10 @@
             scrollDiv.style.height = "100%";
 
             mainCanvasCoverDiv.addEventListener("wheel", wheelAction);
+        }
+
+        function changeScrollInnerWidth(){
+            scrollInner.style.width = Math.round(window.innerWidth + 120*data.TM/data.STEP).toString() + "px";
         }
 
         function getScrollData(){
@@ -160,6 +167,8 @@
 
         //$rootScope.$broadcast('dataHaveBeenLoaded');
         $rootScope.$on('dataHaveBeenLoaded', function(event){
+            changeScrollInnerWidth();
+
             self.visible = true;
         });
 
@@ -746,7 +755,7 @@
 
             initThree();
             //stats = initStats();
-            initDat();
+            //initDat();
             scene = initScene();
             camera = initCamera();
             canvasHolderCover = document.getElementById("mainCanvasHolderCover");
@@ -1620,6 +1629,8 @@
                     }
                 }
             }
+            data.cmin = cmin;
+            data.cmax = cmax;
             console.log("cmin:", cmin, "; cmax:", cmax);
 
             if (settings.filter.enabled) {

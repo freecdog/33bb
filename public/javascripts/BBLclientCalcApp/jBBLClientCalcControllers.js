@@ -20,12 +20,6 @@
         calcCtrl.drawMe(param);
     };
 
-    window.changeBodyFontSize = function(fontSize){
-        var bodyDOM = document.body;
-        var style = bodyDOM.style;
-        console.log(fontSize, style);
-    };
-
     function mobileAndTabletcheck() {
         // http://stackoverflow.com/a/11381730
         var check = false;
@@ -392,19 +386,6 @@
             console.log("Time to update $scope:", (Date.now() - curTime), "msec");
         }
         this.drawMe = drawMe;
-
-        function changeBodyFontSize(fontSize){
-            if (!isNumber(fontSize)) {
-                console.error("wrong fontSize", fontSize);
-                return null;
-            }
-
-            var bodyDOM = document.body;
-            var style = bodyDOM.style;
-            console.log(fontSize, style);
-            style.fontSize = fontSize.toString() + "px";
-        }
-        this.changeBodyFontSize = changeBodyFontSize;
 
         function calcAllWatchers() {
             // http://stackoverflow.com/a/18526757

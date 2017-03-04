@@ -68,6 +68,27 @@ html
                                 br
 
                                 div(class="row")
+                                    span(class="col-xs-4") Легенда
+
+                                    div(class="col-xs-8" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 2")
+                                        div(class="btn-group btn-group-sm btn-group-justified" )
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") min
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;")
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") max
+
+                                    div(class="col-xs-8" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 3")
+                                        div(class="btn-group btn-group-sm btn-group-justified" )
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c2c; border-color: #c2c;") < 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") < 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2cc; border-color: #2cc;") < 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #cc2; border-color: #cc2;") > 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c82; border-color: #c82;") > 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") > 0
+
+                                br
+
+                                div(class="row")
                                     div(class="panel panel-default")
                                         div(class="panel-body")
                                             button(class="btn btn-sm" ng-class="{'btn-success': canvasCTRL.data.settings.filter.enabled, 'btn-default': !canvasCTRL.data.settings.filter.enabled}" ng-click="canvasCTRL.toggleFilterState()") Toggle filter
