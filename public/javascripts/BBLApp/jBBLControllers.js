@@ -311,7 +311,7 @@
                 var timeValue = i * data.STEP;
 
                 //if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || i+1 == data.memout[0].length) {
-                if (timeValue % 5 == 0 || i+1 == data.memout[0].length) {
+                if ((timeValue * 10) % 10 == 0 || i+1 == data.memout[0].length) {
                     self.timeIndicies.push(i);
                     self.timeValues.push(timeValue);
                 }
@@ -367,7 +367,8 @@
             ans=0;
             for (L = data.NL-1; L > 0; L--){
                 // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
-                if (X < data.HI[L]*data.DX + 1e-6){
+                // only here "*data.geomprocR" to show correctly layer number
+                if (X < data.HI[L]*data.DX*data.geomprocR + 1e-6){
                     ans = L;
                     return ans;
                 }
@@ -1686,7 +1687,7 @@
             } else {
                 if (settings.visualisationSchemeIndex == 0) return getRainbowColor(value);
 
-                else if (settings.visualisationSchemeIndex == 3) return getRainbowColorZeroInGreen(value);
+                else if (settings.visualisationSchemeIndex == 3) return getRainbowColorZeroInWhite(value);
 
                 else if (settings.visualisationSchemeIndex == 4) return getGrayColor(value);
                 else if (settings.visualisationSchemeIndex == 5) return getGreenBlackColor(value);
@@ -1895,6 +1896,61 @@
                 SRC_g = 0.5;
                 SRC_b = 0;
                 SRC_g = 0.5 - bright * (value - borO) / piece;
+            }
+
+            return [SRC_r, SRC_g, SRC_b];
+        }
+
+        function getRainbowColorZeroInWhite(value){
+
+            var piece = 0.16666666666666666666666666666667;
+            var borF = 0 * piece;  		// Fiolet
+            var borS = 1 * piece;    	// Sinij
+            var borG = 2 * piece;   	// Goluboj
+            var borB = 3 * piece;		// Belyj
+            var borZ = 4 * piece;		// Zelenyj
+            var borZh = 5 * piece;		// Zheltyj
+            var borK = 6 * piece;		// Krasnyj
+
+            var SRC_r, SRC_g, SRC_b;
+            var bright;
+
+            bright = 1;
+
+            //value = (value + 1) / 2;
+            value = ctd(value, -1, 1, 0, 1, false);
+
+            //  F - S - G - B - Z - Zh - K
+            // -1...........0............1
+            if ((value >= borF) && (value < borS)) {
+                SRC_r = 1 - bright * (value - borF) / piece;
+                SRC_g = 0;
+                SRC_b = 1;
+            }
+            if ((value >= borS) && (value < borG)) {
+                SRC_r = 0;
+                SRC_g = bright * (value - borS) / piece;
+                SRC_b = 1;
+            }
+            if ((value >= borG) && (value < borB)) {
+                SRC_r = bright * (value - borG) / piece;
+                SRC_g = 1;
+                SRC_b = 1;
+            }
+            if ((value >= borB) && (value < borZ)) {
+                SRC_r = 1 - bright * (value - borB) / piece;
+                SRC_g = 1;
+                SRC_b = 1 - bright * (value - borB) / piece;
+            }
+            if ((value >= borZ) && (value < borZh)) {
+                SRC_r = bright * (value - borZ) / piece;
+                SRC_g = 1;
+                SRC_b = 0;
+            }
+            if ((value >= borZh) && (value <= borK)) {
+                SRC_r = 1;
+                SRC_g = 1 - bright * (value - borZh) / piece;
+                SRC_b = 0;
             }
 
             return [SRC_r, SRC_g, SRC_b];
