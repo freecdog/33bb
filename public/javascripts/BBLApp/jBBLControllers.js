@@ -263,21 +263,31 @@
 
         function init(){
             self.visible = false;
-            self.showData = false;
+        }
+
+        function lateInit(){
+            data = new BBL.Datatone();
+            self.data = data;
+
+            self.showData = data.settings.showMemoutTable;
 
             self.currentTabIndex = 2;
 
-            //self.dataNames = window.dataNames;
-            self.dataNames = [];
-
-            data = new BBL.Datatone();
-            self.data = data;
+            self.dataNames = window.dataNames;
 
             $scope.settings = data.settings;
         }
 
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            lateInit();
+
+            formLimitedData();
+            formDescartData();
+
+            self.visible = true;
+        });
+
         function toggleDataTable(){
-            if (self.dataNames.length == 0) angular.extend(self.dataNames, window.dataNames);
             self.showData = !self.showData;
         }
         this.toggleDataTable = toggleDataTable;
@@ -292,13 +302,6 @@
         }
         this.setTab = setTab;
 
-        $rootScope.$on('dataHaveBeenLoaded', function(event){
-            formLimitedData();
-            formDescartData();
-
-            self.visible = true;
-        });
-
         function formLimitedData(){
             var limitedData = [];
             data.limitedData = limitedData;
@@ -311,7 +314,8 @@
                 var timeValue = i * data.STEP;
 
                 //if (isNumberDecimalEqualTo(timeValue, 0) || isNumberDecimalEqualTo(timeValue, 0.5) || i+1 == data.memout[0].length) {
-                if ((timeValue * 10) % 10 == 0 || i+1 == data.memout[0].length) {
+                //if ((timeValue * 10) % 10 == 0 || i+1 == data.memout[0].length) {
+                if ((timeValue * 10) % data.settings.memoutStep == 0 || i+1 == data.memout[0].length) {
                     self.timeIndicies.push(i);
                     self.timeValues.push(timeValue);
                 }
@@ -378,7 +382,9 @@
         this.getLayerNumberByCoordinate = getLayerNumberByCoordinate;
 
         $scope.$watch('settings.showMemoutTable', function(newValue, oldValue) {
-            if (data.memout === undefined) return;
+            if (data === undefined || data.memout === undefined || oldValue === undefined) return;
+
+            if (newValue == true) formLimitedData();
 
             console.log("settings.showMemoutTable changed to", newValue, "; from", oldValue);
             toggleDataTable();
@@ -394,15 +400,23 @@
 
         function init(){
             self.visible = false;
+        }
 
+        function lateInit(){
             data = new BBL.Datatone();
             self.data = data;
+
+            self.showEpure = data.settings.showEpure;
 
             $scope.settings = data.settings;
         }
 
         $rootScope.$on('dataHaveBeenLoaded', function(event){
+            lateInit();
+
             initWaveShape(data);
+
+            self.visible = true;
         });
 
         function initWaveShape(data){
@@ -480,11 +494,11 @@
         }
 
         function toggleEpure(){
-            self.visible = !self.visible;
+            self.showEpure = !self.showEpure;
         }
 
         $scope.$watch('settings.showEpure', function(newValue, oldValue) {
-            if (data.memout === undefined) return;
+            if (data === undefined || data.memout === undefined || oldValue === undefined) return;
 
             console.log("settings.showEpure changed to", newValue, "; from", oldValue);
             toggleEpure();
@@ -501,20 +515,31 @@
         function init(){
             console.log("jBBLControlPointsController is here");
 
-            self.visible = false;
+            self.dataNames = window.dataNames;
+            //self.dataNames = [];
 
+            self.visible = false;
+        }
+
+        function lateInit(){
             data = new BBL.Datatone();
             self.data = data;
 
             self.currentTabIndex = 2;
 
-            self.dataNames = window.dataNames;
-            //self.dataNames = [];
-
             charts = [];
 
             $scope.settings = data.settings;
+
+            self.showCtrlPoints = data.settings.showControlPointsData;
+            self.visible = true;
         }
+
+        $rootScope.$on('dataHaveBeenLoaded', function(event){
+            lateInit();
+
+            setControlPointsData(false);
+        });
 
         function getTimeByTimeIndex(timeIndex){
             var realTime = timeIndex * data.STEP;
@@ -681,17 +706,13 @@
 
         }
 
-        $rootScope.$on('dataHaveBeenLoaded', function(event){
-            setControlPointsData(false);
-        });
-
         $rootScope.$on('updateControlPointsDiagram', function(event){
             setControlPointsData(false);
             $scope.$digest();
         });
 
         function toggleControlPointsData(){
-            self.visible = !self.visible;
+            self.showCtrlPoints = !self.showCtrlPoints;
         }
 
         function isSet(index){
@@ -705,7 +726,7 @@
         this.setTab = setTab;
 
         $scope.$watch('settings.showControlPointsData', function(newValue, oldValue) {
-            if (data.memout === undefined) return;
+            if (data === undefined || data.memout === undefined || oldValue === undefined) return;
 
             console.log("settings.showControlPointsData (diagrams and table) changed to", newValue, "; from", oldValue);
             toggleControlPointsData();
@@ -828,7 +849,7 @@
             // load from Datatone. Mem[time from 0 to 5 (data.TM), with 0.1 (data.DT) step][coord from 0 to 1 (data.XDESTR) with 0.1 (data.STEPX) step][angle from 0 to 90 (data.printPoints) with 15 step]
             settings.schemeIndex = 2;
 
-            settings.visualisationSchemeIndex = 3;   // 0 == rainbow, 1 == HSV, 2 == blue-white-red, 4 == rainbow with zero
+            settings.visualisationSchemeIndex = 3;   // 0 == rainbow, 1 == HSV, 2 == blue-white-red, 3 == rainbow with zero
 
             settings.amplifyColors = false;
             settings.amplifyCoef = 1.3;
@@ -836,13 +857,14 @@
             settings.showControlPoints = false;
 
             settings.filter = {
-                enabled: true,
+                enabled: false,
                 parts: 10,
-                leftBorder: 3,
+                leftBorder: 0,
                 rightBorder: 10
             };
 
             settings.showMemoutTable = false;
+            settings.memoutStep = 10;
 
             settings.showEpure = false;
 

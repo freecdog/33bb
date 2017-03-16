@@ -53,37 +53,37 @@ html
                                 //-div(class="container")
 
                                 div(class="row")
-                                    span(class="col-xs-4") Схема данных
-                                    div(class="col-xs-8")
+                                    span(class="col-xs-3") Scheme:
+                                    div(class="col-xs-9")
                                         div(class="btn-group btn-group-sm btn-group-justified")
-                                            a(ng-repeat="schemeIndex in canvasCTRL.dataNames" class="btn btn-primary btn-sm" ng-click="canvasCTRL.changeSchemeIndex($index)" ng-class="{'btn-success': $index==canvasCTRL.data.settings.schemeIndex}") {{schemeIndex}}
+                                            a(ng-repeat="schemeIndex in canvasCTRL.dataNames" class="btn btn-primary btn-sm" style="border-left-width: 0px;" ng-click="canvasCTRL.changeSchemeIndex($index)" ng-class="{'btn-success': $index==canvasCTRL.data.settings.schemeIndex}" ng-show="canvasCTRL.data.memout[$index]") {{schemeIndex}}
 
 
                                 div(class="row")
-                                    span(class="col-xs-4") Тип визуализации
-                                    div(class="col-xs-8")
+                                    span(class="col-xs-3") Visualization:
+                                    div(class="col-xs-9")
                                         div(class="btn-group btn-group-sm btn-group-justified")
                                             a(ng-repeat="visualisationSchemeIndex in ['Rnbw', 'HSV', 'RedWB', 'RZero']" class="btn btn-sm btn-primary" ng-click="canvasCTRL.changeVisualisationSchemeIndex($index)" ng-class="{'btn-success': $index==canvasCTRL.data.settings.visualisationSchemeIndex}") {{visualisationSchemeIndex}}
 
                                 br
 
                                 div(class="row")
-                                    span(class="col-xs-4") Легенда
+                                    span(class="col-xs-3") Legend:
 
-                                    div(class="col-xs-8" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 2")
+                                    div(class="col-xs-9" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 2")
                                         div(class="btn-group btn-group-sm btn-group-justified" )
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") min
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;")
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") max
+                                            div(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") min
+                                            div(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;")
+                                            div(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") max
 
-                                    div(class="col-xs-8" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 3")
+                                    div(class="col-xs-9" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 3")
                                         div(class="btn-group btn-group-sm btn-group-justified" )
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #c2c; border-color: #c2c;") < 0
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") < 0
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #2cc; border-color: #2cc;") < 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;") 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") > 0
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #cc2; border-color: #cc2;") > 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c82; border-color: #c82;") > 0
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") > 0
 
                                 br
@@ -92,12 +92,13 @@ html
                                     div(class="panel panel-default")
                                         div(class="panel-body")
                                             button(class="btn btn-sm" ng-class="{'btn-success': canvasCTRL.data.settings.filter.enabled, 'btn-default': !canvasCTRL.data.settings.filter.enabled}" ng-click="canvasCTRL.toggleFilterState()") Toggle filter
+                                            span(class="text-warning" ng-show="canvasCTRL.data.settings.filter.enabled")  Filter should be reworked due to min to zero and zero to max values
                                             br
-                                            div(class="row")
+                                            div(class="row" ng-show="canvasCTRL.data.settings.filter.enabled")
                                                 div(class="col-xs-12")
                                                     div(class="btn-group btn-group-sm btn-group-justified")
                                                         a(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index== canvasCTRL.data.settings.filter.leftBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index >= canvasCTRL.data.settings.filter.rightBorder}" ng-repeat=" leftBorder in canvasCTRL.filterPartsValues" ng-click=" canvasCTRL.changeFilterLeftBorder($index)") {{leftBorder}}
-                                            div(class="row")
+                                            div(class="row" ng-show="canvasCTRL.data.settings.filter.enabled")
                                                 div(class="col-xs-12")
                                                     div(class="btn-group btn-group-sm btn-group-justified")
                                                         a(class="btn btn-sm btn-primary" ng-class="{'btn-success':$index==canvasCTRL.data.settings.filter.rightBorder, 'disabled': !canvasCTRL.data.settings.filter.enabled || $index <= canvasCTRL.data.settings.filter.leftBorder}" ng-repeat="rightBorder in canvasCTRL.filterPartsValues" ng-click="canvasCTRL.changeFilterRightBorder($index)") {{rightBorder}}
@@ -107,7 +108,7 @@ html
                                         div(class="panel-body")
                                             button(class="btn btn-sm" ng-class="{'btn-success': canvasCTRL.data.settings.amplifyColors, 'btn-default': !canvasCTRL.data.settings.amplifyColors}" ng-click="canvasCTRL.toggleAmplifyState()") Toggle amplify
                                             br
-                                            div(class="row")
+                                            div(class="row" ng-show="canvasCTRL.data.settings.amplifyColors")
                                                 div(class="col-xs-12")
                                                     div(class="btn-group btn-group-sm btn-group-justified")
                                                         a(class="btn btn-sm btn-primary" ng-class="{'btn-success':canvasCTRL.amplifyValues[$index] == canvasCTRL.data.settings.amplifyCoef, 'disabled': !canvasCTRL.data.settings.amplifyColors}" ng-repeat="amplifyValue in canvasCTRL.amplifyValues" ng-click=" canvasCTRL.changeAmplifyValue($index)") {{amplifyValue}}
@@ -136,10 +137,14 @@ html
                                                     div(class="form-group")
                                                         div(class="col-xs-2")
                                                             input(ng-model="canvasCTRL.data.settings.showMemoutTable" type="checkbox" class="form-control input-md")
-                                                        div(class="col-xs-10" ng-click="canvasCTRL.data.settings.showMemoutTable = !canvasCTRL.data.settings.showMemoutTable")
-                                                            h4
-                                                                span show data table&nbsp;
-                                                                span(class="text-warning") (Mises, need cfg)
+                                                        div(class="col-xs-10")
+                                                            div(class="row")
+                                                                div(class="col-xs-6" ng-click="canvasCTRL.data.settings.showMemoutTable = !canvasCTRL.data.settings.showMemoutTable")
+                                                                    h4
+                                                                        span show data table&nbsp;
+                                                                        span(class="text-warning") (Mises)
+                                                                div(class="col-xs-6")
+                                                                    input(ng-model="canvasCTRL.data.settings.memoutStep" type="number" class="form-control input-md")
                                                 div(class="row")
                                                     div(class="form-group")
                                                         div(class="col-xs-2")
@@ -192,7 +197,7 @@ html
 
         //- TODO nbsp is not a solution of HTML layout
         div(ng-controller="jBBLepureController as epureView" ng-show="epureView.visible")
-            div(class="container")
+            div(class="container" ng-show="epureView.showEpure")
                 div(class="row")
                     p &nbsp;
                     p &nbsp;
@@ -213,7 +218,7 @@ html
                             canvas(id="waveShape" width="800" height="800")
 
         div(ng-controller="jBBLControlPointsController as controlPointsCtrl" ng-show="controlPointsCtrl.visible")
-            div(class="container")
+            div(class="container" ng-show="controlPointsCtrl.showCtrlPoints")
                 div(class="row")
                     p &nbsp;
                     p &nbsp;

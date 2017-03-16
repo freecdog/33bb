@@ -376,17 +376,6 @@
 
     }]);
 
-    jClientCalcControllers.controller('TabController', function(){
-        this.curTab = 2;
-
-        this.setTab = function(tabIndex){
-            this.curTab = tabIndex;
-        };
-        this.isSet = function(tabIndex){
-            return this.curTab === tabIndex;
-        };
-    });
-
     jClientCalcControllers.filter('numberFilter', ['$filter', function ($filter) {
         return function (input) {
             var inputStr = input.toExponential(); //.toString(); // no need, as mozilla docs say toExponential returns string

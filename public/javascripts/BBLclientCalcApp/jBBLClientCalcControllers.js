@@ -33,6 +33,7 @@
         var BBL, data, RTET, inputObject, userData;
         var objectShapeDomObject, objectShapeChartData, objectShapeChartOptions, objectShapeChartObject;
         var waveShapeDomObject, waveShapeChartData, waveShapeChartOptions, waveShapeChartObject;
+        var previousInput = {};
 
         init();
 
@@ -150,18 +151,24 @@
                 }
             } else {
                 console.warn("inputForm is not valid");
-                $scope.InputCalcCtrl.inputParams = oldValue;
+                //$scope.InputCalcCtrl.inputParams = oldValue;
+                angular.extend($scope.InputCalcCtrl.inputParams, oldValue);
             }
         }, true);
 
         function initCharts(BBL, data){
-            BBL.BBLstart.STARTPROC(inputObject, function(){
-                console.log('data', data);
+            if (angular.equals(previousInput, inputObject)){
+                console.warn("previousInput equals to inputObject", inputObject);
+            } else {
+                previousInput = angular.copy(inputObject);
+                BBL.BBLstart.STARTPROC(inputObject, function(){
+                    console.log('data', data);
 
-                Chart.defaults.global.defaultFontColor = '#aaaaaa';
-                initObjectShape(data);
-                initWaveShape(data);
-            });
+                    Chart.defaults.global.defaultFontColor = '#aaaaaa';
+                    initObjectShape(data);
+                    initWaveShape(data);
+                });
+            }
         }
 
         function initObjectShape(data){
