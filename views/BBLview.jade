@@ -77,14 +77,22 @@ html
                                             div(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") max
 
                                     div(class="col-xs-9" ng-show="canvasCTRL.data.settings.visualisationSchemeIndex == 3")
-                                        div(class="btn-group btn-group-sm btn-group-justified" )
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c2c; border-color: #c2c;") < 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") < 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2cc; border-color: #2cc;") < 0
+                                        div(class="btn-group btn-group-sm btn-group-vertical"   ng-show="canvasCTRL.data.settings.legendVertical" ng-click="canvasCTRL.data.settings.legendVertical=!canvasCTRL.data.settings.legendVertical")
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c2c; border-color: #c2c;") {{(canvasCTRL.data.cmin).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") {{(0.667*canvasCTRL.data.cmin).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2cc; border-color: #2cc;") {{(0.333*canvasCTRL.data.cmin).toExponential(2)}}
                                             a(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;") 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") > 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #cc2; border-color: #cc2;") > 0
-                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") > 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") {{(0.333*canvasCTRL.data.cmax).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #cc2; border-color: #cc2;") {{(0.667*canvasCTRL.data.cmax).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") {{(canvasCTRL.data.cmax).toExponential(2)}}
+                                        div(class="btn-group btn-group-sm btn-group-justified"  ng-show="!canvasCTRL.data.settings.legendVertical" ng-click="canvasCTRL.data.settings.legendVertical=!canvasCTRL.data.settings.legendVertical")
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c2c; border-color: #c2c;") {{(canvasCTRL.data.cmin).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #22c; border-color: #22c;") {{(0.667*canvasCTRL.data.cmin).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2cc; border-color: #2cc;") {{(0.333*canvasCTRL.data.cmin).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #ccc; border-color: #ccc;") 0
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #2c2; border-color: #2c2;") {{(0.333*canvasCTRL.data.cmax).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #cc2; border-color: #cc2;") {{(0.667*canvasCTRL.data.cmax).toExponential(2)}}
+                                            a(class="btn btn-sm btn-primary btn-success" style="background-color: #c22; border-color: #c22;") {{(canvasCTRL.data.cmax).toExponential(2)}}
 
                                 br
 
