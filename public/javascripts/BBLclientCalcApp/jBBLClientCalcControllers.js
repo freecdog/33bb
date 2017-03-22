@@ -180,7 +180,7 @@
             var verticesFields = [];
             var verticesFieldsWidth = 0;
             for (var vfi = 0; vfi < data.NL; vfi++) {
-                verticesFieldsWidth += data.layers[vfi].H;
+                verticesFieldsWidth += data.layers[data.NL - vfi -1].H;
                 verticesFields[vfi] = [];
                 for (var vfj = 0; vfj < vertices.length; vfj++) {
                     verticesFields[vfi].push(vertices[vfj] + verticesFieldsWidth);
