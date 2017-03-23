@@ -331,7 +331,7 @@ define(function (require, exports, module) {
             if (needRealValues){
                 // TODO Shouldn't we use (1e-05/0.981 or 9.869*1e-06 [1/101325 google] )
                 // for calculation SHOULD be in MPa
-                console.log('S0 =', S0 *C0*RC0*1E-05/0.981);
+                console.log('S0 =', S0 *C0*RC0); // atm *1E-05/0.981);
             } else {
                 console.log('S0 =', S0);
             }
@@ -833,6 +833,60 @@ define(function (require, exports, module) {
             }
         }
 
+//        function BOUNDARYCONDITIONS(){
+//            var MatMult = BBL.MatMult;
+//
+//            var L;
+//            var LBD;    // of real[10,10]
+//            var SS;     // of real[4,10]
+//
+//            var A,B;    // float
+//
+//            LBD = MatMult.createArray(10, 10);
+//            SS = MatMult.createArray(5, 10);
+//
+//            BOUNDARYS = MatMult.createArray(NL, 10, 10);
+//            MatMult.fillArray(BOUNDARYS, 0);
+//
+//            for (L = NL-2; L >= 0; L--){
+//                A = C[L] / C[L+1];
+//                B = LRC[L] / LRC[L+1];
+//
+//                MatMult.fillArray(SS, 0);
+//
+//                SS[0][0]=1;	SS[0][5]=-A;
+//                SS[1][1]=1;	SS[1][6]=-A;
+//                SS[2][2]=1;	SS[2][7]=-B;
+//
+//                SS[4][4]=1;	SS[4][9]=-B;
+//                SS[3][3]=1;	SS[3][8]=-B;
+//
+//                MatMult.fillArray(LBD, 0);
+//
+//                //LBD(1:2,1:5)=LAUX(L+1,1:2,1:5);
+//                for (var c4 = 0; c4 < 2; c4++)
+//                    for (var c5 = 0; c5 < 5; c5++) LBD[c4][c5] = LAUX[L+1][c4][c5];
+//
+//                //LBD(3:5,6:10)=LAUX(L,3:5,1:5);
+//                for (var c6 = 2; c6 < 5; c6++)
+//                    for (var c7 = 5; c7 < 10; c7++) LBD[c6][c7] = LAUX[L][c6][c7-5];
+//
+//                //BOUNDARYS(L,1:5,:)=LBD(1:5,:);
+//                for (var c8 = 0; c8 < 5; c8++)
+//                    for (var c9 = 0; c9 < 10; c9++) BOUNDARYS[L][c8][c9] = LBD[c8][c9];
+//
+//                //BOUNDARYS(L,6:10,:)=SS;
+//                for (var c10 = 5; c10 < 10; c10++)
+//                    for (var c11 = 0; c11 < 10; c11++) BOUNDARYS[L][c10][c11] = SS[c10-5][c11];
+//
+//                //BOUNDARYS(L,:,:)=(.inv.BOUNDARYS(L,:,:)).x.LBD;
+//                var invBOUNDARYS = matrix.inverseCopy( BOUNDARYS[L] );
+//                BOUNDARYS[L] = matrix.multiply(invBOUNDARYS, LBD);
+//                //for (var c12 = 0; c12 < 10; c12++)
+//                //    for (var c13 = 0; c13 < 10; c13++) BOUNDARYS[L][c12][c13] = matrix.multiply(invBOUNDARYS, LBD);
+//            }
+//        }
+
         function MTRXPROC(){
             //var BBL = require('../BBL');
             var MatMult = BBL.MatMult;
@@ -928,6 +982,8 @@ define(function (require, exports, module) {
                 FIX[L] = matrix.addition(FIXP[L], FIXM[L]);
                 FIY[L] = matrix.addition(FIYP[L], FIYM[L]);
 
+                LAUX[L] = matrix.deepCopy(LAX);
+
                 MatMult.fillArray(LBD, 0);
                 MatMult.fillArray(M, 0);
                 MatMult.fillArray(E, 0);
@@ -975,7 +1031,7 @@ define(function (require, exports, module) {
 
                 FG[L] = matrix.multiply(F, M);
 
-                LAUX[L] = matrix.deepCopy(LAX);
+                //LAUX[L] = matrix.deepCopy(LAX);
             }   // for L
         }
 
@@ -1049,7 +1105,7 @@ define(function (require, exports, module) {
                 while (true){
                     if (T > TPLUS) break;
                     if (needRealValues){
-                        value = -C0 * C0 * LRO[0] * FF(T) * 1E-05 / 0.981;
+                        value = -C0 * C0 * LRO[0] * FF(T); // atm * 1E-05 / 0.981;
                     } else {
                         value = FF(T);
                     }
@@ -1069,7 +1125,7 @@ define(function (require, exports, module) {
                     if (T > TMAX) break;
                     // WRITE(50,'(5X,E10.4,3X,E11.4)') T,TENS(LC*T)    !C2*C2*RO2*TENS(LC*T)*1E-06
                     if (needRealValues){
-                        value = C0*C0*LRO[0]*FF(LC*T)*1E-05/0.981;
+                        value = C0*C0*LRO[0]*FF(LC*T); // atm *1E-05/0.981;
                     } else {
                         value = FF(LC*T);
                     }
