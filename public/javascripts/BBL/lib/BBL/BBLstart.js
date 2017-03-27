@@ -982,8 +982,6 @@ define(function (require, exports, module) {
                 FIX[L] = matrix.addition(FIXP[L], FIXM[L]);
                 FIY[L] = matrix.addition(FIYP[L], FIYM[L]);
 
-                LAUX[L] = matrix.deepCopy(LAX);
-
                 MatMult.fillArray(LBD, 0);
                 MatMult.fillArray(M, 0);
                 MatMult.fillArray(E, 0);
@@ -1031,7 +1029,7 @@ define(function (require, exports, module) {
 
                 FG[L] = matrix.multiply(F, M);
 
-                //LAUX[L] = matrix.deepCopy(LAX);
+                LAUX[L] = matrix.deepCopy(LAX);
             }   // for L
         }
 
