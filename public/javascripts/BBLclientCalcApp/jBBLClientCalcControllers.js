@@ -61,6 +61,7 @@
             //
             //    needRealValues: data.needRealValues
             //});
+
             userData = {
                 TM: 1,
                 ALFA: 0,
@@ -112,6 +113,58 @@
 
                 needRealValues: true
             };
+
+            //userData = {
+            //    TM: 1,
+            //    ALFA: 0,
+            //
+            //    //INDEX: 0,
+            //    //XDESTR: 4,
+            //    NL: 4,
+            //    layers: [
+            //        {
+            //            E: 5.79e10,
+            //            RO: 2.7e3,
+            //            NU: 0.35,
+            //            H: 1.0
+            //        },
+            //        {
+            //            E: 5.79e10,
+            //            RO: 2.7e3,
+            //            NU: 0.35,
+            //            H: 1.0
+            //        },
+            //        {
+            //            E: 5.79e10,
+            //            RO: 2.7e3,
+            //            NU: 0.35,
+            //            H: 1.0
+            //        },
+            //        {
+            //            E: 5.79e10,
+            //            RO: 2.7e3,
+            //            NU: 0.35,
+            //            H: 1
+            //        }
+            //    ],
+            //
+            //    EPUR: 0,
+            //    rtetN: 2,
+            //    rtetA: 2.0,
+            //    rtetB: 2.0,
+            //    rtetN1: 2,
+            //    rtetN2: 2,
+            //    rtetC: 2.0,
+            //    rtetVortex: 0,
+            //    rtetNoEdge: false,
+            //
+            //    S0: 9.6,
+            //    BETTA: 900,
+            //    A1: 7.917,
+            //    A2: 48.611,
+            //
+            //    needRealValues: true
+            //};
 
             inputObject = {
                 userInput: true,

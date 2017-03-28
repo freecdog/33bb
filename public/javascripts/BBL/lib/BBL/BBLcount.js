@@ -411,7 +411,7 @@ define(function (require, exports, module) {
                                 }   // for J
                                 if ((NFI == 2*I) || (NFI == 2*I-1)) break;
                             }   // while true (I)
-                            X = X + JX;
+                            X = JX;
 
                             for (var i8 = 0; i8 < G.length; i8++) {
                                 for (var i9 = GABS; i9 <= GABE; i9++) {
@@ -626,6 +626,7 @@ define(function (require, exports, module) {
 
                     for (K = 0; K <= NBX+10; K++) {
                         KSI = K*DX*CF - (HTOTAL + KSIN);
+                        //KSI = K*DX*CF - KSIN; // Wave would be near object at T=0
                         if (KSI < 0) {
                             for (var c1 = 0; c1 < 5; c1++) G[c1][K][I] = 0;
                         } else {

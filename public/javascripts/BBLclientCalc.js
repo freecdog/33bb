@@ -188,7 +188,7 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
             str += data.TM.toFixed(2) + " s";
             str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";
         }
-        if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min left";
+        if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min passed";
         domCurrentTime.innerHTML = str;
 
         domCurrentS0.innerHTML = domCurrentS0.innerHTML.substr(0, 4) + " " + data.S0;

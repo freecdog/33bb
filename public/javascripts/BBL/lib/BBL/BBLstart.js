@@ -922,7 +922,7 @@ define(function (require, exports, module) {
                 SG = Math.sqrt(LB[L]);
                 CG = 1 - 2 * LB[L];
 
-                MatMult.fillArray(Q, 0);
+                MatMult.fillArray(Q[L], 0);
                 MatMult.fillArray(LAX, 0);
                 MatMult.fillArray(LAY, 0);
                 MatMult.fillArray(M, 0);

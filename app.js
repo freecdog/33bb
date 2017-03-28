@@ -35,8 +35,8 @@ app.use(logger('dev'));
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }));
 // special limit definition (413 html error)
-app.use(bodyParser.json({limit: '500mb'}));
-app.use(bodyParser.urlencoded({limit: '500mb', extended: true}));
+app.use(bodyParser.json({limit: '2000mb'}));
+app.use(bodyParser.urlencoded({limit: '2000mb', extended: true}));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
