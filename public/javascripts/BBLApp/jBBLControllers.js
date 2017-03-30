@@ -1508,6 +1508,11 @@
             return renderer;
         }
         function clickOnCanvas(){
+            if (data.settings.showControlPointsData == false){
+                console.log("you can change control points positions only when they are active");
+                return;
+            }
+
             //console.warn(event);
             var screenWidth = renderer.domElement.width;
             var screenHeight = renderer.domElement.height;
