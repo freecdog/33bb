@@ -682,6 +682,14 @@
                                 ticks: {
                                     maxTicksLimit: mobileAndTabletcheck() ? 20 : 30
                                 }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    callback: function(value, index, values){
+                                        if (index == 0) console.warn(value, index, values);
+                                        return value.toExponential(2);
+                                    }
+                                }
                             }]
                         }
                     };
