@@ -109,6 +109,11 @@ define(function (require, exports, module) {
                 VORTEX = data.rtetVortex,
                 NOEDGE = data.rtetNoEdge;
 
+            // now
+            //    C
+            // B     B
+            //    A
+            // TODO should be
             //    A
             // D     B
             //    C
