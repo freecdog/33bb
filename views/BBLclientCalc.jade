@@ -75,9 +75,9 @@ html
                                 thead
                                     tr
                                         th #
-                                        th E
-                                        th RO, кг/м³
-                                        th NU
+                                        th E, Па
+                                        th ρ, кг/м³
+                                        th ν
                                         th H, м
                                 tbody
                                     tr(ng-repeat="layer in InputCalcCtrl.inputParams.layers | limitTo: InputCalcCtrl.inputParams.NL track by $index")
@@ -91,6 +91,21 @@ html
                                             input(ng-model="layer.NU" type="number" class="form-control input-sm" placeholder="NU" required)
                                         td
                                             input(ng-model="layer.H" type="number" class="form-control input-sm" placeholder="H" required)
+                                        td
+                                            div(class="dropdown" ng-class="{'open': dropdownToggle }" ng-click="dropdownToggle = !dropdownToggle")
+                                                a(href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false")
+                                                    span(class="caret")
+                                                ul(class="dropdown-menu pull-right" role="menu")
+                                                    li
+                                                        a(ng-click="layer.E = 200e9; layer.RO = 7800; layer.NU = 0.28;") Сталь
+                                                    li
+                                                        a(ng-click="layer.E = 105e9; layer.RO = 2760; layer.NU = 0.26;") Грунт (Плато Расвумчорр)
+                                                        // Протосеня, Вербило
+                                                    li
+                                                        a(ng-click="layer.E = 49.66e9; layer.RO = 2800; layer.NU = 0.22;") Гранит
+                                                        // Карпенко
+                                                        //- var c = 4500, p = 2800, n = 0.22; var E = (c*c*p*(1+n)*(1-2*n))/(1-n);
+
 
                             div(class="panel panel-default")
                                 div(class="panel-body")

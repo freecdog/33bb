@@ -53,6 +53,10 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
     var data = (new BBL.Datatone());
     //BBL.BBLup.run({}, runCallback);
 
+    var domCurrentTime = document.getElementById("currentTime");
+    domCurrentTime.innerHTML = "current time";
+    var hasSent = false;
+
     function runCallback(){
         var dataToSend = {};
         //dataToSend.memOut = data.memOut;
@@ -85,6 +89,9 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         // TODO use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
         ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
             console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
+
+            hasSent = true;
+            domCurrentTime.innerHTML += " (sent)";
 
             window.connectToApp(data);
         });
@@ -142,9 +149,6 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         xmlhttp.send(parameters);
     }
 
-    var domCurrentTime = document.getElementById("currentTime");
-    domCurrentTime.innerHTML = "current time";
-
     var domCurrentS0 = document.getElementById("currentS0");
     var domCurrentGeomprocS = document.getElementById("currentGeomprocS");
     var domCurrentGeomprocR = document.getElementById("currentGeomprocR");
@@ -189,6 +193,7 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
             str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";
         }
         if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min passed";
+        if (data.status.duration && hasSent) str += " (sent)";
         domCurrentTime.innerHTML = str;
 
         domCurrentS0.innerHTML = domCurrentS0.innerHTML.substr(0, 4) + " " + data.S0;
