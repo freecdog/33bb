@@ -63,7 +63,7 @@
             //});
 
             userData = {
-                TM: 1,
+                TM: 10,
                 ALFA: 0,
 
                 //INDEX: 0,
@@ -173,6 +173,8 @@
 
             initBBL();
             initCharts(BBL, data);
+
+            self.data = data;
 
             self.inputParams = userData;
             self.visibility = true;

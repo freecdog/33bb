@@ -63,7 +63,9 @@ define(function (require, exports, module) {
         var ALFA,FRIC,S0,A1,A2,TH,
             TPLUS,STEP,STEPX,
             ALEF,BETTA,
-            S,TET0,TET1,TET2,TET3,L1,R,LC,
+            S,TET0,TET1,TET2,TET3,L1, // R
+            R=1,
+            LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
             RC0, C0, HTOTAL;    // float
         var H = Math.PI / 180, DELTA = 1;
@@ -350,9 +352,20 @@ define(function (require, exports, module) {
 
             LC = R / C0;
 
+            //TM = TM * 1e3 / LC;
+
             DFI = DFI * Math.PI / 180;
 
             ITP = new Array(NTP+2);
+
+//            //Harry's new
+//            for (L = 0; L < NL; L++){
+//                if (LH[L]/R < DX){
+//                    DX = LH(L) / R;
+//                    STEPX = DX;
+//                    if (DT > DX) DT = DX;
+//                }
+//            }
 
             DX = STEPX / Math.round(STEPX / DX);
             HTOTAL = 0;
@@ -471,7 +484,7 @@ define(function (require, exports, module) {
             var RTET = FUNC2.RTET;
 
             var K; // integer
-            var T,TETA,TK,H,RT, A,B,T1,T2,AK; // float
+            var T,TETA,TK,H,RT, A,B,T1,T2,AK, Ref; // float
             var ROOT = false;
 
             console.log("GEOMPROC has start work");
@@ -531,17 +544,20 @@ define(function (require, exports, module) {
 
             S = S / 2;
             // R - характерный размер (радиус)
-            R = Math.sqrt(S / Math.PI);
+            Ref = Math.sqrt(S / Math.PI);   // R effective
+            R = Ref;
 
             data.geomprocS = S;
             data.geomprocR = R;
 
+            data.geomprocRef = Ref;
+
             //WRITE(*,'()');
             //WRITE(*,'(2(A,F6.3))') '        S= ',S,'  L= ',L
             //WRITE(*,'()');
-            console.log("S =", S, "R =", R);
+            console.log("S =", S, "R effective =", Ref);
             // TODO meters? XDESTR is given in non-dimensional scale, while rtetB in meters (probably meters?)
-            data.TMrecommended = 2 * XDESTR + (2 * data.rtetB) / data.geomprocR;
+            data.TMrecommended = 2 * XDESTR + (2 * data.rtetB) / data.geomprocRef;  // TMrecommended not used
             console.log("Recommended time for calculations is", data.TMrecommended, " plus a little extra to be sure");
 
             H = Math.PI / 6;

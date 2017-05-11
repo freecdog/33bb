@@ -196,9 +196,9 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         if (data.status.duration && hasSent) str += " (sent)";
         domCurrentTime.innerHTML = str;
 
-        domCurrentS0.innerHTML = domCurrentS0.innerHTML.substr(0, 4) + " " + data.S0;
-        domCurrentGeomprocS.innerHTML = domCurrentGeomprocS.innerHTML.substr(0, 3) + " " + data.geomprocS;
-        domCurrentGeomprocR.innerHTML = domCurrentGeomprocR.innerHTML.substr(0, 3) + " " + data.geomprocR;
+        domCurrentS0.innerHTML = domCurrentS0.innerHTML.substr(0, 4) + " " + (data.S0 * data.C0 * data.RC0 * 1e-6).toFixed(3) + " MPa";
+        domCurrentGeomprocS.innerHTML = domCurrentGeomprocS.innerHTML.substr(0, 3) + " " + (data.geomprocS).toFixed(3) + " m²";
+        domCurrentGeomprocR.innerHTML = domCurrentGeomprocR.innerHTML.substr(0, 3) + " " + (data.geomprocR).toFixed(3) + " m";
 
         if (data.currentT > 0 && Math.abs(parseInt(data.currentT) - data.currentT ) < 1e-6) {
             var url = window.location.href;
