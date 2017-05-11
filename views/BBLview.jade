@@ -32,7 +32,7 @@ html
 
         div(ng-controller="jBBLscrollController as scroll" ng-show="scroll.visible")
             //-input(id="scrollValue" type="text" class="input-sm" ng-model="scroll.scrollPos")
-            h3(id="scrollValue") {{scroll.scrollPos ? scroll.scrollPos : "0.00 s"}}
+            h3(id="scrollValue") {{scroll.scrollPos ? scroll.scrollPos : "0.00 ms"}}
             div(id="timeScroll")
                 div(id="timeInner")
                     span &nbsp;

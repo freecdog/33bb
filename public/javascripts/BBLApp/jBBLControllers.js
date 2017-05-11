@@ -154,7 +154,8 @@
                 var params = { scrollData: getScrollData() };
                 $rootScope.$broadcast('scrollEvent', params);
 
-                self.scrollPos = (params.scrollData.scrollStep * data.DT).toFixed(2) + " s";
+                //self.scrollPos = (params.scrollData.scrollStep * data.DT).toFixed(2) + " s";
+                self.scrollPos = (params.scrollData.scrollStep * data.DT * data.LC * 1e3).toFixed(2) + " ms";
                 $scope.$digest();
             }
         }
@@ -438,8 +439,10 @@
                 if (userData.EPUR == 2) dataStep = 10;
 
                 for (var i = 0; i < data.waveEpure.length; i = i + dataStep){
-                    timeSteps.push(data.waveEpure[i].T);
-                    valueSteps.push(data.waveEpure[i].value);
+                    //timeSteps.push(data.waveEpure[i].T);
+                    timeSteps.push((data.waveEpure[i].T * data.LC * 1e3).toFixed(2)); // LC = R / C0;
+                    //valueSteps.push(data.waveEpure[i].value);
+                    valueSteps.push(data.waveEpure[i].value * 1e-6);
                 }
             }
 
@@ -609,7 +612,8 @@
 
                 var timeLabels = [];
                 for (var ti = 0; ti < ctrlPoints[0][0].length; ti++) {
-                    timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                    //timeLabels.push(getTimeByTimeIndex(ti).toFixed(2));
+                    timeLabels.push((getTimeByTimeIndex(ti) * data.LC * 1e3).toFixed(2));   // conversion to ms
                 }
 
                 var datasetTemplate = {

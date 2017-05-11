@@ -366,8 +366,10 @@
                 if (userData.EPUR == 2) dataStep = 10;
 
                 for (var i = 0; i < data.waveEpure.length; i = i + dataStep){
-                    timeSteps.push(data.waveEpure[i].T);
-                    valueSteps.push(data.waveEpure[i].value);
+                    //timeSteps.push(data.waveEpure[i].T);
+                    timeSteps.push((data.waveEpure[i].T * data.LC * 1e3).toFixed(2)); // LC = R / C0; convert to ms
+                    //valueSteps.push(data.waveEpure[i].value);
+                    valueSteps.push(data.waveEpure[i].value * 1e-6);
                 }
             }
 
