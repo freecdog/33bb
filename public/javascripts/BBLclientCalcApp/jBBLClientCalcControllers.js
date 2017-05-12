@@ -27,7 +27,7 @@
         return check;
     }
 
-    jBBLClientCalcControllers.controller('jClientInputCalcController', ['$scope', '$window', function($scope, $window) {
+    jBBLClientCalcControllers.controller('jBBLClientInputCalcController', ['$scope', '$window', function($scope, $window) {
         var self = this;
 
         var BBL, data, RTET, inputObject, userData;

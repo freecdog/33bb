@@ -13,7 +13,7 @@ html
 
     body
 
-        div(ng-controller="jClientInputCalcController as InputCalcCtrl")
+        div(ng-controller="jBBLClientInputCalcController as InputCalcCtrl")
             div(class="container" ng-show="InputCalcCtrl.visibility")
                 div(class="row")
                     div(class="col-xs-12 col-sm-6")
@@ -81,28 +81,32 @@ html
                                         th H, м
                                 tbody
                                     tr(ng-repeat="layer in InputCalcCtrl.inputParams.layers | limitTo: InputCalcCtrl.inputParams.NL track by $index")
-                                        td
+                                        td(class="col-xs-1")
                                             span {{$index+1}}
-                                        td
+                                        td(class="col-xs-4")
                                             input(ng-model="layer.E" type="number" class="form-control input-sm" placeholder="E" required)
-                                        td
+                                        td(class="col-xs-2")
                                             input(ng-model="layer.RO" type="number" class="form-control input-sm" placeholder="RO" required)
-                                        td
+                                        td(class="col-xs-2")
                                             input(ng-model="layer.NU" type="number" class="form-control input-sm" placeholder="NU" required)
-                                        td
+                                        td(class="col-xs-2")
                                             input(ng-model="layer.H" type="number" class="form-control input-sm" placeholder="H" required)
-                                        td
+                                        td(class="col-xs-1")
                                             div(class="dropdown" ng-class="{'open': dropdownToggle }" ng-click="dropdownToggle = !dropdownToggle")
                                                 a(href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false")
                                                     span(class="caret")
                                                 ul(class="dropdown-menu pull-right" role="menu")
-                                                    li
+                                                    //li
                                                         a(ng-click="layer.E = 200e9; layer.RO = 7800; layer.NU = 0.28;") Сталь
+                                                    li
+                                                        a(ng-click="layer.E = 57.9e9; layer.RO = 2700; layer.NU = 0.35;") H1 (57.9e9)
+                                                    li
+                                                        a(ng-click="layer.E = 12.3e9; layer.RO = 2590; layer.NU = 0.3;") H2 (12.3e9)
                                                     li
                                                         a(ng-click="layer.E = 105e9; layer.RO = 2760; layer.NU = 0.26;") Грунт (Плато Расвумчорр)
                                                         // Протосеня, Вербило
                                                     li
-                                                        a(ng-click="layer.E = 49.66e9; layer.RO = 2800; layer.NU = 0.22;") Гранит
+                                                        a(ng-click="layer.E = 49.66e9; layer.RO = 2800; layer.NU = 0.22;") Гранит (49.7e9)
                                                         // Карпенко
                                                         //- var c = 4500, p = 2800, n = 0.22; var E = (c*c*p*(1+n)*(1-2*n))/(1-n);
 
