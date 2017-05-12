@@ -36,7 +36,7 @@ html
                             fieldset
                                 div(class="form-group")
                                     label(class="col-xs-6 control-label")
-                                        h4 TM ({{ (InputCalcCtrl.inputParams.TM * InputCalcCtrl.data.LC * 1e3).toFixed(2) }} ms}})
+                                        h4 TM ({{ (InputCalcCtrl.inputParams.TM * InputCalcCtrl.data.LC * 1e3).toFixed(2) }} ms)
                                     div(class="col-xs-6 input-group")
                                         input(ng-model="InputCalcCtrl.inputParams.TM" type="number" class="form-control input-md" min="1" max="120" placeholder="TM" required)
                                         span(class="input-group-addon input-md") s
