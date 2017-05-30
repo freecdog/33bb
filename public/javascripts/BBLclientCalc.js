@@ -218,7 +218,7 @@ requirejs(['BBL', 'Chart', 'angular', 'jBBLClientCalcApp', 'jBBLClientCalcContro
         if (data.currentT >= data.TM ) doCheckTime = false;
 
         if (doCheckTime){
-            setTimeout( checkTime, checkInterval);
+            setTimeout(checkTime, checkInterval);
         }
     }
 
