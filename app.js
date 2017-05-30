@@ -17,6 +17,10 @@ var BBLfilesList = require('./routes/BBLfilesList');
 var BBLclientCalc = require('./routes/BBLclientCalc');
 var BBLviewRoute = require('./routes/BBLviewRoute');
 
+var BBLHfilesList = require('./routes/BBLHfilesList');
+var BBLHclientCalc = require('./routes/BBLHclientCalc');
+var BBLHviewRoute = require('./routes/BBLHviewRoute');
+
 var restartServer = require('./routes/restartServer');
 
 var crypto = require('crypto');
@@ -46,6 +50,10 @@ app.use('/', routes);
 app.use('/BBLfilesList', BBLfilesList);
 app.use('/c', BBLclientCalc);
 app.use('/v', BBLviewRoute);
+
+app.use('/BBLHfilesList', BBLHfilesList);
+app.use('/hc', BBLHclientCalc);
+app.use('/hv', BBLHviewRoute);
 
 app.use('/memout', memoutRouter);
 

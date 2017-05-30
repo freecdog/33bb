@@ -1,0 +1,16 @@
+{
+  "author": {
+    "name": "jaric",
+    "email": "mm1000@list.ru",
+    "url": "https://github.com/freecdog"
+  },
+  "name": "BBLH",
+  "description": "for some papers",
+  "version": "0.0.1",
+  "homepage": "https://github.com/freecdog/33bb",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/freecdog/33bb"
+  },
+  "main": "index"
+}
