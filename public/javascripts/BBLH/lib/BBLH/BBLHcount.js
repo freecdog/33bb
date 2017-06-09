@@ -119,6 +119,7 @@ define(function (require, exports, module) {
             var FUNC2 = BBLH.FUNC2;
             var MatMult = BBLH.MatMult;
             var BBLHstart = BBLH.BBLHstart;
+            var BBLHstatic = BBLH.BBLHstatic;
             var Datatone = BBLH.Datatone;
 
             data = new Datatone();
@@ -176,18 +177,30 @@ define(function (require, exports, module) {
                 //fds1 = data.fds1,
                 //fds2 = data.fds2,
                 RC0 = data.RC0,
-                needRealValues = data.needRealValues;
+                needRealValues = data.needRealValues,
 
-            var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK; // integer
+                HEFFECT = data.HEFFECT,
+
+                GAF1 = data.GAF1,
+                GAF2 = data.GAF2,
+                QG = data.QG,
+
+                G = data.G,
+
+                LO = data.LO,
+                HI = data.HI,
+                OnlyStaticLoad = data.OnlyStaticLoad;
+
+            var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
             var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX; // float
             var WT; // boolean
             var DZ0, Z; // Complex
             var LX, LAX, E; // [5, 5] of float
             var W, U, UFI; // [5] of float
-            var G, GOUT; // [,,] of float
-            var GA; // [5, -1:1] of float
-            var GAF1, GAF2; // [,,] of float
-            var LO, HI; // [] of integer
+            var GOUT; // [,,] of float
+            var GA; // [:,:,:,:] of float
+            //var GAF1, GAF2; // [,,] of float
+            //var LO, HI; // [] of integer
 
             var GABobj; // to convert GABS and GABE
 
@@ -207,14 +220,17 @@ define(function (require, exports, module) {
             // ALLOCATE(GAF1(1:NL-1,5,0:NFI),GAF2(1:NL-1,5,0:NFI),LO(NL),HI(NL) );	! LO,HI- НИЖНИЕ И ВЕРХНИЕ ГРАНИЦЫ СЛОЁВ СООТВЕТСТВЕННО
 
             // G(КОМПОНЕНТА, КООРДИНАТА, УГОЛ)
-            G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
-            GOUT = MatMult.createArray(genSize, Math.round(CHECK/STEPX)+1, NTP+1);
-            GAF1 = MatMult.createArray(NL-1, genSize, NFI+1);
-            MatMult.fillArray(GAF1, 0);
-            GAF2 = MatMult.createArray(NL-1, genSize, NFI+1);
-            MatMult.fillArray(GAF2, 0);
-            LO = MatMult.createArray(NL);
-            HI = MatMult.createArray(NL);
+            //G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
+
+            GOUT = MatMult.createArray(genSize, Math.round(HEFFECT/STEPX)+1, NTP+1);
+
+            // all this were moved to BBLHstatic.js
+            //GAF1 = MatMult.createArray(NL-1, genSize, NFI+1);
+            //MatMult.fillArray(GAF1, 0);
+            //GAF2 = MatMult.createArray(NL-1, genSize, NFI+1);
+            //MatMult.fillArray(GAF2, 0);
+            //LO = MatMult.createArray(NL);
+            //HI = MatMult.createArray(NL);
 
             E = MatMult.createArray(5,5);
             MatMult.fillArray(E, 0);
@@ -228,8 +244,11 @@ define(function (require, exports, module) {
             TOUT = T;
             NX = NBX - 1;
             DZ0 = ZET(TET0);
-            MatMult.fillArraySafe(G, 0);
-            CALCBOUNDARIES(LO,HI);
+
+            //CALCBOUNDARIES(LO,HI);
+
+            //MatMult.fillArraySafe(G, 0);
+
 
             //GA = MatMult.createArray(genSize , 2);
             //delete GA[0];
@@ -243,8 +262,10 @@ define(function (require, exports, module) {
             var memoutCounter = 0;
             var memout = [];
             data.memout = memout;
-            data.HI = HI;
-            data.LO = LO;
+
+            // all this were moved to BBLHstatic.js
+            //data.HI = HI;
+            //data.LO = LO;
 
             jStepsCnt = 0;
             async.whilst(
@@ -262,69 +283,94 @@ define(function (require, exports, module) {
                 function(callback){
                     var timeAtStart = Date.now();
 
-                    FICTCELLS(GAF1, GAF2);
+                    BBLHstatic.FICTCELLS(GAF1, GAF2, G);
 
                     console.log("T = " + T.toFixed(2));
 
                     LK[0] = NX - Math.round(HTOTAL/DX);
-                    X = 0;
 
-                    for (var L = NL-1; L >= 0; L--){
-                        LM = C[L] / C0;
-                        // ALLOCATE(GA(5,0:LK(L)+1,0:NFI))
-                        GA = MatMult.createArray(genSize, LK[L]+2, NFI+1);
-                        MatMult.fillArray(GA, 0);
+
+                    M = 0;
+                    for (L = 0; L < NL; L++) {
+                        if (LK[L] > M) M = LK[L];
+                    }
+                    //ALLOCATE(GA(1:NL,5,0:M+1,0:NFI))
+                    GA = MatMult.createArray(NL, genSize, M + 2, NFI+1);
+
+                    for (L = NL-1; L >= 0; L--){
+                        //GA(L,:,:,:)=0;
+                        MatMult.fillArray(GA[L], 0);
 
                         GABS = LO[L];
                         GABE = HI[L];
 
                         //DO I=0,NFI
-                        //  DO J=1,LK(L)
-                        //      GA(:,J,I)=G(:,GABS+J-1,I)
-                        //  END DO
+                        //DO J=1,LK(L)
+                        //GA(L,:,J,I)=G(:,GABS+J-1,I)
                         //END DO
-                        for (var i0 = 0; i0 <= NFI; i0++)
-                            for (var i1 = 1; i1 <= LK[L]; i1++)
-                                for (var i2 = 0, i2len = GA.length; i2 < i2len; i2++)
-                                    GA[i2][i1][i0] = G[i2][GABS+i1-1][i0];
+                        //END DO
+                        for (var i20 = 0; i20 <= NFI; i20++)
+                            for (var i21 = 1; i21 <= LK[L]; i21++)
+                                for (var i22 = 0, i22len = GA[0].length; i22 < i22len; i22++)
+                                    GA[L][i22][i21][i20] = G[i22][GABS+i21-1][i20];
 
-                        if (L == NL-1){
-                            // G(:,0,0:NFI)=FG(NL,:,:).x.G(:,1,0:NFI);
-                            var g0 = [];
-                            for (var g0i = 0; g0i < G.length; g0i++){
-                                //var g0arr = [];
-                                //for (var g0j = 0; g0j <= NFI; g0j++) g0arr.push(G[g0i][1][g0j]);
-                                var g0arr = G[g0i][1].slice(0);
-                                g0.push(g0arr);
-                            }
-                            var g0mult = matrix.multiply(FG[NL-1], g0);
-                            for (var g0m = 0; g0m < G.length; g0m++)
-                                //for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
-                                for (var g0n = 0; g0n <= NFI; g0n++)
-                                    G[g0m][0][g0n] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
-                            // GA(:,0,0:NFI)=G(:,0,0:NFI);
-                            for (var i3 = 0; i3 < GA.length; i3++)
-                                for (var i4 = 0; i4 <= NFI; i4++)
-                                    GA[i3][0][i4] = G[i3][0][i4];
-                        }
-
-                        if (L == 0){
-                            // GA(:,LK(L)+1,0:NFI)=G(:,GABE+1,0:NFI);
-                            for (var i6 = 0; i6 < GA.length; i6++)
-                                for (var i7 = 0; i7 <= NFI; i7++)
-                                    GA[i6][LK[L]+1][i7] = G[i6][GABE+1][i7];
-                        }
-
-                        // IF (L/=NL) GA(:,0,0:NFI)=GAF1(L,:,0:NFI)
+                        // IF (L/=NL) GA(L,:,0,0:NFI)=GAF1(L,:,0:NFI)
                         if (L != NL-1)
-                            for (var i12 = 0; i12 < GA.length; i12++)
-                                for (var i13 = 0; i13 <= NFI; i13++)
-                                    GA[i12][0][i13] = GAF1[L][i12][i13];
-                        // IF (L/=1)  GA(:,LK(L)+1,0:NFI)=GAF2(L-1,:,0:NFI)
+                            for (var i23 = 0; i23 < GA[0].length; i23++)
+                                for (var i24 = 0; i24 <= NFI; i24++)
+                                    GA[L][i23][0][i24] = GAF1[L][i23][i24];
+                        // IF (L/=1)  GA(L,:,LK(L)+1,0:NFI)=GAF2(L-1,:,0:NFI)
                         if (L != 0)
-                            for (var i14 = 0; i14 < GA.length; i14++)
-                                for (var i15 = 0; i15 <= NFI; i15++)
-                                    GA[i14][LK[L]+1][i15] = GAF2[L-1][i14][i15];
+                            for (var i25 = 0; i25 < GA[0].length; i25++)
+                                for (var i26 = 0; i26 <= NFI; i26++)
+                                    GA[L][i25][LK[L]+1][i26] = GAF2[L-1][i25][i26];
+                    }
+
+                    // G(:,0,0:NFI)=FG(NL,:,:).x.G(:,1,0:NFI);
+                    var g0 = [];
+                    for (var g0i = 0; g0i < G.length; g0i++){
+                        //var g0arr = [];
+                        //for (var g0j = 0; g0j <= NFI; g0j++) g0arr.push(G[g0i][1][g0j]);
+                        var g0arr = G[g0i][1].slice(0);
+                        g0.push(g0arr);
+                    }
+                    var g0mult = matrix.multiply(FG[NL-1], g0);
+                    for (var g0m = 0; g0m < G.length; g0m++)
+                        //for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
+                        for (var g0n = 0; g0n <= NFI; g0n++)
+                            G[g0m][0][g0n] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
+
+                    if (OnlyStaticLoad == true) {
+                        // G(1:2,0,0:NFI) =0;
+                        for (var i27 = 0; i27 < 2; i27++)
+                            for (var i28 = 0; i28 <= NFI; i28++)
+                                G[i27][0][i28] = 0;
+                    }
+
+                    // GA(NL,:,0,0:NFI)=FG(NL,:,:).x.GA(NL,:,1,0:NFI)
+                    var g10 = [];
+                    for (var g10i = 0; g10i < GA[0].length; g10i++){
+                        var g10arr = GA[NL-1][g10i][1].slice(0);
+                        g10.push(g10arr);
+                    }
+                    var g10mult = matrix.multiply(FG[NL-1], g10);
+                    for (var g10m = 0; g10m < GA[0].length; g10m++)
+                        for (var g10n = 0; g10n <= NFI; g10n++)
+                            GA[NL-1][g10m][0][g10n] = g10mult[g10m][g10n];
+
+                    // GA(1,:,LK(1)+1,0:NFI)=G(:,GABE+1,0:NFI);
+                    for (var i6 = 0; i6 < GA[0].length; i6++)
+                        for (var i7 = 0; i7 <= NFI; i7++)
+                            GA[0][i6][LK[0]+1][i7] = G[i6][GABE+1][i7];
+
+
+                    X = 0;
+
+                    for (L = NL-1; L >= 0; L--){
+                        LM = C[L] / C0;
+
+                        GABS = LO[L];
+                        //GABE = HI[L];
 
                         if (T > 0){
                             I = NFI;
@@ -337,7 +383,18 @@ define(function (require, exports, module) {
                                 TETA = TAR[I];
                                 COM = COURB[I] * R;
                                 LOM = LONG[I] / R;
-                                FIM = FAR[I];
+                                //FIM = FAR[I];
+                                FIM = FUNC2.ATN(TETA);
+
+                                QG.length = 0;
+                                QG[0] = ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
+                                QG[1] = - ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
+                                QG[2] = 0;
+                                QG[3] = 0;
+                                QG[4] = 0;
+                                //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
+                                //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
+                                QG = matrix.vectorTranspose(QG);
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -367,38 +424,39 @@ define(function (require, exports, module) {
                                     //);
                                     LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
 
-                                    // W=LX.x.GA(:,J,I);
-                                    var ga0 = matrix.getColUnSafe3x(GA, J, I);
+                                    // W=LX.x.GA(L,:,J,I);
+                                    var ga0 = matrix.getColUnSafe3x(GA[L], J, I);
                                     ga0 = matrix.vectorTranspose(ga0);
                                     W = matrix.multiply(LX, ga0);
 
-                                    // U=FIXP(L,:,:).x.GA(:,J-1,I)
-                                    var ga1 = matrix.getColUnSafe3x(GA, J-1, I);
+                                    // U=FIXP(L,:,:).x.GA(L,:,J-1,I)
+                                    var ga1 = matrix.getColUnSafe3x(GA[L], J-1, I);
                                     ga1 = matrix.vectorTranspose(ga1);
                                     U = matrix.multiply(FIXP[L], ga1);
                                     // W=W+DT*LM/DX*U;
                                     W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
 
-                                    // U=FIXM(L,:,:).x.GA(:,J+1,I)
-                                    var ga2 = matrix.getColUnSafe3x(GA, J+1, I);
+                                    // U=FIXM(L,:,:).x.GA(L,:,J+1,I)
+                                    var ga2 = matrix.getColUnSafe3x(GA[L], J+1, I);
                                     ga2 = matrix.vectorTranspose(ga2);
                                     U = matrix.multiply(FIXM[L], ga2);
                                     // W=W+DT*LM/DX*U;
                                     W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
 
-                                    // U=FIYP(L,:,:).x.GA(:,J,I-1)
-                                    var ga3 = matrix.getColUnSafe3x(GA, J, I-1);
+                                    // U=FIYP(L,:,:).x.GA(L,:,J,I-1)
+                                    var ga3 = matrix.getColUnSafe3x(GA[L], J, I-1);
                                     ga3 = matrix.vectorTranspose(ga3);
                                     U = matrix.multiply(FIYP[L], ga3);
                                     // W=W+DT*LM*P/DFI*U;
                                     W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
 
-                                    // U=FIYM(L,:,:).x.GA(:,J,I+1)
-                                    var ga4 = matrix.getColUnSafe3x(GA, J, I+1);
+                                    // U=FIYM(L,:,:).x.GA(L,:,J,I+1)
+                                    var ga4 = matrix.getColUnSafe3x(GA[L], J, I+1);
                                     ga4 = matrix.vectorTranspose(ga4);
                                     U = matrix.multiply(FIYM[L], ga4);
-                                    // W=W+DT*LM*P/DFI*U;
+                                    // W=W+DT*LM*P/DFI*U - DT*LM*QG;
                                     W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
+                                    W = matrix.addition(W, matrix.scalarSafe(QG, -DT * LM));
 
                                     LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
                                     LX = matrix.inverse(LX);
@@ -408,9 +466,9 @@ define(function (require, exports, module) {
                                     for (var i16 = 0; i16 < G.length; i16++)
                                         G[i16][KJ][I] = W[i16][0];
 
-                                }   // for J
+                                }   // end for J
                                 if ((NFI == 2*I) || (NFI == 2*I-1)) break;
-                            }   // while true (I)
+                            }   // end while true (I)
                             X = JX;
 
                             for (var i8 = 0; i8 < G.length; i8++) {
@@ -422,18 +480,13 @@ define(function (require, exports, module) {
                                 }
                             }
 
-                            for (var i10 = 0; i10 < GA.length; i10++) {
-                                for (var i11 = 0, i11len = GA[0].length; i11 < i11len; i11++) {
-                                    // GA(:,:,0)= 	GA(:,:,NFI-1);
-                                    GA[i10][i11][0] = GA[i10][i11][NFI-1];
-                                    // GA(:,:,NFI)= GA(:,:,1);
-                                    GA[i10][i11][NFI] = GA[i10][i11][1];
-                                }
-                            }
-
                         }   // if T > 0
-                        GA.length = 0;
                     }   // for L
+
+                    //IF(.NOT.BEGIN.AND.(T>0)) STOP;
+                    if (OnlyStaticLoad && T > 0) {
+                        data.breakCalculation = true;
+                    }
 
                     WT = T >= TOUT;
 
@@ -447,6 +500,8 @@ define(function (require, exports, module) {
                     data.currentT = T;
 
                     NX = NX - 1;
+
+                    GA.length = 0;
 
                     jStepsCnt++;
                     if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()", '; CountOut:', Date.now() - timeBeforeCountOut, 'ms');
@@ -611,66 +666,43 @@ define(function (require, exports, module) {
             function INITLOAD(){
                 var I, K;
                 var B = LB[0];
-                for (I = 0; I <= NFI; I++){
-                    TETA = TAR[I];
-                    FIM = FAR[I];
-                    Z = ZET(TETA);
-                    KSIN = (Z.subtract(DZ0)).re;
-                    CF = Math.cos(FIM);
-                    SF = Math.sin(FIM);
-                    UFI[0] = CF;
-                    UFI[1] = -SF;
-                    UFI[2] = 1 - 2*B * SF*SF;
-                    UFI[3] = 1 - 2*B * CF*CF;
-                    UFI[4] = -2*B * CF*SF;
 
-                    for (K = 0; K <= NBX+10; K++) {
-                        KSI = K*DX*CF - (HTOTAL + KSIN);
-                        //KSI = K*DX*CF - KSIN; // Wave would be near object at T=0
-                        if (KSI < 0) {
-                            for (var c1 = 0; c1 < 5; c1++) G[c1][K][I] = 0;
-                        } else {
-                            var IFF = BBLHstart.FF(LC*KSI);
-                            for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] = IFF*UFI[c2];
+                if (OnlyStaticLoad == false) {
+                    for (I = 0; I <= NFI; I++) {
+                        TETA = TAR[I];
+                        FIM = FAR[I];
+                        Z = ZET(TETA);
+                        KSIN = (Z.subtract(DZ0)).re;
+                        CF = Math.cos(FIM);
+                        SF = Math.sin(FIM);
+                        UFI[0] = CF;
+                        UFI[1] = -SF;
+                        UFI[2] = 1 - 2 * B * SF * SF;
+                        UFI[3] = 1 - 2 * B * CF * CF;
+                        UFI[4] = -2 * B * CF * SF;
+
+                        for (K = 0; K <= NBX + 10; K++) {
+                            KSI = K * DX * CF - (HTOTAL + KSIN);
+                            //KSI = K*DX*CF - KSIN; // Wave would be near object at T=0
+
+                            //if (KSI < 0) {
+                            //    for (var c1 = 0; c1 < 5; c1++) G[c1][K][I] = 0;
+                            //} else {
+                            //    var IFF = BBLHstart.FF(LC * KSI);
+                            //    for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] = IFF * UFI[c2];
+                            //}
+
+                            // TODO check this very carefully, it could be problem with equality
+                            if (KSI >= 0){
+                                var IFF = BBLHstart.FF(LC * KSI);
+                                for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] = G[c2][K][I] + IFF * UFI[c2];
+                            }
                         }
                     }
                 }
             }
 
-            function FICTCELLS(A1, A2){
-                // REAL,DIMENSION(NL-1,5,NFI-1),INTENT(OUT)::A1,A2
-                var U; // [1:10,0:NFI] of float
-                var L; // int
 
-                U = MatMult.createArray(10, NFI+1);
-                MatMult.fillArray(U, 0);
-
-                for (L=0; L < NL-1; L++){
-                    // U(1:5,0:NFI)=G(1:5,HI(L+1),0:NFI);
-                    for (var c1 = 0; c1 < 5; c1++)
-                        for (var c2 = 0; c2 <= NFI; c2++) U[c1][c2] = G[c1][HI[L+1]][c2];
-                    //U(6:10,0:NFI)=G(1:5,LO(L),0:NFI);
-                    for (var c3 = 5; c3 < 10; c3++)
-                        for (var c4 = 0; c4 <= NFI; c4++) U[c3][c4] = G[c3-5][LO[L]][c4];
-                    //U(1:10,0:NFI)=BOUNDARYS(L,1:10,:).x.U(:,0:NFI);
-                    U = matrix.multiply(BOUNDARYS[L], U);
-                    //U = alternativeMultiply(BOUNDARYS[L], U);
-
-                    // A2(L,1:5,0:NFI)=U(1:5,0:NFI);
-                    for (var c5 = 0; c5 < 5; c5++){
-                        for (var c6 = 0; c6 <= NFI; c6++){
-                            A2[L][c5][c6] = U[c5][c6];
-                        }
-                    }
-                    // A1(L,:,0:NFI)=U(6:10,0:NFI);
-                    for (var c7 = 5; c7 < 10; c7++){
-                        for (var c8 = 0; c8 <= NFI; c8++){
-                            A1[L][c7-5][c8] = U[c7][c8];
-                        }
-                    }
-                }
-
-            }
             function alternativeMultiply(A,B){
                 var C = MatMult.createArray(A.length, B[0].length);
                 var sum = 0;
@@ -687,20 +719,7 @@ define(function (require, exports, module) {
             }
 
 
-            function CALCBOUNDARIES(A,B){
-                // INTEGER,DIMENSION(NL),INTENT(OUT)::A,B
-                var L,BS,BE,I;
 
-                for (L = 0; L < NL; L++){
-                    BS = 1;
-                    for (I = NL-1; I >= L+1; I--) {
-                        BS = BS + LK[I];
-                    }
-                    BE = BS + LK[L] - 1;
-                    A[L] = BS;
-                    B[L] = BE;
-                }
-            }
 
             function ZET(T){
                 // ZET=-RTET(T)*EXP(IM*(T-ALFA))/R;

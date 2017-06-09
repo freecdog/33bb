@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             R=1,
             LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
-            RC0, C0, HTOTAL;    // float
+            RC0, C0, HTOTAL, HDAY, STATICTM;    // float
         var H = Math.PI / 180, DELTA = 1;
         var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
@@ -82,7 +82,7 @@ define(function (require, exports, module) {
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
-        var needRealValues;
+        var needRealValues, OnlyStaticLoad;
 
         function STARTPROC(params, callback){
             var startProcProfiler = new Date();
@@ -115,6 +115,9 @@ define(function (require, exports, module) {
                         RZ: 2.55E-02,   // metres
                         X: 10,          // metres
                         XDESTR: 2,    // metres, TODO XDESTR should be changed to layers[0].H
+                        HDAY: 50,       // metres
+                        STATICTM: 30,
+                        OnlyStaticLoad: false,
 
                         // 0 - Heaviside function
                         // 1 - exponent
@@ -209,6 +212,9 @@ define(function (require, exports, module) {
                 RZ = inputData.RZ;
                 X = inputData.X;
                 XDESTR = inputData.XDESTR;
+                HDAY = inputData.HDAY;
+                STATICTM = inputData.STATICTM;
+                OnlyStaticLoad = inputData.OnlyStaticLoad;
 
                 EPUR = inputData.EPUR;
 
@@ -352,6 +358,8 @@ define(function (require, exports, module) {
 
             LC = R / C0;
 
+            HDAY = HDAY / R;
+
             //TM = TM * 1e3 / LC;
 
             DFI = DFI * Math.PI / 180;
@@ -451,6 +459,10 @@ define(function (require, exports, module) {
             data.RC0 = RC0;
             data.S0 = S0;
             data.needRealValues = needRealValues;
+
+            data.HDAY = HDAY;
+            data.STATICTM = STATICTM;
+            data.OnlyStaticLoad = OnlyStaticLoad;
 
             // jmemOut init
             // 10 files

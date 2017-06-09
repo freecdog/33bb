@@ -68,6 +68,27 @@ html
                             fieldset
                                 div(class="form-group")
                                     label(class="col-xs-6 control-label")
+                                        h4 Hday
+                                    div(class="col-xs-6 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.HDAY" type="number" class="form-control input-md" min="10" max="1000" placeholder="Hday" required)
+                                        span(class="input-group-addon input-md") m
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-6 control-label")
+                                        h4 StaticTM
+                                    div(class="col-xs-6 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.STATICTM" type="number" class="form-control input-md" min="1" max="100" placeholder="StaticTM" required)
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-6 control-label")
+                                        h4 OnlyStaticLoad
+                                    div(class="col-xs-6 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.OnlyStaticLoad" type="checkbox" class="form-control input-md" placeholder="OnlyStaticLoad")
+
+
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-6 control-label")
                                         h4 Number of Layers
                                     div(class="col-xs-6 input-group")
                                         input(ng-model="InputCalcCtrl.inputParams.NL" type="number" class="form-control input-md" min="1" max="4" placeholder="NL" required)

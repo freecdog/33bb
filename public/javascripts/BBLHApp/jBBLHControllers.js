@@ -254,6 +254,20 @@
         }
         this.hideStats = hideStats;
 
+        function changeCminCmax(param){
+            if (param){
+                if (param.cmin) data.cmin = param.cmin;
+                if (param.cmax) data.cmax = param.cmax;
+            }
+
+            $rootScope.$broadcast('changeCminCmaxEvent');
+            //$rootScope.$on('changeCminCmaxEvent', function(event,params){
+            //    initColorVertices(lastCurrentTime);
+            //});
+
+        }
+        this.changeCminCmax = changeCminCmax;
+
     }]);
 
     jBBLHControllers.controller('jBBLHmemoutController', ['$rootScope', '$scope', 'BBLH', function($rootScope, $scope, BBLH){
@@ -766,6 +780,7 @@
         var colorsPresets;
         var memout;
         var settings;
+        var lastCurrentTime = 0;
 
         init();
 
@@ -1458,6 +1473,8 @@
             }
 
             geometry.attributes.color = new THREE.BufferAttribute( colors, N );
+
+            lastCurrentTime = currentTime;
         }
         function reorderMemout(){
             // [time][param][coordinate][angle] to [param][time][coordinate][angle]
@@ -2056,6 +2073,12 @@
 
         $rootScope.$on('scrollEvent', function(event,params){
             initColorVertices( params.scrollData.scrollStep );
+        });
+
+        $rootScope.$on('changeCminCmaxEvent', function(event,params){
+            cmin = data.cmin;
+            cmax = data.cmax;
+            requestScrollDataAndUpdate();
         });
 
         $rootScope.$on('changeSchemeIndex', function(event, params){

@@ -68,6 +68,10 @@
 
                 //INDEX: 0,
                 //XDESTR: 4,
+                HDAY: 50,
+                STATICTM: 60,
+                OnlyStaticLoad: false,
+
                 NL: 2,
                 layers: [
                     {
