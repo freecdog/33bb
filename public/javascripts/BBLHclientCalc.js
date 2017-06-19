@@ -101,31 +101,32 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
 
     function buildName(data){
         var name = "_BBLH_";
-        name += data.inputData.printPoints[data.inputData.printPoints.length-1].toFixed(0);
-        name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
+        //name += data.inputData.printPoints[data.inputData.printPoints.length-1].toFixed(0);
+        //name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
+        //name += '_';
+        name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(0) + 's';
         name += '_';
-        name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(1) + 's';
-        name += '_';
-        name += data.inputData.XDESTR.toFixed(1) + 'xd';
-        name += '_';
+        name += data.inputData.NL.toFixed(0) + 'NL';
+        name += '(';
+        for (var i = 0; i < data.inputData.NL; i++) name += data.inputData.layers[i].H.toFixed(0) + (i+1==data.inputData.NL? ')' : ',');
+        //name += data.inputData.XDESTR.toFixed(1) + 'xd';
+        //name += '_';
         name += data.inputData.EPUR.toFixed(0) + 'e';
         name += '_';
         name += data.inputData.INDEX.toFixed(0) + 'i';
-        name += '_';
-        name += data.inputData.NL.toFixed(0) + 'NL';
         name += '_';
         name += data.inputData.ALFA.toFixed(0) + 'deg';
         name += '_';
         name += data.inputData.rtetN.toFixed(0) + 'N';
         name += '_';
-        name += data.inputData.rtetA.toFixed(2) + 'A';
+        name += data.inputData.rtetA.toFixed(0) + 'A';
         name += '_';
-        name += data.inputData.rtetB.toFixed(2) + 'B';
+        name += data.inputData.rtetB.toFixed(0) + 'B';
         name += '_';
         name += data.inputData.needRealValues ? 'real' : 'norm';
         if (data.inputData.rtetNoEdge == false){
             name += '_';
-            name += '(Edge' + data.inputData.rtetVortex.toFixed(0) + 'deg,' + data.inputData.rtetC.toFixed(2) + 'C,' + data.inputData.rtetN1.toFixed(2) + 'N1,' + data.inputData.rtetN2.toFixed(2) + 'N2' + ')';
+            name += '(Edge' + data.inputData.rtetVortex.toFixed(0) + 'deg,' + data.inputData.rtetC.toFixed(0) + 'C,' + data.inputData.rtetN1.toFixed(0) + 'N1,' + data.inputData.rtetN2.toFixed(0) + 'N2' + ')';
         }
         name += '(' + (data.status.duration/1000/60).toFixed(1) + 'min)';
 

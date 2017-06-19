@@ -387,7 +387,7 @@
             for (L = data.NL-1; L > 0; L--){
                 // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
                 // only here "*data.geomprocR" to show correctly layer number
-                if (X < data.HI[L]*data.DX*data.geomprocR + 1e-6){
+                if (X <= data.HI[L]*data.DX*data.geomprocR + 1e-6){
                     ans = L;
                     return ans;
                 }

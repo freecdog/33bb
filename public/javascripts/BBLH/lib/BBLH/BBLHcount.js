@@ -593,11 +593,22 @@ define(function (require, exports, module) {
             }
 
             function getLayerNumberByCoordinate(X){
-                var L, ans;   // integer
+                //var L, ans;   // integer
+                //ans=0;
+                //for (L = NL-1; L > 0; L--){
+                //    // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
+                //    if (X < HI[L]*DX + 1e-6){
+                //        ans = L;
+                //        return ans;
+                //    }
+                //}
+                //return ans;
+
+                var K, L, ans;   // integer
                 ans=0;
                 for (L = NL-1; L > 0; L--){
                     // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
-                    if (X < HI[L]*DX + 1e-6){
+                    if (X <= HI[L]*DX + 1e-6){
                         ans = L;
                         return ans;
                     }
