@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             R=1,
             LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
-            RC0, C0, HTOTAL, HDAY, STATICTM;    // float
+            RC0, C0, HTOTAL, HDAY, STATICTM, CMAX;    // float
         var H = Math.PI / 180, DELTA = 1;
         var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
@@ -288,6 +288,7 @@ define(function (require, exports, module) {
             FR = MatMult.createArray(NL, 5, 5);
             FL = MatMult.createArray(NL, 5, 5);
 
+            CMAX = 0;
             for (L = 0; L < NL; L++){
                 LE[L] = layers[L].E;
                 LRO[L] = layers[L].RO;
@@ -295,6 +296,7 @@ define(function (require, exports, module) {
                 LH[L] = layers[L].H;
 
                 C[L] = Math.sqrt( ( LE[L]*(1-LNU[L]) ) / (LRO[L]*(1+LNU[L])*(1-2*LNU[L])) );
+                if (CMAX < C[L]) CMAX = C[L];
                 LRC[L]=C[L]*C[L]*LRO[L];
                 LB[L]=.5*(1-2*LNU[L])/(1-LNU[L]);
             }
@@ -463,6 +465,7 @@ define(function (require, exports, module) {
             data.HDAY = HDAY;
             data.STATICTM = STATICTM;
             data.OnlyStaticLoad = OnlyStaticLoad;
+            data.CMAX = CMAX;
 
             // jmemOut init
             // 10 files

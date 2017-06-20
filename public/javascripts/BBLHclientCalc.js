@@ -106,6 +106,8 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         //name += '_';
         name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(0) + 's';
         name += '_';
+        name += 'H' + data.inputData.HDAY.toFixed(0);
+        name += '_';
         name += data.inputData.NL.toFixed(0) + 'NL';
         name += '(';
         for (var i = 0; i < data.inputData.NL; i++) name += data.inputData.layers[i].H.toFixed(0) + (i+1==data.inputData.NL? ')' : ',');
@@ -170,28 +172,34 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             return;
         }
 
-        var str = "";
-        if (data.currentT < 0){
-            str += "preparing...";
-            str += " (" + (1.1 * data.XDESTR + data.currentT).toFixed(2) + " of " + (1.1 * data.XDESTR).toFixed(2) +  ")";
-        } else if (data.currentT < data.TM) {
-            str += data.currentT.toFixed(2) + " of " + data.TM.toFixed(2) + " s";
-            str += " (" + (data.currentT / data.TM * 100).toFixed(0) + "%)";
+        var currentT;
+        var TM = data.STATICTM + data.TM;
 
-            if (lastT != data.currentT){
+        if (data.status.isCOUNTPROC) currentT = data.STATICTM + data.currentT;
+        else currentT = data.currentT;
+
+        var str = "";
+        if (currentT < 0){
+            str += "preparing...";
+            str += " (" + (1.1 * data.XDESTR + currentT).toFixed(2) + " of " + (1.1 * data.XDESTR).toFixed(2) +  ")";
+        } else if (data.status.active) {
+            str += currentT.toFixed(2) + " of " + TM.toFixed(2) + "["+ data.STATICTM.toFixed(2) + "+" + data.TM.toFixed(2) + "] s";
+            str += " (" + (currentT / TM * 100).toFixed(0) + "%)";
+
+            if (lastT != currentT){
                 if (lastDiff != 0) {
                     var a1 = Date.now() - lastDiff;
-                    var n = (data.TM - data.currentT) / data.DT;
+                    var n = (TM - currentT) / data.DT;
                     estimatedT = n * (a1 + a1/2)/2; // sum of arithmetic progression
                     if (maximalT == 0) maximalT = estimatedT;
                 }
                 lastDiff = Date.now();
-                lastT = data.currentT;
+                lastT = currentT;
             }
             str += " [" + ((Date.now() - data.status.startTime)/1000).toFixed(0) + "s of estimated total " + (maximalT/1000).toFixed(0) + "s" + " (or " + ((Date.now() - data.status.startTime + estimatedT)/1000).toFixed(0) + "s)" + "]";
         } else {
-            str += data.TM.toFixed(2) + " s";
-            str += " (" + (data.TM / data.TM * 100).toFixed(0) + "%)";
+            str += TM.toFixed(2) + " s";
+            str += " (" + (TM / TM * 100).toFixed(0) + "%)";
         }
         if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min passed";
         if (data.status.duration && hasSent) str += " (sent)";
@@ -201,10 +209,10 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         domCurrentGeomprocS.innerHTML = domCurrentGeomprocS.innerHTML.substr(0, 3) + " " + (data.geomprocS).toFixed(3) + " m²";
         domCurrentGeomprocR.innerHTML = domCurrentGeomprocR.innerHTML.substr(0, 3) + " " + (data.geomprocR).toFixed(3) + " m";
 
-        if (data.currentT > 0 && Math.abs(parseInt(data.currentT) - data.currentT ) < 1e-6) {
+        if (currentT > 0 && Math.abs(parseInt(currentT) - currentT ) < 1e-6) {
             var url = window.location.href;
             var addressArr = url.split("/");
-            ajaxWrapper('POST', {time: parseInt(data.currentT)}, addressArr[0] + "//" + addressArr[2] + "/calcTime", function(status, responseText){
+            ajaxWrapper('POST', {time: parseInt(currentT)}, addressArr[0] + "//" + addressArr[2] + "/calcTime", function(status, responseText){
                 if (status === 200 || status === 304){
                     if (responseText != undefined){
                         console.log("last time has been sent");
@@ -216,7 +224,7 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             });
         }
 
-        if (data.currentT >= data.TM ) doCheckTime = false;
+        if (data.status.active == false) doCheckTime = false;
 
         if (doCheckTime){
             setTimeout( checkTime, checkInterval);

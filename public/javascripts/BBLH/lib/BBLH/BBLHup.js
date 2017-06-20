@@ -33,9 +33,18 @@ define(function (require, exports, module) {
             data.status.startTime = Date.now();
             data.status.active = true;
 
+            data.status.isSTARTPROC = true;
             BBLHstart.STARTPROC(params, function(){
+                data.status.isSTARTPROC = false;
+                data.status.isCalcStatic = true;
+
                 BBLHstatic.CalcStatic(function(){
+                    data.status.isCalcStatic = false;
+                    data.status.isCOUNTPROC = true;
+
                     BBLHcount.COUNTPROC(function(){
+                        data.status.isCOUNTPROC = false;
+
                         data.status.active = false;
                         data.status.finishTime = Date.now();
                         data.status.duration = data.status.finishTime - data.status.startTime;

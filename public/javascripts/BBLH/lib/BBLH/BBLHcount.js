@@ -189,7 +189,8 @@ define(function (require, exports, module) {
 
                 LO = data.LO,
                 HI = data.HI,
-                OnlyStaticLoad = data.OnlyStaticLoad;
+                OnlyStaticLoad = data.OnlyStaticLoad,
+                CMAX = data.CMAX;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
             var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX; // float
@@ -386,6 +387,10 @@ define(function (require, exports, module) {
                                 //FIM = FAR[I];
                                 FIM = FUNC2.ATN(TETA);
 
+                                CF = Math.cos(FIM);
+                                Z = ZET(TETA);
+                                KSIN = (Z.subtract(DZ0)).re;
+
                                 QG.length = 0;
                                 QG[0] = ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
                                 QG[1] = - ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
@@ -403,68 +408,76 @@ define(function (require, exports, module) {
                                 JX = X;
                                 for (J = 1; J <= LK[L]; J++){
                                     KJ = GABS - 1 + J;
+
+                                    // TODO is it C0 or C[L]?
+                                    KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
+
                                     JX = JX + DX;
-                                    P = 1 / ((1 + COM * (JX - DX/2)) * LOM);
-                                    PP = COM / (1 + COM * (JX - DX/2));
-                                    // LAX=DT*LM/DX*FIX(L,:,:)+DT*LM*P/DFI*FIY(L,:,:)+DT*LM*PP*Q(L,:,:)
-                                    // it seems like no speed up here
-                                    LAX = matrix.addition(
-                                        matrix.addition(
-                                            constMatrix1,
-                                            matrix.scalarSafe(constMatrix2, P)
-                                        ),
-                                        matrix.scalarSafe(constMatrix3, PP)
-                                    );
-                                    //LAX = matrix.addition(
-                                    //    matrix.addition(
-                                    //        matrix.scalarSafe(FIX[L], DT * LM / DX),
-                                    //        matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
-                                    //    ),
-                                    //    matrix.scalarSafe(Q[L], DT * LM * PP)
-                                    //);
-                                    LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
 
-                                    // W=LX.x.GA(L,:,J,I);
-                                    var ga0 = matrix.getColUnSafe3x(GA[L], J, I);
-                                    ga0 = matrix.vectorTranspose(ga0);
-                                    W = matrix.multiply(LX, ga0);
+                                    if (KSI >= 0) {
+                                        P = 1 / ((1 + COM * (JX - DX / 2)) * LOM);
+                                        PP = COM / (1 + COM * (JX - DX / 2));
+                                        // LAX=DT*LM/DX*FIX(L,:,:)+DT*LM*P/DFI*FIY(L,:,:)+DT*LM*PP*Q(L,:,:)
+                                        // it seems like no speed up here
+                                        LAX = matrix.addition(
+                                            matrix.addition(
+                                                constMatrix1,
+                                                matrix.scalarSafe(constMatrix2, P)
+                                            ),
+                                            matrix.scalarSafe(constMatrix3, PP)
+                                        );
+                                        //LAX = matrix.addition(
+                                        //    matrix.addition(
+                                        //        matrix.scalarSafe(FIX[L], DT * LM / DX),
+                                        //        matrix.scalarSafe(FIY[L], DT * LM * P / DFI)
+                                        //    ),
+                                        //    matrix.scalarSafe(Q[L], DT * LM * PP)
+                                        //);
+                                        LX = matrix.subtract(E, matrix.scalarSafe(LAX, 1 - DELTA));
 
-                                    // U=FIXP(L,:,:).x.GA(L,:,J-1,I)
-                                    var ga1 = matrix.getColUnSafe3x(GA[L], J-1, I);
-                                    ga1 = matrix.vectorTranspose(ga1);
-                                    U = matrix.multiply(FIXP[L], ga1);
-                                    // W=W+DT*LM/DX*U;
-                                    W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
+                                        // W=LX.x.GA(L,:,J,I);
+                                        var ga0 = matrix.getColUnSafe3x(GA[L], J, I);
+                                        ga0 = matrix.vectorTranspose(ga0);
+                                        W = matrix.multiply(LX, ga0);
 
-                                    // U=FIXM(L,:,:).x.GA(L,:,J+1,I)
-                                    var ga2 = matrix.getColUnSafe3x(GA[L], J+1, I);
-                                    ga2 = matrix.vectorTranspose(ga2);
-                                    U = matrix.multiply(FIXM[L], ga2);
-                                    // W=W+DT*LM/DX*U;
-                                    W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
+                                        // U=FIXP(L,:,:).x.GA(L,:,J-1,I)
+                                        var ga1 = matrix.getColUnSafe3x(GA[L], J - 1, I);
+                                        ga1 = matrix.vectorTranspose(ga1);
+                                        U = matrix.multiply(FIXP[L], ga1);
+                                        // W=W+DT*LM/DX*U;
+                                        W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
 
-                                    // U=FIYP(L,:,:).x.GA(L,:,J,I-1)
-                                    var ga3 = matrix.getColUnSafe3x(GA[L], J, I-1);
-                                    ga3 = matrix.vectorTranspose(ga3);
-                                    U = matrix.multiply(FIYP[L], ga3);
-                                    // W=W+DT*LM*P/DFI*U;
-                                    W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
+                                        // U=FIXM(L,:,:).x.GA(L,:,J+1,I)
+                                        var ga2 = matrix.getColUnSafe3x(GA[L], J + 1, I);
+                                        ga2 = matrix.vectorTranspose(ga2);
+                                        U = matrix.multiply(FIXM[L], ga2);
+                                        // W=W+DT*LM/DX*U;
+                                        W = matrix.addition(W, matrix.scalarSafe(U, DT * LM / DX));
 
-                                    // U=FIYM(L,:,:).x.GA(L,:,J,I+1)
-                                    var ga4 = matrix.getColUnSafe3x(GA[L], J, I+1);
-                                    ga4 = matrix.vectorTranspose(ga4);
-                                    U = matrix.multiply(FIYM[L], ga4);
-                                    // W=W+DT*LM*P/DFI*U - DT*LM*QG;
-                                    W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
-                                    W = matrix.addition(W, matrix.scalarSafe(QG, -DT * LM));
+                                        // U=FIYP(L,:,:).x.GA(L,:,J,I-1)
+                                        var ga3 = matrix.getColUnSafe3x(GA[L], J, I - 1);
+                                        ga3 = matrix.vectorTranspose(ga3);
+                                        U = matrix.multiply(FIYP[L], ga3);
+                                        // W=W+DT*LM*P/DFI*U;
+                                        W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
 
-                                    LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
-                                    LX = matrix.inverse(LX);
-                                    W = matrix.multiply(LX, W);
+                                        // U=FIYM(L,:,:).x.GA(L,:,J,I+1)
+                                        var ga4 = matrix.getColUnSafe3x(GA[L], J, I + 1);
+                                        ga4 = matrix.vectorTranspose(ga4);
+                                        U = matrix.multiply(FIYM[L], ga4);
+                                        // W=W+DT*LM*P/DFI*U - DT*LM*QG;
+                                        W = matrix.addition(W, matrix.scalarSafe(U, DT * LM * P / DFI));
+                                        W = matrix.addition(W, matrix.scalarSafe(QG, -DT * LM));
 
-                                    // G(:,KJ,I)=W;
-                                    for (var i16 = 0; i16 < G.length; i16++)
-                                        G[i16][KJ][I] = W[i16][0];
+                                        LX = matrix.addition(E, matrix.scalarSafe(LAX, DELTA));
+                                        LX = matrix.inverse(LX);
+                                        W = matrix.multiply(LX, W);
+
+                                        // G(:,KJ,I)=W;
+                                        for (var i16 = 0; i16 < G.length; i16++)
+                                            G[i16][KJ][I] = W[i16][0];
+
+                                    }   // end if (KSI >= 0)
 
                                 }   // end for J
                                 if ((NFI == 2*I) || (NFI == 2*I-1)) break;
