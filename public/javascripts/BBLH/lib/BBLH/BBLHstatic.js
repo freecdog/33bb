@@ -418,7 +418,7 @@ define(function (require, exports, module) {
                     for (K = NBX+10; K >= 0; K--) {
                         X=K*DX;
                         if (K >= LEF){
-                            SXX= -9.81/(C[0]*C[0]) * (HDAY - RTET(TETA)* Math.cos(TETA) - X*CF);
+                            SXX= -9.81*R/(C[0]*C[0]) * (HDAY - RTET(TETA)* Math.cos(TETA) - X*CF);
                             UFI[2] = SXX * (1 - CNU*SF*SF);
                             UFI[3] = SXX * (1 - CNU*CF*CF);
                             UFI[4] = -SXX * CNU*CF*SF;
