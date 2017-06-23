@@ -309,6 +309,7 @@ define(function (require, exports, module) {
 
             if (EPUR == 0) {
                 //S0 = 1.0;
+                // because small values and static pressure connected badly
                 S0 = 9.6 * 1e05 / (C0 * RC0);
             } else if (EPUR == 1) {
                 // TODO again Harry changed something
