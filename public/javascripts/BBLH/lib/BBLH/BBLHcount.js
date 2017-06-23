@@ -190,7 +190,8 @@ define(function (require, exports, module) {
                 LO = data.LO,
                 HI = data.HI,
                 OnlyStaticLoad = data.OnlyStaticLoad,
-                CMAX = data.CMAX;
+                CMAX = data.CMAX,
+                CAVERAGE = data.CAVERAGE;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
             var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX; // float
@@ -410,7 +411,9 @@ define(function (require, exports, module) {
                                     KJ = GABS - 1 + J;
 
                                     // TODO is it C0 or C[L]?
-                                    KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
+
+                                    //KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
+                                    KSI = JX * CF - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
 
                                     JX = JX + DX;
 

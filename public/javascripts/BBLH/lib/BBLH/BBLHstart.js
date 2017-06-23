@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             R=1,
             LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
-            RC0, C0, HTOTAL, HDAY, STATICTM, CMAX;    // float
+            RC0, C0, HTOTAL, HDAY, STATICTM, CMAX, CAVERAGE;    // float
         var H = Math.PI / 180, DELTA = 1;
         var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
@@ -289,6 +289,7 @@ define(function (require, exports, module) {
             FL = MatMult.createArray(NL, 5, 5);
 
             CMAX = 0;
+            CAVERAGE = 0;
             for (L = 0; L < NL; L++){
                 LE[L] = layers[L].E;
                 LRO[L] = layers[L].RO;
@@ -297,15 +298,18 @@ define(function (require, exports, module) {
 
                 C[L] = Math.sqrt( ( LE[L]*(1-LNU[L]) ) / (LRO[L]*(1+LNU[L])*(1-2*LNU[L])) );
                 if (CMAX < C[L]) CMAX = C[L];
+                CAVERAGE += C[L];
                 LRC[L]=C[L]*C[L]*LRO[L];
                 LB[L]=.5*(1-2*LNU[L])/(1-LNU[L]);
             }
+            CAVERAGE = CAVERAGE / NL;
 
             C0 = C[0];
             RC0 = LRC[0] / C0;
 
             if (EPUR == 0) {
-                S0 = 1.0;
+                //S0 = 1.0;
+                S0 = 9.6 * 1e05 / (C0 * RC0);
             } else if (EPUR == 1) {
                 // TODO again Harry changed something
                 X = X / RZ;
@@ -466,6 +470,7 @@ define(function (require, exports, module) {
             data.STATICTM = STATICTM;
             data.OnlyStaticLoad = OnlyStaticLoad;
             data.CMAX = CMAX;
+            data.CAVERAGE = CAVERAGE;
 
             // jmemOut init
             // 10 files
