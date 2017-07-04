@@ -413,7 +413,8 @@ define(function (require, exports, module) {
                                     // TODO is it C0 or C[L]?
 
                                     //KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
-                                    KSI = JX * CF - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
+                                    //KSI = JX * CF - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
+                                    KSI = JX * CF - (HTOTAL - CAVERAGE/C0*T + KSIN);    // or C[L]/C[0]
 
                                     JX = JX + DX;
 
