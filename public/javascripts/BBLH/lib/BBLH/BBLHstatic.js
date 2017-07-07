@@ -148,6 +148,7 @@ define(function (require, exports, module) {
             for (I = 0; I < 5; I++) QG[I] = 0;
 
             HEFFECT = 2 + 3 * HTOTAL;
+            if (HEFFECT > HDAY) HEFFECT = 0.5 * (HDAY + HTOTAL);
             data.HEFFECT = HEFFECT;
 
             LK[0]= Math.round((HEFFECT-HTOTAL)/DX);
@@ -418,7 +419,11 @@ define(function (require, exports, module) {
                     for (K = NBX+10; K >= 0; K--) {
                         X=K*DX;
                         if (K >= LEF){
-                            SXX= -9.81*R/(C[0]*C[0]) * (HDAY - RTET(TETA)* Math.cos(TETA) - X*CF);
+                            KSI = HDAY - RTET(TETA)* Math.cos(TETA) - X*CF;
+                            if (KSI > 0)
+                                SXX= -9.81 * R * KSI / (C[0]*C[0]);
+                            else
+                                SXX = 0;
                             UFI[2] = SXX * (1 - CNU*SF*SF);
                             UFI[3] = SXX * (1 - CNU*CF*CF);
                             UFI[4] = -SXX * CNU*CF*SF;
