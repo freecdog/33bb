@@ -148,7 +148,8 @@ define(function (require, exports, module) {
             for (I = 0; I < 5; I++) QG[I] = 0;
 
             HEFFECT = 2 + 3 * HTOTAL;
-            if (HEFFECT > HDAY) HEFFECT = 0.5 * (HDAY + HTOTAL);
+            var H0 = 0.5 * (HDAY -1 + HTOTAL); // -1 is typical size
+            if (HEFFECT > H0) HEFFECT = H0;
             data.HEFFECT = HEFFECT;
 
             LK[0]= Math.round((HEFFECT-HTOTAL)/DX);
@@ -419,7 +420,7 @@ define(function (require, exports, module) {
                     for (K = NBX+10; K >= 0; K--) {
                         X=K*DX;
                         if (K >= LEF){
-                            KSI = HDAY - RTET(TETA)* Math.cos(TETA) - X*CF;
+                            KSI = HDAY - (RTET(TETA) / R) * Math.cos(TETA) - X*CF;
                             if (KSI > 0)
                                 SXX= -9.81 * R * KSI / (C[0]*C[0]);
                             else
