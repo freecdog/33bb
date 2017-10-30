@@ -382,7 +382,8 @@ define(function (require, exports, module) {
 //                }
 //            }
 
-            DX = STEPX / Math.round(STEPX / DX);
+            var KSTEP = Math.round(STEPX / DX);
+            DX = STEPX / KSTEP;
             HTOTAL = 0;
             for (L = 1; L < NL; L++){
                 NSTEP[L] = Math.round(LH[L] / (R*STEPX));

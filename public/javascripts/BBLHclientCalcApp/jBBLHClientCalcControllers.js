@@ -69,7 +69,7 @@
                 //INDEX: 0,
                 //XDESTR: 4,
                 HDAY: 50,
-                STATICTM: 60,
+                STATICTM: 20,
                 OnlyStaticLoad: false,
 
                 NL: 2,
@@ -87,9 +87,9 @@
                         H: 2.0
                     },
                     {
-                        E: 5.45e10,
-                        RO: 2.667e3,
-                        NU: 0.26,
+                        E: 2.09e10,
+                        RO: 7.8e3,
+                        NU: 0.28,
                         H: 1.0
                     },
                     {

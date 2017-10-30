@@ -411,6 +411,10 @@ define(function (require, exports, module) {
             function INITLOAD(){
                 var I, K;
                 var B = LB[0];
+
+                UFI[0] = 0;
+                UFI[1] = 0;
+
                 for (I = 0; I <= NFI; I++){
                     TETA = TAR[I];
                     FIM = FUNC2.ATN(TETA);
@@ -419,25 +423,28 @@ define(function (require, exports, module) {
 
                     for (K = NBX+10; K >= 0; K--) {
                         X=K*DX;
-                        if (K >= LEF){
-                            KSI = HDAY - (RTET(TETA) / R) * Math.cos(TETA) - X*CF;
-                            if (KSI > 0)
-                                SXX= -9.81 * R * KSI / (C[0]*C[0]);
-                            else
-                                SXX = 0;
-                            UFI[2] = SXX * (1 - CNU*SF*SF);
-                            UFI[3] = SXX * (1 - CNU*CF*CF);
-                            UFI[4] = -SXX * CNU*CF*SF;
-                            if (K == LEF){
-                                //UEF = UFI;
-                                for (var j = 0; j < UFI.length; j++) UEF[j] = UFI[j];
-                                XEF = X;
-                            }
-                        } else {
-                            //UFI=UEF*X/XEF;
-                            var vector = matrix.scalarSafe(UEF, X/XEF);
-                            for (var m = 0; m < UFI.length; m++) UFI[m] = vector[m];
-                        }
+
+                        //if (K >= LEF){
+
+                        KSI = HDAY - (RTET(TETA) / R) * Math.cos(TETA) - X*CF;
+                        if (KSI > 0)
+                            SXX= -9.81 * R * KSI / (C[0]*C[0]);
+                        else
+                            SXX = 0;
+                        UFI[2] = SXX * (1 - CNU*SF*SF);
+                        UFI[3] = SXX * (1 - CNU*CF*CF);
+                        UFI[4] = -SXX * CNU*CF*SF;
+
+                        //    if (K == LEF){
+                        //        //UEF = UFI;
+                        //        for (var j = 0; j < UFI.length; j++) UEF[j] = UFI[j];
+                        //        XEF = X;
+                        //    }
+                        //} else {
+                        //    //UFI=UEF*X/XEF;
+                        //    var vector = matrix.scalarSafe(UEF, X/XEF);
+                        //    for (var m = 0; m < UFI.length; m++) UFI[m] = vector[m];
+                        //}
 
                         //G(:,IK,II)=UFI;
                         for (var gi = 0; gi < genSize; gi++) G[gi][K][I] = UFI[gi];
