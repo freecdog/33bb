@@ -268,7 +268,7 @@ define(function (require, exports, module) {
                         LM = C[L] / C0;
 
                         GABS = LO[L];
-                        //GABE = HI[L];
+                        GABE = HI[L];
 
                         if (T > 0){
                             I = NFI;

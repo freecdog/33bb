@@ -290,6 +290,7 @@ define(function (require, exports, module) {
                     console.log("T = " + T.toFixed(2));
 
                     LK[0] = NX - Math.round(HTOTAL/DX);
+                    CALCBOUNDARIES(LO, HI);
 
 
                     M = 0;
@@ -372,7 +373,7 @@ define(function (require, exports, module) {
                         LM = C[L] / C0;
 
                         GABS = LO[L];
-                        //GABE = HI[L];
+                        GABE = HI[L];
 
                         if (T > 0){
                             I = NFI;
@@ -607,6 +608,22 @@ define(function (require, exports, module) {
                 }
 
                 console.timeEnd("calculateDeformations");
+            }
+
+            // TODO it is dublicate from BBLHstatic.js
+            function CALCBOUNDARIES(A,B){
+                // INTEGER,DIMENSION(NL),INTENT(OUT)::A,B
+                var L,BS,BE,I;
+
+                for (L = 0; L < NL; L++){
+                    BS = 1;
+                    for (I = NL-1; I >= L+1; I--) {
+                        BS = BS + LK[I];
+                    }
+                    BE = BS + LK[L] - 1;
+                    A[L] = BS;
+                    B[L] = BE;
+                }
             }
 
             function getLayerNumberByCoordinate(X){
