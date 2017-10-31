@@ -90,7 +90,43 @@
                 console.error(response);
             });
 
-
+            //$http({
+            //    method: 'GET',
+            //    url: "http://localhost:3113/dat/def00_20171031200046zzz.txt.json"
+            //}).then(function successCallback(response) {
+            //    console.warn("response", response);
+            //
+            //    var JSZip = require('JSZip');
+            //    // download
+            //    var responseJson = response.data;
+            //    var zipped = atob(responseJson.base64);
+            //    unzipData(zipped, function(unzipped){
+            //        console.warn("ajaxWrapper", unzipped);
+            //        angular.extend(data, unzipped);
+            //
+            //        console.warn("Datatone", data);
+            //
+            //        $rootScope.$broadcast('dataHaveBeenLoaded');
+            //        $rootScope.$broadcast('loadingChanged', {visible: false});
+            //    });
+            //    function unzipData(zippedData, callback){
+            //        callback = callback || noop;
+            //        var unzip = new JSZip();
+            //        unzip.loadAsync(zippedData).then(function(unzipped){
+            //            unzipped.file("1.txt").async("string").then(function (fileData){
+            //                var parsedUnzippedData = JSON.parse(fileData);
+            //                fileData = null;
+            //                callback(parsedUnzippedData);
+            //            });
+            //        });
+            //    }
+            //
+            //}, function errorCallback(response) {
+            //    self.visible = true;
+            //    $rootScope.$broadcast('loadingChanged', {visible: false});
+            //
+            //    console.error(response);
+            //});
         }
         self.loadDataFile = loadDataFile;
 

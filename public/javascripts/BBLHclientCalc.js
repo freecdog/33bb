@@ -14,7 +14,9 @@ requirejs.config({
         angular: 'angular',
         'ui-bootstrap-tpls-0.12.0': 'ui-bootstrap-tpls-0.12.0',
         jBBLHClientCalcApp: 'BBLHclientCalcApp/jBBLHClientCalcApp',
-        jBBLHClientCalcControllers: 'BBLHclientCalcApp/jBBLHClientCalcControllers'
+        jBBLHClientCalcControllers: 'BBLHclientCalcApp/jBBLHClientCalcControllers',
+
+        JSZip: 'jszip'
     },
     shim: {
         'THREE': {
@@ -37,13 +39,92 @@ requirejs.config({
         },
         'jBBLHClientCalcControllers': {
             deps: ['jBBLHClientCalcApp']
+        },
+        'JSZip': {
+            exports: 'JSZip'
         }
     }
 });
 
-requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcControllers'], function(BBLH, Chart, angular, jBBLHClientCalcApp, jBBLHClientCalcControllers) {
+requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcControllers', 'JSZip'], function(BBLH, Chart, angular, jBBLHClientCalcApp, jBBLHClientCalcControllers, JSZip) {
 
     console.warn(angular, jBBLHClientCalcApp, jBBLHClientCalcControllers);
+
+    //var zip = new JSZip();
+    //var dataToZip = [0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5];
+    //var stringifiedData = JSON.stringify(dataToZip);
+    //zip.file("readme.txt", stringifiedData);
+    //stringifiedData = null;
+    //zip.generateAsync({type:"string"}).then(function(zipped) {
+    //    zip = null;
+    //    var unzip = new JSZip();
+    //    unzip.loadAsync(zipped).then(function(unzipped){
+    //        unzipped.file("readme.txt").async("string").then(function (fileData){
+    //            console.warn("unzip", JSON.parse(fileData));
+    //        });
+    //    });
+    //});
+
+    function noop(){}
+    function zipData(data, callback){
+        callback = callback || noop;
+        var zip = new JSZip();
+        var stringifiedData = JSON.stringify(data);
+        zip.file("1.txt", stringifiedData);
+        stringifiedData = null;
+        zip.generateAsync({type:"string"}).then(function(zipped) {
+            zip = null;
+            callback(zipped);
+        });
+    }
+    function unzipData(zippedData, callback){
+        callback = callback || noop;
+        var unzip = new JSZip();
+        unzip.loadAsync(zippedData).then(function(unzipped){
+            unzipped.file("1.txt").async("string").then(function (fileData){
+                var parsedUnzippedData = JSON.parse(fileData);
+                fileData = null;
+                callback(parsedUnzippedData);
+            });
+        });
+    }
+    //zipData(dataToZip, function(zipped){
+    //    unzipData(zipped, function(unzipped){
+    //        console.warn("functions", unzipped);
+    //    });
+    //});
+
+
+    // upload
+    //zipData([0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5], function(zipped){
+    //    var url = window.location.href;
+    //    var addressArr = url.split("/");
+    //    var b64 = btoa(zipped);
+    //    ajaxWrapper(
+    //        'POST',
+    //        {base64:b64},
+    //        addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
+    //        function(status, responseText){
+    //            console.warn("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
+    //        }
+    //    );
+    //});
+
+    // download
+    //ajaxWrapper(
+    //    'GET',
+    //    {},
+    //    "http://localhost:3113/dat/def00_20171031191348zzz.txt.json",
+    //    function(status, responseText){
+    //        console.warn("status code:", status, "server message:", responseText);
+    //        var responseJson = JSON.parse(responseText);
+    //        var zipped = atob(responseJson.base64);
+    //        unzipData(zipped, function(unzipped){
+    //            console.warn("ajaxWrapper", unzipped);
+    //        });
+    //    }
+    //);
+
 
     // init angular application (instead of ng-app directive in view)
     angular.element(document).ready(function() {
@@ -96,6 +177,20 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             window.connectToApp(data);
         });
 
+        // upload zipped
+        //zipData(dataToSend, function(zipped){
+        //    var url = window.location.href;
+        //    var addressArr = url.split("/");
+        //    var b64 = btoa(zipped);
+        //    ajaxWrapper(
+        //        'POST',
+        //        {base64:b64},
+        //        addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
+        //        function(status, responseText){
+        //            console.warn("dataToSend (zipped) has been post, status code:", status, "server message:", responseText);
+        //        }
+        //    );
+        //});
     }
     window.runCallback = runCallback;
 

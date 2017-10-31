@@ -63,13 +63,13 @@
             //});
 
             userData = {
-                TM: 10,
+                TM: 5,
                 ALFA: 0,
 
                 //INDEX: 0,
                 //XDESTR: 4,
                 HDAY: 50,
-                STATICTM: 20,
+                STATICTM: 5,
                 OnlyStaticLoad: false,
 
                 NL: 2,

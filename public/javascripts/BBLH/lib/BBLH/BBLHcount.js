@@ -530,7 +530,7 @@ define(function (require, exports, module) {
                     setTimeout(callback, 1);
                 },
                 function(err){
-                    if (err) console.log(err, "!!!!!!!!!!!");
+                    if (err) console.error(err, "!!!!!!!!!!!");
 
                     for (var i = 0; i < ARS.length; i++){
                         //noinspection JSUnresolvedFunction
@@ -539,7 +539,11 @@ define(function (require, exports, module) {
 
                     console.log("COUNTPROC has end work", (new Date()) - countProcProfiler, "ms to complete COUNTPROC");
 
+                    console.warn("roughSizeOfObject", roughSizeOfObject(memout));
+
                     calculateDeformations();
+
+                    console.warn("roughSizeOfObject with E", roughSizeOfObject(memout));
 
                     callback();
                 }
@@ -551,7 +555,7 @@ define(function (require, exports, module) {
                 // From book Filonenko-Borodich M.M. Teoriya uprugosti (str. 138)
                 console.time("calculateDeformations");
 
-                var e11 = [], e22 = [], e12 = [];
+                //var e11 = [], e22 = [], e12 = [];
 
                 var lenTime  = memout.length;
                 //var lenParam = memout[0].length;
@@ -598,9 +602,9 @@ define(function (require, exports, module) {
                         timexy.push(coordxy);
                     }
 
-                    e11.push(timexx);
-                    e22.push(timeyy);
-                    e12.push(timexy);
+                    //e11.push(timexx);
+                    //e22.push(timeyy);
+                    //e12.push(timexy);
 
                     memout[i][5] = timexx;
                     memout[i][6] = timeyy;
@@ -669,18 +673,12 @@ define(function (require, exports, module) {
                         K = Math.round(X/DX);
                         L = getLayerNumberByCoordinate(X);
 
-                        // TODO ask Harry to check it out
                         for (J = 1; J <= NTP+1; J++) {
                             if (needRealValues){
                                 // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J));
                                 var ans = 0;
                                 for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * G[lgi][K][ITP[J]];
                                 GOUT[M][I][J-1] = ans;
-
-                                //var g2 = [matrix.getColUnSafe(LG[L], M)];
-                                //var g3 = matrix.transpose([matrix.getColUnSafe3x(G, K, ITP[J])]);
-                                //var g2mult = matrix.multiply(g2, g3);
-                                //GOUT[M][I][J-1] = g2mult[0][0];
                             } else {
                                 // GOUT(M,I,J)=G(M,K,ITP(J));
                                 GOUT[M][I][J-1] = G[M][K][ITP[J]];
@@ -763,7 +761,39 @@ define(function (require, exports, module) {
                 return C;
             }
 
+            function roughSizeOfObject( object ) {
 
+                var objectList = [];
+                var stack = [ object ];
+                var bytes = 0;
+
+                while ( stack.length ) {
+                    var value = stack.pop();
+
+                    if ( typeof value === 'boolean' ) {
+                        bytes += 4;
+                    }
+                    else if ( typeof value === 'string' ) {
+                        bytes += value.length * 2;
+                    }
+                    else if ( typeof value === 'number' ) {
+                        bytes += 8;
+                    }
+                    else if
+                    (
+                        typeof value === 'object'
+                        && objectList.indexOf( value ) === -1
+                    )
+                    {
+                        objectList.push( value );
+
+                        for( var i in value ) {
+                            stack.push( value[ i ] );
+                        }
+                    }
+                }
+                return bytes;
+            }
 
 
             function ZET(T){
