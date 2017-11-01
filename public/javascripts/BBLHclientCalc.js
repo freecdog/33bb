@@ -66,15 +66,26 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
     //});
 
     function noop(){}
-    function zipData(data, callback){
+    function zipData(data, dataType, callback){
+        var startTime = Date.now();
         callback = callback || noop;
         var zip = new JSZip();
         var stringifiedData = JSON.stringify(data);
         zip.file("1.txt", stringifiedData);
         stringifiedData = null;
-        zip.generateAsync({type:"string"}).then(function(zipped) {
+        zip.generateAsync({
+            type: dataType,
+            compression: "deflate",
+            compressionOptions: {level: 4}
+        }).then(function(zipped) {
             zip = null;
             callback(zipped);
+            console.log("zipped for " + ((Date.now() - startTime)/1000).toString() + " s");
+            // 10s calc, 26617136 bytes
+            // len: 16569090, level: 1 === 5.758 s
+            // len: 15534884, level: 4 === 7.008 s (264mb -> 639mb on zipping -> 470mb -> 411mb)
+            // len: 15264680, level: 6 === 9.075 s
+            // len: 15104735, level: 9 === 14.129 s
         });
     }
     function unzipData(zippedData, callback){
@@ -87,6 +98,17 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
                 callback(parsedUnzippedData);
             });
         });
+    }
+    function uploadFormData(url, formData) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+        xhr.onload = function(e) {
+            console.warn("uplodaded", e);
+        };
+        // Listen to the upload progress.
+        xhr.upload.onprogress = function(e) {
+        };
+        xhr.send(formData);
     }
     //zipData(dataToZip, function(zipped){
     //    unzipData(zipped, function(unzipped){
@@ -178,19 +200,54 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         });
 
         // upload zipped
-        //zipData(dataToSend, function(zipped){
-        //    var url = window.location.href;
-        //    var addressArr = url.split("/");
-        //    var b64 = btoa(zipped);
-        //    ajaxWrapper(
-        //        'POST',
-        //        {base64:b64},
-        //        addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
-        //        function(status, responseText){
-        //            console.warn("dataToSend (zipped) has been post, status code:", status, "server message:", responseText);
-        //        }
-        //    );
-        //});
+        var recId = Math.random().toString().slice(2);
+        // TODO slice, zip, send, repeat
+
+        zipData(dataToSend, "blob", function(zipped){
+            var url = window.location.href;
+            var addressArr = url.split("/");
+            console.log("File is zipped, length is " + zipped.size);
+
+            //var b64 = btoa(zipped);
+            //ajaxWrapper(
+            //    'POST',
+            //    {base64:b64},
+            //    addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
+            //    function(status, responseText){
+            //        console.warn("dataToSend (zipped base64) has been post, status code:", status, "server message:", responseText);
+            //    }
+            //);
+
+            var formData = new FormData();
+            formData.append("zipped", zipped);
+            //formData.append("a", "b");
+
+            //ajaxWrapperFormData(
+            //    'POST',
+            //    formData,
+            //    //addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zipped.txt",
+            //    "/test",
+            //    function(status, responseText){
+            //        console.warn("dataToSend (zipped) has been post, status code:", status, "server message:", responseText);
+            //    }
+            //);
+
+            uploadFormData('/test', formData);
+
+            //function upload(blobOrFile) {
+            //    var xhr = new XMLHttpRequest();
+            //    xhr.open('POST', '/test', true);
+            //    xhr.onload = function(e) {
+            //        console.warn("uplodaded", e);
+            //    };
+            //    // Listen to the upload progress.
+            //    xhr.upload.onprogress = function(e) {
+            //    };
+            //    xhr.send(blobOrFile);
+            //}
+
+
+        });
     }
     window.runCallback = runCallback;
 
@@ -245,6 +302,23 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         };
         var parameters = JSON.stringify(theJson);
         xmlhttp.send(parameters);
+    }
+    function ajaxWrapperFormData(mode, formData, toUrl, callback){
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open(mode, toUrl, true);
+        //xmlhttp.setRequestHeader("Content-type", "multipart/form-data");
+        //xmlhttp.setRequestHeader("Content-type", undefined);
+        xmlhttp.setRequestHeader("Content-type", false);
+        xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                console.warn("xmlhttp.responseText", xmlhttp.responseText);
+                callback(xmlhttp.status, xmlhttp.responseText);
+            }else {
+                console.log("xmlhttp.readyState:", xmlhttp.readyState == 4, "status:", xmlhttp.status);
+                //callback(xmlhttp.status); // here we had several callbacks fired while we need only one
+            }
+        };
+        xmlhttp.send(formData);
     }
 
     var domCurrentS0 = document.getElementById("currentS0");

@@ -31,3 +31,8 @@ html
         p
             h3
                 a(href='/bb') single layer results (/bb)
+        //-
+            p Test file uploading
+            form(method='post' enctype='multipart/form-data' action='/test')
+                input(type='file' name='zipped')
+                input(type="submit", value="Upload")

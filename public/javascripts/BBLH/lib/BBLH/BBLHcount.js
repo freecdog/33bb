@@ -287,7 +287,7 @@ define(function (require, exports, module) {
 
                     BBLHstatic.FICTCELLS(GAF1, GAF2, G);
 
-                    console.log("T = " + T.toFixed(2));
+                    //console.log("T = " + T.toFixed(2));
 
                     LK[0] = NX - Math.round(HTOTAL/DX);
                     CALCBOUNDARIES(LO, HI);
@@ -514,6 +514,8 @@ define(function (require, exports, module) {
                         TOUT += STEP;
                     }
 
+                    if (T >= 0) console.log(jStepsCnt.toString() + ") T = " + T.toFixed(2) + ", " + (Date.now()-timeAtStart).toString() + " ms to count(); CountOut:" + (Date.now() - timeBeforeCountOut).toString() + " ms");
+
                     T += DT;
                     data.currentT = T;
 
@@ -522,7 +524,7 @@ define(function (require, exports, module) {
                     GA.length = 0;
 
                     jStepsCnt++;
-                    if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()", '; CountOut:', Date.now() - timeBeforeCountOut, 'ms');
+                    //if (T >= 0) console.log(jStepsCnt, ")", Date.now()-timeAtStart, "ms to count()", '; CountOut:', Date.now() - timeBeforeCountOut, 'ms');
 
                     //callback();
                     // It should be a joke, but setTimeout works faster or for the same time! How come?

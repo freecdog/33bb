@@ -18,6 +18,18 @@
         return check;
     }
     function noop(){}
+    function unzipData(zippedData, callback){
+        var JSZip = require('JSZip');
+        callback = callback || noop;
+        var unzip = new JSZip();
+        unzip.loadAsync(zippedData).then(function(unzipped){
+            unzipped.file("1.txt").async("string").then(function (fileData){
+                var parsedUnzippedData = JSON.parse(fileData);
+                fileData = null;
+                callback(parsedUnzippedData);
+            });
+        });
+    }
 
     jBBLHControllers.controller('jBBLHloadingController', ['$rootScope', function($rootScope) {
         var self = this;
@@ -96,7 +108,6 @@
             //}).then(function successCallback(response) {
             //    console.warn("response", response);
             //
-            //    var JSZip = require('JSZip');
             //    // download
             //    var responseJson = response.data;
             //    var zipped = atob(responseJson.base64);
@@ -108,20 +119,12 @@
             //
             //        $rootScope.$broadcast('dataHaveBeenLoaded');
             //        $rootScope.$broadcast('loadingChanged', {visible: false});
+            //
+            //        $rootScope.$digest();
             //    });
-            //    function unzipData(zippedData, callback){
-            //        callback = callback || noop;
-            //        var unzip = new JSZip();
-            //        unzip.loadAsync(zippedData).then(function(unzipped){
-            //            unzipped.file("1.txt").async("string").then(function (fileData){
-            //                var parsedUnzippedData = JSON.parse(fileData);
-            //                fileData = null;
-            //                callback(parsedUnzippedData);
-            //            });
-            //        });
-            //    }
             //
             //}, function errorCallback(response) {
+            //    console.error("error on loadDataFile", response);
             //    self.visible = true;
             //    $rootScope.$broadcast('loadingChanged', {visible: false});
             //
@@ -740,7 +743,7 @@
                             yAxes: [{
                                 ticks: {
                                     callback: function(value, index, values){
-                                        if (index == 0) console.warn(value, index, values);
+                                        //if (index == 0) console.warn(value, index, values);
                                         return value.toExponential(2);
                                     }
                                 }

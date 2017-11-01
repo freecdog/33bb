@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var multer = require('multer');
+var multerUpload = multer({ dest: 'uploads/' });
 
 var routes = require('./routes/index');
 
@@ -41,6 +43,17 @@ app.use(logger('dev'));
 // special limit definition (413 html error)
 app.use(bodyParser.json({limit: '2000mb'}));
 app.use(bodyParser.urlencoded({limit: '2000mb', extended: true}));
+app.post('/test', function(req,res,next){
+    console.log("going to save zipped data, which sent as multipart/form-data");
+    next();
+    }, multerUpload.single('zipped'), function(req, res){    // "zipped" is a formData field name
+    //}, multerUpload.fields([{name: 'zipped', maxCount: 1}]), function(req, res){    // "zipped" is a formData field name
+    if (req.file) {
+        console.dir(req.file);
+        return res.end('Thank you for the file');
+    }
+    res.end('Missing file');
+});
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
