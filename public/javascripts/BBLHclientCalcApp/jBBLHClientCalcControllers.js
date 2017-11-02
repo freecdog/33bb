@@ -336,7 +336,7 @@
                     currentDataset.data = verticesFields[si];
                     objectShapeChartData.datasets.push(currentDataset);
                 }
-                console.warn("objectShapeChartData", objectShapeChartData);
+                console.log("objectShapeChartData", objectShapeChartData);
 
                 objectShapeChartOptions = {
                     scale: {

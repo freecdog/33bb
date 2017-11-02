@@ -326,7 +326,9 @@ html
                                         input(ng-model="InputCalcCtrl.inputParams.needRealValues" type="checkbox" class="form-control input-md" placeholder="needRealValues")
 
 
-        h3(id="currentTime")
+        div(class="container")
+            div(class="row")
+                h3(id="currentTime")
         div(ng-controller="jClientCalcController as CalcCtrl")
             div(class="container" ng-show="true")
 
@@ -341,6 +343,9 @@ html
                     h3(id="currentGeomprocS") S = {{CalcCtrl.data.geomprocS}}
                 div(class="row")
                     h3(id="currentGeomprocR") R = {{CalcCtrl.data.geomprocR}}
+                div(class="row")
+                    div(class="progress")
+                        div(id="currentProgress" class="progress-bar progress-bar-success" style="width: 0%")
 
                 //-div(class="row")
                     a(class="btn btn-primary" ng-click="this.showCavform = !this.showCavform") BBLHdat/_Cavform.dat (expand/collapse)

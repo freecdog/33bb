@@ -48,22 +48,7 @@ requirejs.config({
 
 requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcControllers', 'JSZip'], function(BBLH, Chart, angular, jBBLHClientCalcApp, jBBLHClientCalcControllers, JSZip) {
 
-    console.warn(angular, jBBLHClientCalcApp, jBBLHClientCalcControllers);
-
-    //var zip = new JSZip();
-    //var dataToZip = [0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5];
-    //var stringifiedData = JSON.stringify(dataToZip);
-    //zip.file("readme.txt", stringifiedData);
-    //stringifiedData = null;
-    //zip.generateAsync({type:"string"}).then(function(zipped) {
-    //    zip = null;
-    //    var unzip = new JSZip();
-    //    unzip.loadAsync(zipped).then(function(unzipped){
-    //        unzipped.file("readme.txt").async("string").then(function (fileData){
-    //            console.warn("unzip", JSON.parse(fileData));
-    //        });
-    //    });
-    //});
+    console.log(angular, jBBLHClientCalcApp, jBBLHClientCalcControllers);
 
     function noop(){}
     function zipData(data, dataType, callback){
@@ -88,65 +73,40 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             // len: 15104735, level: 9 === 14.129 s
         });
     }
-    function unzipData(zippedData, callback){
+    function unzipData(zippedData, dataType, callback){
+        var JSZip = require('JSZip');
         callback = callback || noop;
         var unzip = new JSZip();
         unzip.loadAsync(zippedData).then(function(unzipped){
-            unzipped.file("1.txt").async("string").then(function (fileData){
-                var parsedUnzippedData = JSON.parse(fileData);
-                fileData = null;
-                callback(parsedUnzippedData);
+            unzipped.file("1.txt").async(dataType).then(function (fileData){
+                var fr = new FileReader();
+                fr.onload = function() {
+                    fileData = null;
+                    callback(JSON.parse(this.result));
+                };
+                fr.readAsText(fileData);
             });
         });
     }
-    function uploadFormData(url, formData) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', url, true);
-        xhr.onload = function(e) {
-            console.warn("uplodaded", e);
-        };
-        // Listen to the upload progress.
-        xhr.upload.onprogress = function(e) {
-        };
-        xhr.send(formData);
-    }
+    // test
+    //var dataToZip = [0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5];
     //zipData(dataToZip, function(zipped){
     //    unzipData(zipped, function(unzipped){
     //        console.warn("functions", unzipped);
     //    });
     //});
 
-
-    // upload
-    //zipData([0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5], function(zipped){
-    //    var url = window.location.href;
-    //    var addressArr = url.split("/");
-    //    var b64 = btoa(zipped);
-    //    ajaxWrapper(
-    //        'POST',
-    //        {base64:b64},
-    //        addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
-    //        function(status, responseText){
-    //            console.warn("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
-    //        }
-    //    );
-    //});
-
-    // download
-    //ajaxWrapper(
-    //    'GET',
-    //    {},
-    //    "http://localhost:3113/dat/def00_20171031191348zzz.txt.json",
-    //    function(status, responseText){
-    //        console.warn("status code:", status, "server message:", responseText);
-    //        var responseJson = JSON.parse(responseText);
-    //        var zipped = atob(responseJson.base64);
-    //        unzipData(zipped, function(unzipped){
-    //            console.warn("ajaxWrapper", unzipped);
-    //        });
-    //    }
-    //);
-
+    function uploadFormData(url, formData, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+        xhr.onload = function(e) {
+            console.log("uplodaded formData", e);
+            callback(e);
+        };
+        // Listen to the upload progress.
+        //xhr.upload.onprogress = function(e) {};
+        xhr.send(formData);
+    }
 
     // init angular application (instead of ng-app directive in view)
     angular.element(document).ready(function() {
@@ -154,13 +114,17 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
     });
 
     var data = (new BBLH.Datatone());
-    //BBLH.BBLHup.run({}, runCallback);
 
+    var domCurrentProgress = document.getElementById("currentProgress");
     var domCurrentTime = document.getElementById("currentTime");
     domCurrentTime.innerHTML = "current time";
     var hasSent = false;
+    var hasZipped = false;
+    var runCallbackFired = false;
 
     function runCallback(){
+        runCallbackFired = true;
+
         var dataToSend = {};
         //dataToSend.memOut = data.memOut;
         //dataToSend.G = data.G;
@@ -189,64 +153,43 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         var name = buildName(data);
 
         console.warn("dataToSend", dataToSend);
-        // TODO use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
-        ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
-            console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
-
-            hasSent = true;
-            domCurrentTime.innerHTML += " (sent)";
-
-            window.connectToApp(data);
-        });
+        // FIXED use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
+        //ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
+        //    console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
+        //
+        //    hasSent = true;
+        //    domCurrentTime.innerHTML += " (sent)";
+        //
+        //    window.connectToApp(data);
+        //});
 
         // upload zipped
         var recId = Math.random().toString().slice(2);
         // TODO slice, zip, send, repeat
 
+        var domLastValue = domCurrentTime.innerHTML;
+        domCurrentTime.innerHTML += "<br>start zipping now";
+
+        var zipStartTime = Date.now();
         zipData(dataToSend, "blob", function(zipped){
             var url = window.location.href;
             var addressArr = url.split("/");
             console.log("File is zipped, length is " + zipped.size);
 
-            //var b64 = btoa(zipped);
-            //ajaxWrapper(
-            //    'POST',
-            //    {base64:b64},
-            //    addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zzz.txt",
-            //    function(status, responseText){
-            //        console.warn("dataToSend (zipped base64) has been post, status code:", status, "server message:", responseText);
-            //    }
-            //);
+            domCurrentTime.innerHTML = domLastValue + "<br>zipped for <span class='text-success'>" + ((Date.now()-zipStartTime)/1000).toString() + " s</span>";
 
             var formData = new FormData();
             formData.append("zipped", zipped);
-            //formData.append("a", "b");
+            formData.append("somedata", JSON.stringify([0, 1, "2", [6, "7", {c: "8", d: 9}, 10],{a: 3, b: "4"}, 5]));
 
-            //ajaxWrapperFormData(
-            //    'POST',
-            //    formData,
-            //    //addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + "zipped.txt",
-            //    "/test",
-            //    function(status, responseText){
-            //        console.warn("dataToSend (zipped) has been post, status code:", status, "server message:", responseText);
-            //    }
-            //);
+            domLastValue = domCurrentTime.innerHTML;
+            domCurrentTime.innerHTML += "<br>start zipping now";
 
-            uploadFormData('/test', formData);
-
-            //function upload(blobOrFile) {
-            //    var xhr = new XMLHttpRequest();
-            //    xhr.open('POST', '/test', true);
-            //    xhr.onload = function(e) {
-            //        console.warn("uplodaded", e);
-            //    };
-            //    // Listen to the upload progress.
-            //    xhr.upload.onprogress = function(e) {
-            //    };
-            //    xhr.send(blobOrFile);
-            //}
-
-
+            var uploadStartTime = Date.now();
+            uploadFormData(addressArr[0] + "//" + addressArr[2] + "/memout/zipped" + "/" + name, formData, function(event){
+                domCurrentTime.innerHTML = domLastValue + "<br>sent for <span class='text-success'>" + ((Date.now()-uploadStartTime)/1000).toString() + " s</span>";
+                domCurrentProgress.style.width = "100%";
+            });
         });
     }
     window.runCallback = runCallback;
@@ -303,23 +246,6 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         var parameters = JSON.stringify(theJson);
         xmlhttp.send(parameters);
     }
-    function ajaxWrapperFormData(mode, formData, toUrl, callback){
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open(mode, toUrl, true);
-        //xmlhttp.setRequestHeader("Content-type", "multipart/form-data");
-        //xmlhttp.setRequestHeader("Content-type", undefined);
-        xmlhttp.setRequestHeader("Content-type", false);
-        xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                console.warn("xmlhttp.responseText", xmlhttp.responseText);
-                callback(xmlhttp.status, xmlhttp.responseText);
-            }else {
-                console.log("xmlhttp.readyState:", xmlhttp.readyState == 4, "status:", xmlhttp.status);
-                //callback(xmlhttp.status); // here we had several callbacks fired while we need only one
-            }
-        };
-        xmlhttp.send(formData);
-    }
 
     var domCurrentS0 = document.getElementById("currentS0");
     var domCurrentGeomprocS = document.getElementById("currentGeomprocS");
@@ -341,18 +267,24 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             return;
         }
 
+        if (runCallbackFired) return;
+
         var currentT;
         var TM = data.STATICTM + data.TM;
 
         if (data.status.isCOUNTPROC) currentT = data.STATICTM + data.currentT;
         else currentT = data.currentT;
+        if (currentT > data.STATICTM + data.TM) currentT = data.STATICTM + data.TM;
+
+        var progressLevel = currentT / (data.STATICTM + data.TM) ;
+        domCurrentProgress.style.width = parseInt(progressLevel * 100).toString() + "%";
 
         var str = "";
         if (currentT < 0){
             str += "preparing...";
             str += " (" + (1.1 * data.XDESTR + currentT).toFixed(2) + " of " + (1.1 * data.XDESTR).toFixed(2) +  ")";
         } else if (data.status.active) {
-            str += currentT.toFixed(2) + " of " + TM.toFixed(2) + "["+ data.STATICTM.toFixed(2) + "+" + data.TM.toFixed(2) + "] s";
+            str += currentT.toFixed(2) + " of " + TM.toFixed(2) + " ["+ data.STATICTM.toFixed(2) + "+" + data.TM.toFixed(2) + "] s";
             str += " (" + (currentT / TM * 100).toFixed(0) + "%)";
 
             if (lastT != currentT){
@@ -365,12 +297,21 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
                 lastDiff = Date.now();
                 lastT = currentT;
             }
-            str += " [" + ((Date.now() - data.status.startTime)/1000).toFixed(0) + "s of estimated total " + (maximalT/1000).toFixed(0) + "s" + " (or " + ((Date.now() - data.status.startTime + estimatedT)/1000).toFixed(0) + "s)" + "]";
+            str += " [";
+            str += "<span class='text-success'>";
+            str += ((Date.now() - data.status.startTime)/1000).toFixed(0) + "s";
+            str += "</span>";
+            str += " of estimated total " + (maximalT/1000).toFixed(0) + "s" + " (or ";
+            str += "<span class='text-success'>";
+            str += ((Date.now() - data.status.startTime + estimatedT)/1000).toFixed(0) + "s";
+            str += "</span>";
+            str += ")" + "]";
         } else {
             str += TM.toFixed(2) + " s";
             str += " (" + (TM / TM * 100).toFixed(0) + "%)";
         }
         if (data.status.duration) str += "; " + (data.status.duration/1000/60).toFixed(2) + " min passed";
+        if (data.status.duration && hasZipped) str += " (zipped)";
         if (data.status.duration && hasSent) str += " (sent)";
         domCurrentTime.innerHTML = str;
 

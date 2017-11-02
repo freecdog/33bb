@@ -110,4 +110,86 @@ router.post('/:name', function(req, res) {
     });
 });
 
+var multer = require('multer');
+var multerDownloadFolder = path.join(__dirname, '..', 'uploads');
+var multerUpload = multer({ dest: multerDownloadFolder });
+router.post('/zipped/:name', multerUpload.single('zipped'), function(req, res){    // "zipped" is a formData field name
+//}, multerUpload.fields([{name: 'zipped', maxCount: 1}]), function(req, res){
+    if (req.file) {
+        console.dir(req.file);
+
+        var recentFilePath = path.join(multerDownloadFolder, req.file.filename);
+
+        var name = req.params.name;
+        var date = currentDateToStr();
+        console.log("date:", date);
+
+        var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.json');
+        copyFileTo(
+            recentFilePath,
+            pathToFile,
+            //path.join(multerDownloadFolder, '..', 'public', 'dat', req.file.filename),
+            { replace: true },
+            function(){
+                fs.unlink(recentFilePath, noop);
+            }
+        );
+
+        return res.end('Thank you for the file');
+    }
+    res.end('Missing file');
+});
+function copyFileTo(src, dst, options, callback){
+    var mkdirp = require('mkdirp');
+
+    var srcPath = src;
+    var dstPath = dst;
+
+    var dstDir = path.dirname(dstPath);
+    mkdirp(dstDir, function(err){
+        if (err) throw err;
+
+        fscopy(srcPath, dstPath, options, function (err) {
+            if (err) throw err;
+            console.log("Copied", srcPath, "to", dstPath);
+            callback();
+        });
+    });
+}
+function fscopy(src, dst, opts, cb) {
+    // modified from https://github.com/coolaj86/utile-fs/blob/master/fs.extra/fs.copy.js
+    if ('function' === typeof opts) {
+        cb = opts;
+        opts = null;
+    }
+    opts = opts || {};
+
+    function copyHelper(err) {
+        var is
+            , os
+            ;
+        if (!err && !(opts.replace || opts.overwrite)) {
+            return cb(new Error("File " + dst + " exists."));
+        }
+        fs.stat(src, function (err, stat) {
+            if (err) {
+                return cb(err);
+            }
+            is = fs.createReadStream(src);
+            os = fs.createWriteStream(dst);
+
+            is.pipe(os);
+            os.on('close', function (err) {
+                if (err) {
+                    return cb(err);
+                }
+                fs.utimes(dst, stat.atime, stat.mtime, cb);
+            });
+        });
+    }
+    cb = cb || noop;
+    fs.stat(dst, copyHelper);
+}
+function noop(){};
+
 module.exports = router;

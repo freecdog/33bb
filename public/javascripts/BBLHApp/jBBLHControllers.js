@@ -18,15 +18,18 @@
         return check;
     }
     function noop(){}
-    function unzipData(zippedData, callback){
+    function unzipData(zippedData, dataType, callback){
         var JSZip = require('JSZip');
         callback = callback || noop;
         var unzip = new JSZip();
         unzip.loadAsync(zippedData).then(function(unzipped){
-            unzipped.file("1.txt").async("string").then(function (fileData){
-                var parsedUnzippedData = JSON.parse(fileData);
-                fileData = null;
-                callback(parsedUnzippedData);
+            unzipped.file("1.txt").async(dataType).then(function (fileData){
+                var fr = new FileReader();
+                fr.onload = function() {
+                    fileData = null;
+                    callback(JSON.parse(this.result));
+                };
+                fr.readAsText(fileData);
             });
         });
     }
@@ -73,6 +76,7 @@
             $rootScope.$broadcast('loadingChanged', {visible: true});
 
             // TODO loading bar (0... in progress... 100%)
+            /*
             $http({
                 method: 'GET',
                 url: '/memout' + fileObject.path
@@ -101,35 +105,35 @@
 
                 console.error(response);
             });
+            */
 
-            //$http({
-            //    method: 'GET',
-            //    url: "http://localhost:3113/dat/def00_20171031200046zzz.txt.json"
-            //}).then(function successCallback(response) {
-            //    console.warn("response", response);
-            //
-            //    // download
-            //    var responseJson = response.data;
-            //    var zipped = atob(responseJson.base64);
-            //    unzipData(zipped, function(unzipped){
-            //        console.warn("ajaxWrapper", unzipped);
-            //        angular.extend(data, unzipped);
-            //
-            //        console.warn("Datatone", data);
-            //
-            //        $rootScope.$broadcast('dataHaveBeenLoaded');
-            //        $rootScope.$broadcast('loadingChanged', {visible: false});
-            //
-            //        $rootScope.$digest();
-            //    });
-            //
-            //}, function errorCallback(response) {
-            //    console.error("error on loadDataFile", response);
-            //    self.visible = true;
-            //    $rootScope.$broadcast('loadingChanged', {visible: false});
-            //
-            //    console.error(response);
-            //});
+            $http({
+                method: 'GET',
+                url: '/dat' + fileObject.path,
+                //url: "http://localhost:3113/dat/8419087d448c9a048d509bf3293fff48",
+                responseType: "blob"
+            }).then(function successCallback(response) {
+                console.warn("response", response);
+
+                unzipData(response.data, "blob", function(unzipped){
+                    console.warn("unzippedData", unzipped);
+                    angular.extend(data, unzipped);
+
+                    console.warn("Datatone", data);
+
+                    $rootScope.$broadcast('dataHaveBeenLoaded');
+                    $rootScope.$broadcast('loadingChanged', {visible: false});
+
+                    $rootScope.$digest();
+                });
+
+            }, function errorCallback(response) {
+                console.error("error on loadDataFile", response);
+                self.visible = true;
+                $rootScope.$broadcast('loadingChanged', {visible: false});
+
+                console.error(response);
+            });
         }
         self.loadDataFile = loadDataFile;
 
