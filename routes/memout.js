@@ -124,7 +124,7 @@ router.post('/zipped/:name', multerUpload.single('zipped'), function(req, res){ 
         var date = currentDateToStr();
         console.log("date:", date);
 
-        var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.json');
+        var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + date + name + '.zip.json');
         copyFileTo(
             recentFilePath,
             pathToFile,
