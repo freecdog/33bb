@@ -148,28 +148,73 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
 
         var url = window.location.href;
         var addressArr = url.split("/");
-        //ajaxWrapper('POST', data.memOut, addressArr[0] + "//" + addressArr[2] + "/memout", function(status, responseText){
-        // 360x5_30s_4xd_epur0_45deg_circleCube_config(19min)
         var name = buildName(data);
 
-        console.warn("dataToSend", dataToSend);
-        // FIXED use zip files instead of json (https://github.com/Stuk/jszip), it should reduce size of files by 3 times
-        //ajaxWrapper('POST', dataToSend, addressArr[0] + "//" + addressArr[2] + "/memout" + "/" + name, function(status, responseText){
-        //    console.log("dataToSend has been post to", addressArr[2], "status code:", status, "server message:", responseText);
-        //
-        //    hasSent = true;
-        //    domCurrentTime.innerHTML += " (sent)";
-        //
-        //    window.connectToApp(data);
-        //});
+        console.log("dataToSend", dataToSend);
 
         // upload zipped
-        var recId = Math.random().toString().slice(2);
-        // TODO slice, zip, send, repeat
+        // DONE slice, zip, send, repeat
+        var async = require('async');
 
+        var zipId = Math.random().toString().slice(2);
+        var MEMOUT_ZIP_LENGTH = 17;
+        var domLastValue = domCurrentTime.innerHTML;
+        var asyncWhilstIndex = 0;
+        var zipSteps = Math.ceil(dataToSend.memout.length / MEMOUT_ZIP_LENGTH); // ceil(7/3) = 3; ceil(6/3) = 2
+        var timeBeforeZipAndUpload = Date.now();
+
+        async.whilst(
+            function(){
+                var calcNext = dataToSend.memout.length > 0;
+
+                return calcNext;
+            },
+            function(callback){
+                domCurrentTime.innerHTML = domLastValue + "<br>zipping " + asyncWhilstIndex.toString() + " of " + zipSteps.toString();
+
+                var recMemoutSplice = dataToSend.memout.splice(-MEMOUT_ZIP_LENGTH);
+
+                zipData(recMemoutSplice, "blob", function(zipped){
+                    console.log(asyncWhilstIndex.toString() + ") recMemoutSplice is zipped, length is " + zipped.size);
+                    var formData = new FormData();
+                    formData.append("zipped", zipped);
+                    formData.append("options", JSON.stringify( {memoutIndex: asyncWhilstIndex, name: name} ));
+
+                    domCurrentTime.innerHTML = domLastValue + "<br>uploading " + asyncWhilstIndex.toString() + " of " + zipSteps.toString();
+
+                    uploadFormData(addressArr[0]+"//"+addressArr[2]+"/memout/zippart/" + zipId, formData, function(event){
+                        zipped = null;
+                        formData = null;
+                        recMemoutSplice = null;
+
+                        asyncWhilstIndex++;
+                        callback();
+                    });
+                });
+            },
+            function(err){
+                if (err) console.error(err, "BBLHclientCalc.runCallback() error");
+
+                zipData(dataToSend, "blob", function(zipped){
+                    console.log(asyncWhilstIndex.toString() + ") The rest of dataToSend is zipped, length is " + zipped.size);
+                    var formData = new FormData();
+                    formData.append("zipped", zipped);
+                    formData.append("options", JSON.stringify( {memoutIndex: asyncWhilstIndex, lastPart: true, name: name} ));
+
+                    uploadFormData(addressArr[0]+"//"+addressArr[2]+"/memout/zippart/" + zipId, formData, function(event){
+                        zipped = null;
+                        formData = null;
+
+                        domCurrentTime.innerHTML = domLastValue + "<br>zipped and uploaded for <span class='text-success'>" + ((Date.now()-timeBeforeZipAndUpload)/1000).toString() + " s</span>";
+                        domCurrentProgress.style.width = "100%";
+                    });
+                });
+            }
+        );
+
+        /*
         var domLastValue = domCurrentTime.innerHTML;
         domCurrentTime.innerHTML += "<br>start zipping now";
-
         var zipStartTime = Date.now();
         zipData(dataToSend, "blob", function(zipped){
             var url = window.location.href;
@@ -191,6 +236,7 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
                 domCurrentProgress.style.width = "100%";
             });
         });
+        */
     }
     window.runCallback = runCallback;
 

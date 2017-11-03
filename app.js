@@ -19,7 +19,8 @@ var BBLfilesList = require('./routes/BBLfilesList');
 var BBLclientCalc = require('./routes/BBLclientCalc');
 var BBLviewRoute = require('./routes/BBLviewRoute');
 
-var BBLHfilesList = require('./routes/BBLHfilesList');
+//var BBLHfilesList = require('./routes/BBLHfilesList');
+var BBLHzipFilesList = require('./routes/BBLHzipFilesList');
 var BBLHclientCalc = require('./routes/BBLHclientCalc');
 var BBLHviewRoute = require('./routes/BBLHviewRoute');
 
@@ -64,7 +65,8 @@ app.use('/BBLfilesList', BBLfilesList);
 app.use('/c', BBLclientCalc);
 app.use('/v', BBLviewRoute);
 
-app.use('/BBLHfilesList', BBLHfilesList);
+//app.use('/BBLHfilesList', BBLHfilesList);
+app.use('/BBLHzipFilesList', BBLHzipFilesList);
 app.use('/hc', BBLHclientCalc);
 app.use('/hv', BBLHviewRoute);
 

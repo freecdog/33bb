@@ -70,62 +70,89 @@
         }
 
         function loadDataFile(fileObject){
-            //console.warn(fileObject);
+            console.warn(fileObject);
 
             self.visible = false;
             $rootScope.$broadcast('loadingChanged', {visible: true});
 
             // TODO loading bar (0... in progress... 100%)
-            /*
             $http({
                 method: 'GET',
-                url: '/memout' + fileObject.path
+                url: '/memout/zipped' + fileObject.path
+                //responseType: "blob"
             }).then(function successCallback(response) {
-                console.warn("response", response);
-                //var sceneInputData = response.data.inputData;
+                //console.warn("response", response);
+
+                var async = require('async');
+
+                var dataIterator = 0;
+                var dataLength = response.data.filesNameList.length;
+
+                async.whilst(
+                    function(){
+                        var calcNext = dataIterator < dataLength;
+
+                        return calcNext;
+                    },
+                    function(callback){
+                        var zipName = response.data.filesNameList[dataLength - dataIterator -1];
+                        var zipUrl = '/dat' + fileObject.path + '/' + zipName;
+
+                        $http({
+                            method: 'GET',
+                            url: zipUrl,
+                            responseType: "blob"
+                        }).then(
+                            function successCallback(response){
+                                unzipData(response.data, "blob", function(unzipped){
+                                    console.log("unzippedData", unzipped);
+                                    if (dataIterator == 0)
+                                        angular.extend(data, unzipped);
+                                    else{
+                                        //angular.extend(data.memout, unzipped);
+                                        for (var i = 0; i < unzipped.length; i++){
+                                            data.memout.push(unzipped[i]);
+                                        }
+                                    }
+
+                                    response.data = null;
+
+                                    dataIterator++;
+                                    callback();
+                                });
+                            },
+                            function errorCallback(response) {
+                                console.error("error on loadDataFile", response);
+                                self.visible = true;
+                                $rootScope.$broadcast('loadingChanged', {visible: false});
+
+                                console.error(response);
+                            }
+                        );
+                    },
+                    function(err){
+                        if (err) console.error(err, "BBLHclientCalc.runCallback() error");
+
+                        console.warn("Datatone", data);
+
+                        $rootScope.$broadcast('dataHaveBeenLoaded');
+                        $rootScope.$broadcast('loadingChanged', {visible: false});
+
+                        $rootScope.$digest();
+                    }
+                );
+
+                //unzipData(response.data, "blob", function(unzipped){
+                //    console.warn("unzippedData", unzipped);
+                //    angular.extend(data, unzipped);
                 //
-                //var sceneInput = {
-                //    userInput: true,
-                //    userData: sceneInputData
-                //};
-                //var BBLHstart = BBLH.BBLHstart;
-                //BBLHstart.STARTPROC(sceneInput, function(){
-                //    data.G = response.data.G;
-                    angular.extend(data, response.data);
-
-                    console.warn("Datatone", data);
-
-                    $rootScope.$broadcast('dataHaveBeenLoaded');
-                    $rootScope.$broadcast('loadingChanged', {visible: false});
-
+                //    console.warn("Datatone", data);
+                //
+                //    $rootScope.$broadcast('dataHaveBeenLoaded');
+                //    $rootScope.$broadcast('loadingChanged', {visible: false});
+                //
+                //    $rootScope.$digest();
                 //});
-            }, function errorCallback(response) {
-                self.visible = true;
-                $rootScope.$broadcast('loadingChanged', {visible: false});
-
-                console.error(response);
-            });
-            */
-
-            $http({
-                method: 'GET',
-                url: '/dat' + fileObject.path,
-                //url: "http://localhost:3113/dat/8419087d448c9a048d509bf3293fff48",
-                responseType: "blob"
-            }).then(function successCallback(response) {
-                console.warn("response", response);
-
-                unzipData(response.data, "blob", function(unzipped){
-                    console.warn("unzippedData", unzipped);
-                    angular.extend(data, unzipped);
-
-                    console.warn("Datatone", data);
-
-                    $rootScope.$broadcast('dataHaveBeenLoaded');
-                    $rootScope.$broadcast('loadingChanged', {visible: false});
-
-                    $rootScope.$digest();
-                });
 
             }, function errorCallback(response) {
                 console.error("error on loadDataFile", response);
@@ -2184,9 +2211,6 @@
 
 
     jBBLHControllers.factory('BBLH', [function () {
-
-        var self = this;
-
         var BBLH;
 
         init();
@@ -2199,16 +2223,8 @@
 
         function requireBBLH(){
             BBLH = require("BBLH");
-            //self.BBLH = BBLH;
             var data = new BBLH.Datatone();
         }
-
-        //function runSTARTPROC(){
-        //    BBLH.BBLHstart.STARTPROC({}, function(){
-        //        console.warn("Datatone", data);
-        //    });
-        //}
-        //this.runSTARTPROC = runSTARTPROC;
 
         return BBLH;
     }]);
@@ -2226,7 +2242,8 @@
         function getDataFiles(){
             $http({
                 method: 'GET',
-                url: '/BBLHfilesList'
+                //url: '/BBLHfilesList'
+                url: '/BBLHzipFilesList'
             }).then(function successCallback(response) {
                 console.log("dataFiles", response.data.allFiles);
                 angular.extend(dataFiles, response.data.allFiles);

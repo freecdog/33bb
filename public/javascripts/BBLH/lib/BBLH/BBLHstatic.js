@@ -397,10 +397,12 @@ define(function (require, exports, module) {
                     //callback();
                     // It should be a joke, but setTimeout works faster or for the same time! How come?
                     // but setTimeout at least has interruptions so DOM can be rendered
+                    // TODO 2017.11 setTimeout in chrome capped to 1000ms when inactive (https://codereview.chromium.org/6577021/patch/1/2)
+                    // can't interrupt callback(), should find something else or start using workers
                     setTimeout(callback, 1);
                 },
                 function(err){
-                    if (err) console.log(err, "BBLHstatic !!!!!!!!!!!");
+                    if (err) console.error(err, "BBLHstatic !!!!!!!!!!!");
 
                     console.log("CalcStatic has end work", (new Date()) - calcStaticProfiler, "ms to complete CalcStatic");
 

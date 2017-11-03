@@ -8,56 +8,13 @@ var router = express.Router();
 var path = require('path');
 var fs = require('fs');
 
-function readJSONFile(filepath, callback){
-    callback = callback || function(){};
-    fs.readFile(filepath, {encoding: "utf8"}, function(err, filedata){
-        if (err) {
-            console.log("read error:", err);
-            callback(err, null);
-        } else {
-            // some hack with first symbol =/
-            filedata = filedata.replace(/^\uFEFF/, '');
-            // parsing file to JSON object
-            var jsondata = JSON.parse(filedata);
+var multer = require('multer');
+var multerDownloadFolder = path.join(__dirname, '..', 'uploads');
+var multerUpload = multer({ dest: multerDownloadFolder });
 
-            callback(null, jsondata);
-        }
-    });
-}
-
-function writeJSONFile(filepath, jsondata, callback){
-    callback = callback || function(){};
-    fs.writeFile(filepath, JSON.stringify(jsondata), {encoding: "utf8"}, function (err) {
-        if (err) {
-            console.log("write error:", err);
-            callback(e, null);
-        } else {
-            console.log('File has been successfully written', new Date());
-            callback();
-        }
-    });
-}
-
-function escapeRegExp(str) {
-    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-}
-function replaceAll(str, find, replace) {
-    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
-}
-function currentDateToStr(){
-    // it is better to use server local time. The reason why is time=d.toLocalTimeString() so it might be a new day (by time) and old day by UTC
-    var d = new Date();
-    //var year = d.getUTCFullYear().toString();
-    var year = d.getFullYear().toString();
-    //var month = d.getUTCMonth()+1;  // months are counted from 0
-    var month = d.getMonth()+1;  // months are counted from 0
-    if (month < 10) month = "0" + month;
-    //var day = d.getUTCDate();
-    var day = d.getDate();
-    if (day < 10) day = "0" + day;
-    var time = d.toLocaleTimeString();
-    time = replaceAll(time, ":", "");
-    return year + month + day + time;
+var zippartManager = {};
+function generateZippartNameById(zipId){
+    return "z" + zipId.toString();
 }
 
 // send default memOut
@@ -110,9 +67,20 @@ router.post('/:name', function(req, res) {
     });
 });
 
-var multer = require('multer');
-var multerDownloadFolder = path.join(__dirname, '..', 'uploads');
-var multerUpload = multer({ dest: multerDownloadFolder });
+
+router.get('/zipped/:name', function(req, res){
+    var name = req.params.name;
+
+    var pathToFile = path.join(__dirname, '..', 'public', 'dat', name, '_info.json');
+
+    readJSONFile(pathToFile, function(err, data){
+        if (err != null) console.log('err:', err);
+
+        console.log("json", data);
+        res.send(data);
+    });
+});
+
 router.post('/zipped/:name', multerUpload.single('zipped'), function(req, res){    // "zipped" is a formData field name
 //}, multerUpload.fields([{name: 'zipped', maxCount: 1}]), function(req, res){
     if (req.file) {
@@ -139,6 +107,107 @@ router.post('/zipped/:name', multerUpload.single('zipped'), function(req, res){ 
     }
     res.end('Missing file');
 });
+
+router.post('/zippart/:zipId', multerUpload.single('zipped'), function(req, res){    // "zipped" is a formData field name
+    if (req.file) {
+        //console.dir(req.file);
+        //console.dir(req.body);
+
+        var zipId = req.params.zipId;
+        var options = JSON.parse(req.body.options);
+        var recentFilePath = path.join(multerDownloadFolder, req.file.filename);
+
+        var zippartObject;
+        if (zippartManager.hasOwnProperty(generateZippartNameById(zipId)) == false){
+            zippartObject = {};
+            zippartObject.currentDate = currentDateToStr();
+            zippartObject.filesNameList = [];
+
+            zippartManager[generateZippartNameById(zipId)] = zippartObject;
+        } else zippartObject = zippartManager[generateZippartNameById(zipId)];
+
+        console.log("zipId:", zipId, "zippart date:", zippartObject.currentDate);
+
+        var newFileName = zipId  + '_' + options.memoutIndex + '.zip';
+        var pathToFile = path.join(__dirname, '..', 'public', 'dat', 'def00_' + zippartObject.currentDate + options.name, newFileName);
+        zippartObject.filesNameList.push(newFileName);
+
+        copyFileTo(
+            recentFilePath,
+            pathToFile,
+            { replace: true },
+            function(){
+                fs.unlink(recentFilePath, noop);
+
+                if (options.lastPart && options.lastPart == true){
+                    writeJSONFile(
+                        path.join(path.dirname(pathToFile), '_info.json'),
+                        zippartObject,
+                        function(){
+                            zippartManager[generateZippartNameById(zipId)] = null;
+                            delete zippartManager[generateZippartNameById(zipId)];
+                        }
+                    );
+                }
+            }
+        );
+
+        return res.end('Thank you for the file');
+    }
+    res.end('Missing file');
+});
+
+function readJSONFile(filepath, callback){
+    callback = callback || function(){};
+    fs.readFile(filepath, {encoding: "utf8"}, function(err, filedata){
+        if (err) {
+            console.log("read error:", err);
+            callback(err, null);
+        } else {
+            // some hack with first symbol =/
+            filedata = filedata.replace(/^\uFEFF/, '');
+            // parsing file to JSON object
+            var jsondata = JSON.parse(filedata);
+
+            callback(null, jsondata);
+        }
+    });
+}
+function writeJSONFile(filepath, jsondata, callback){
+    callback = callback || function(){};
+    fs.writeFile(filepath, JSON.stringify(jsondata), {encoding: "utf8"}, function (err) {
+        if (err) {
+            console.log("write error:", err);
+            callback(e, null);
+        } else {
+            console.log('File has been successfully written', new Date());
+            callback();
+        }
+    });
+}
+
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+function currentDateToStr(){
+    // it is better to use server local time. The reason why is time=d.toLocalTimeString() so it might be a new day (by time) and old day by UTC
+    var d = new Date();
+    //var year = d.getUTCFullYear().toString();
+    var year = d.getFullYear().toString();
+    //var month = d.getUTCMonth()+1;  // months are counted from 0
+    var month = d.getMonth()+1;  // months are counted from 0
+    if (month < 10) month = "0" + month;
+    //var day = d.getUTCDate();
+    var day = d.getDate();
+    if (day < 10) day = "0" + day;
+    var time = d.toLocaleTimeString();
+    time = replaceAll(time, ":", "");
+    return year + month + day + time;
+}
+
 function copyFileTo(src, dst, options, callback){
     var mkdirp = require('mkdirp');
 
