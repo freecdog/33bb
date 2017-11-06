@@ -135,10 +135,10 @@ define(function (require, exports, module) {
                 STEP = data.STEP,
                 DFI = data.DFI,
                 DF = data.DF,
-                TAR = data.TAR,
+                TETA_ARRAY = data.TETA_ARRAY,
                 COURB = data.COURB,
                 LONG = data.LONG,
-                FAR = data.FAR,
+                FI_ARRAY = data.FI_ARRAY,
                 DX = data.DX,
                 FIX = data.FIX,
                 FIY = data.FIY,
@@ -180,6 +180,7 @@ define(function (require, exports, module) {
                 needRealValues = data.needRealValues,
 
                 HEFFECT = data.HEFFECT,
+                HDAY = data.HDAY,
 
                 GAF1 = data.GAF1,
                 GAF2 = data.GAF2,
@@ -194,12 +195,12 @@ define(function (require, exports, module) {
                 CAVERAGE = data.CAVERAGE;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
-            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX; // float
+            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, CF0, IB, JX, TAT; // float
             var WT; // boolean
             var DZ0, Z; // Complex
             var LX, LAX, E; // [5, 5] of float
             var W, U, UFI; // [5] of float
-            var GOUT; // [,,] of float
+            var GOUT, GVEL, ACCEL, ACCELOUT; // [,,] of float
             var GA; // [:,:,:,:] of float
             //var GAF1, GAF2; // [,,] of float
             //var LO, HI; // [] of integer
@@ -225,6 +226,15 @@ define(function (require, exports, module) {
             //G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
 
             GOUT = MatMult.createArray(genSize, Math.round(HEFFECT/STEPX)+1, NTP+1);
+
+            // ALLOCATE
+            // ACCEL(2, 0:NBX+10,0:NFI)
+            ACCEL = MatMult.createArray(2, NBX+10 +1, NTP+1);
+            MatMult.fillArray(ACCEL, 0);
+            // ACCELOUT(2,0:NEFFECT ,1:NTP+1)
+            ACCELOUT = MatMult.createArray(2, Math.round(HEFFECT/STEPX)+1, NTP+1);
+            // GVEL(2,0:NBX+10,0:NFI)
+            GVEL = MatMult.createArray(2, NBX+10 +1, NTP+1);
 
             // all this were moved to BBLHstatic.js
             //GAF1 = MatMult.createArray(NL-1, genSize, NFI+1);
@@ -285,6 +295,12 @@ define(function (require, exports, module) {
                 function(callback){
                     var timeAtStart = Date.now();
 
+                    //GVEL=G(1:2,:,:);
+                    for (var i50 = 0; i50 < 2; i50++)
+                        for (var i51 = 0, len51 = G[i50].length; i51 < len51; i51++)
+                            for (var i52 = 0, len52 = G[i50][i51].length; i52 < len52; i52++)
+                                GVEL[i50][i51][i52] = G[i50][i51][i52];
+
                     BBLHstatic.FICTCELLS(GAF1, GAF2, G);
 
                     //console.log("T = " + T.toFixed(2));
@@ -329,19 +345,22 @@ define(function (require, exports, module) {
                                     GA[L][i25][LK[L]+1][i26] = GAF2[L-1][i25][i26];
                     }
 
-                    // G(:,0,0:NFI)=FG(NL,:,:).x.G(:,1,0:NFI);
-                    var g0 = [];
-                    for (var g0i = 0; g0i < G.length; g0i++){
-                        //var g0arr = [];
-                        //for (var g0j = 0; g0j <= NFI; g0j++) g0arr.push(G[g0i][1][g0j]);
-                        var g0arr = G[g0i][1].slice(0);
-                        g0.push(g0arr);
+                    // IF(T>0) G(:,0,0:NFI)=FG(NL,:,:).x.G(:,1,0:NFI);
+                    // TODO check this T > 0
+                    if (T > 0) {
+                        var g0 = [];
+                        for (var g0i = 0; g0i < G.length; g0i++) {
+                            //var g0arr = [];
+                            //for (var g0j = 0; g0j <= NFI; g0j++) g0arr.push(G[g0i][1][g0j]);
+                            var g0arr = G[g0i][1].slice(0);
+                            g0.push(g0arr);
+                        }
+                        var g0mult = matrix.multiply(FG[NL - 1], g0);
+                        for (var g0m = 0; g0m < G.length; g0m++)
+                            //for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
+                            for (var g0n = 0; g0n <= NFI; g0n++)
+                                G[g0m][0][g0n] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
                     }
-                    var g0mult = matrix.multiply(FG[NL-1], g0);
-                    for (var g0m = 0; g0m < G.length; g0m++)
-                        //for (var g0n = 0, g0nlen = g0mult[0].length; g0n < g0nlen; g0n++)
-                        for (var g0n = 0; g0n <= NFI; g0n++)
-                            G[g0m][0][g0n] = g0mult[g0m][g0n];    // G[][0][] 0 because Harry as me numerates from 0
 
                     if (OnlyStaticLoad == true) {
                         // G(1:2,0,0:NFI) =0;
@@ -383,25 +402,19 @@ define(function (require, exports, module) {
                                 I = NFI - I + K;
                                 K = 1 - K;
                                 //DFI = DF[I];
-                                TETA = TAR[I];
+                                TETA = TETA_ARRAY[I];
                                 COM = COURB[I] * R;
                                 LOM = LONG[I] / R;
-                                //FIM = FAR[I];
+                                //FIM = FI_ARRAY[I];
                                 FIM = FUNC2.ATN(TETA);
 
                                 CF = Math.cos(FIM);
+                                SF = Math.sin(FIM);
                                 Z = ZET(TETA);
                                 KSIN = (Z.subtract(DZ0)).re;
-
-                                QG.length = 0;
-                                QG[0] = ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
-                                QG[1] = - ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
-                                QG[2] = 0;
-                                QG[3] = 0;
-                                QG[4] = 0;
-                                //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
-                                //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
-                                QG = matrix.vectorTranspose(QG);
+                                CF0 = Math.cos(FI_ARRAY[I]);
+                                TAT = TETA;
+                                if (TETA >= Math.PI) TAT = 2 * Math.PI - TETA;
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -411,11 +424,25 @@ define(function (require, exports, module) {
                                 for (J = 1; J <= LK[L]; J++){
                                     KJ = GABS - 1 + J;
 
-                                    // TODO is it C0 or C[L]?
+                                    var SW = 1;
+                                    if (L == 1 && TAT < Math.PI /2){
+                                        KSI=HDAY - FUNC2.RTET(TETA) / R * Math.cos(TETA) - JX*CF;
+                                        if (KSI <= 0) SW = 0;
+                                    }
+
+                                    QG.length = 0;
+                                    QG[0] = SW * ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
+                                    QG[1] = -SW * ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
+                                    QG[2] = 0;
+                                    QG[3] = 0;
+                                    QG[4] = 0;
+                                    //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
+                                    //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
+                                    QG = matrix.vectorTranspose(QG);
 
                                     //KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
-                                    //KSI = JX * CF - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
-                                    KSI = JX * CF - (HTOTAL - CAVERAGE/C0*T + KSIN);    // or C[L]/C[0]
+                                    KSI = JX * CF0 - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
+                                    //KSI = JX * CF0 - (HTOTAL - CAVERAGE/C0*T + KSIN);    // or C[L]/C[0]
 
                                     JX = JX + DX;
 
@@ -481,6 +508,11 @@ define(function (require, exports, module) {
                                         // G(:,KJ,I)=W;
                                         for (var i16 = 0; i16 < G.length; i16++)
                                             G[i16][KJ][I] = W[i16][0];
+
+                                        // ACCEL(1:2,KJ,I)=(W(1:2)-GVEL(1:2,KJ,I))/(DT*LM);
+                                        for (var i53 = 0; i53 < 2; i53++){
+                                            ACCEL[i53][KJ][I] = (W[i53] - GVEL[i53][KJ][I]) / (DT*LM);
+                                        }
 
                                     }   // end if (KSI >= 0)
 
@@ -676,6 +708,7 @@ define(function (require, exports, module) {
                         X = I * STEPX;
                         K = Math.round(X/DX);
                         L = getLayerNumberByCoordinate(X);
+                        // TODO Harry L=NL
 
                         for (J = 1; J <= NTP+1; J++) {
                             if (needRealValues){
@@ -683,10 +716,17 @@ define(function (require, exports, module) {
                                 var ans = 0;
                                 for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * G[lgi][K][ITP[J]];
                                 GOUT[M][I][J-1] = ans;
+
+                                // IF (M<=2)	ACCELOUT(M,I,J)= C(L)*C(L)/R*ACCEL(M,K,ITP(J));
+                                if (M < 2) ACCELOUT[M][I][J] = C[L]*C[L] / R * ACCEL[M][K][ITP[J]];
                             } else {
                                 // GOUT(M,I,J)=G(M,K,ITP(J));
                                 GOUT[M][I][J-1] = G[M][K][ITP[J]];
+
+                                // IF (M<=2)	ACCELOUT(M,I,J)= ACCEL(M,K,ITP(J));
+                                if (M < 2) ACCELOUT[M][I][J] = ACCEL[M][K][ITP[J]];
                             }
+
                         }
 
                         st = L.toString() + " " + (X*R).toString() + " ";
@@ -704,6 +744,13 @@ define(function (require, exports, module) {
                         //for (var m2 = 0, m2len = GOUT[m0][m1].length; m2 < m2len; m2++) {
                         //    mRec[m0][m1][m2] = GOUT[m0][m1][m2];
                         //}
+
+                        if (m0 == 0 || m0 == 1){
+                            // mRec[8], mRec[9], 0-1 V1,V2; 2-4 S11,S22,S12; 5-7 E11,E22,E12; 8-9 A1,A2
+                            if (mRec[genSize + m0 + 3] === undefined) mRec[genSize + m0 + 3] = [];
+                            if (mRec[genSize + m0 + 3][m1] === undefined) mRec[genSize + m0 + 3][m1] = [];
+                            mRec[genSize + m0 + 3][m1] = ACCELOUT[m0][m1].slice(0);
+                        }
                     }
                 }
                 memout[memoutCounter] = mRec;
@@ -716,8 +763,8 @@ define(function (require, exports, module) {
 
                 if (OnlyStaticLoad == false) {
                     for (I = 0; I <= NFI; I++) {
-                        TETA = TAR[I];
-                        FIM = FAR[I];
+                        TETA = TETA_ARRAY[I];
+                        FIM = FI_ARRAY[I];
                         Z = ZET(TETA);
                         KSIN = (Z.subtract(DZ0)).re;
                         CF = Math.cos(FIM);
@@ -742,7 +789,7 @@ define(function (require, exports, module) {
                             // TODO check this very carefully, it could be problem with equality
                             if (KSI >= 0){
                                 var IFF = BBLHstart.FF(LC * KSI);
-                                for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] = G[c2][K][I] + IFF * UFI[c2];
+                                for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] += IFF * UFI[c2];
                             }
                         }
                     }
@@ -827,3 +874,4 @@ define(function (require, exports, module) {
     //})(typeof exports === 'undefined'? this['BBLHcount']={} : exports);
 
 });
+

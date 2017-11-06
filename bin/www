@@ -2,8 +2,9 @@
 var debug = require('debug')('33bb');
 var app = require('../app');
 
-app.set('port', process.env.PORT || 3113);
+app.set('port', process.env.PORT || 3113);  // it works in linux or in git bash: PORT=3111 node bin/www
 
 var server = app.listen(app.get('port'), function() {
+  console.log('Express server listening on port ' + server.address().port);
   debug('Express server listening on port ' + server.address().port);
 });

@@ -53,10 +53,10 @@ define(function (require, exports, module) {
                 STEP = data.STEP,
                 DFI = data.DFI,
                 DF = data.DF,
-                TAR = data.TAR,
+                TETA_ARRAY = data.TETA_ARRAY,
                 COURB = data.COURB,
                 LONG = data.LONG,
-                FAR = data.FAR,
+                FI_ARRAY = data.FI_ARRAY,
                 DX = data.DX,
                 FIX = data.FIX,
                 FIY = data.FIY,
@@ -148,7 +148,7 @@ define(function (require, exports, module) {
             for (I = 0; I < 5; I++) QG[I] = 0;
 
             HEFFECT = 2 + 3 * HTOTAL;
-            var H0 = 0.5 * (HDAY -1 + HTOTAL); // -1 is typical size
+            var H0 = 0.5 * (HDAY -1 + HTOTAL); // -1 is a typical size
             if (HEFFECT > H0) HEFFECT = H0;
             data.HEFFECT = HEFFECT;
 
@@ -205,10 +205,18 @@ define(function (require, exports, module) {
                         //GA(L,:,J,I)=G(:,GABS+J-1,I)
                         //END DO
                         //END DO
+                        function meUndefined(x){return x === undefined;}
                         for (var i20 = 0; i20 <= NFI; i20++)
                             for (var i21 = 1; i21 <= LK[L]; i21++)
-                                for (var i22 = 0, i22len = GA[0].length; i22 < i22len; i22++)
-                                    GA[L][i22][i21][i20] = G[i22][GABS+i21-1][i20];
+                                for (var i22 = 0, i22len = GA[0].length; i22 < i22len; i22++) {
+                                    //console.log(L, GABS, i20, i21, i22);
+                                    //console.log(meUndefined(GA[L]), meUndefined(G[i22]));
+                                    if (i20 == 0 && i21 == 38 && i22 == 0) {
+                                        var xz = 0;
+                                        xz++;
+                                    }
+                                    GA[L][i22][i21][i20] = G[i22][GABS + i21 - 1][i20];
+                                }
 
                         // IF (L/=NL) GA(L,:,0,0:NFI)=GAF1(L,:,0:NFI)
                         if (L != NL-1)
@@ -277,11 +285,10 @@ define(function (require, exports, module) {
                             while(true){
                                 I = NFI - I + K;
                                 K = 1 - K;
-                                //DFI = DF[I];
-                                TETA = TAR[I];
+                                TETA = TETA_ARRAY[I];
                                 COM = COURB[I] * R;
                                 LOM = LONG[I] / R;
-                                //FIM = FAR[I];
+                                //FIM = FI_ARRAY[I];
                                 FIM = FUNC2.ATN(TETA);
 
                                 QG.length = 0;
@@ -290,14 +297,7 @@ define(function (require, exports, module) {
                                 QG[2] = 0;
                                 QG[3] = 0;
                                 QG[4] = 0;
-                                //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
-                                //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
                                 QG = matrix.vectorTranspose(QG);
-
-                                if (T == 0.2 && L == 0 && I == 126) {
-                                    var d1 = 0;
-                                    d1++;
-                                }
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -374,14 +374,14 @@ define(function (require, exports, module) {
                             }   // end while true (I)
                             X = JX;
 
-                            for (var i8 = 0; i8 < G.length; i8++) {
-                                for (var i9 = GABS; i9 <= GABE; i9++) {
-                                    // G(:,GABS:GABE,0)= 	G(:,GABS:GABE,NFI-1);
-                                    G[i8][i9][0] = G[i8][i9][NFI - 1];
-                                    // G(:,GABS:GABE,NFI)= G(:,GABS:GABE,1);
-                                    G[i8][i9][NFI] = G[i8][i9][1];
-                                }
-                            }
+                            //for (var i8 = 0; i8 < G.length; i8++) {
+                            //    for (var i9 = GABS; i9 <= GABE; i9++) {
+                            //        // G(:,GABS:GABE,0)= 	G(:,GABS:GABE,NFI-1);
+                            //        G[i8][i9][0] = G[i8][i9][NFI - 1];
+                            //        // G(:,GABS:GABE,NFI)= G(:,GABS:GABE,1);
+                            //        G[i8][i9][NFI] = G[i8][i9][1];
+                            //    }
+                            //}
                         }   // if T > 0
                     }   // end for L
 
@@ -418,7 +418,7 @@ define(function (require, exports, module) {
                 UFI[1] = 0;
 
                 for (I = 0; I <= NFI; I++){
-                    TETA = TAR[I];
+                    TETA = TETA_ARRAY[I];
                     FIM = FUNC2.ATN(TETA);
                     CF = Math.cos(FIM);
                     SF = Math.sin(FIM);

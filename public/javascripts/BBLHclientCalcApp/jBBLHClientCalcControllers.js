@@ -72,7 +72,7 @@
                 STATICTM: 5,
                 OnlyStaticLoad: false,
 
-                NL: 2,
+                NL: 3,
                 layers: [
                     {
                         E: 5.79e10,
@@ -102,11 +102,11 @@
 
                 EPUR: 2,
                 rtetN: 2,
-                rtetA: 2.0,
-                rtetB: 4.0,
+                rtetA: 3.0,
+                rtetB: 3.0,
                 rtetN1: 2,
                 rtetN2: 2,
-                rtetC: 4.5,
+                rtetC: 3,
                 rtetVortex: 0,
                 rtetNoEdge: false,
 

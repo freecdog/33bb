@@ -69,13 +69,13 @@ define(function (require, exports, module) {
             DFI,DX,DT,TM,XDESTR, CHECK,
             RC0, C0, HTOTAL, HDAY, STATICTM, CMAX, CAVERAGE;    // float
         var H = Math.PI / 180, DELTA = 1;
-        var DF = [],TAR = [],COURB = [],FAR = [],LONG = [],TP = []; // of float
+        var DF = [],TETA_ARRAY = [],COURB = [],FI_ARRAY = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
         var Q,FIX,FIXP,FIXM,
             FIY,FIYM,FIYP,
             FG,FR,FL, BOUNDARYS, LAUX, LG; // [Layers,5, 5] of float
         var ALIM,IM = new Complex(0.0,1.0); // complex
-        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,NL,L; // integer
+        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,NL, L, LEF; // integer
         var layers = [];
         var LE = [], LRO = [], LNU = [], LH = [], C = [], LB = [], LRC = []; // of float
         var LK = [],NSTEP = []; // of integer
@@ -97,7 +97,7 @@ define(function (require, exports, module) {
 
             data = new Datatone();
 
-            var B1,B2, X,RZ; // float //FI,
+            var B1,B2, X,RZ, H0; // float //FI,
             var I;
 
             var inputData = {};
@@ -298,11 +298,10 @@ define(function (require, exports, module) {
 
                 C[L] = Math.sqrt( ( LE[L]*(1-LNU[L]) ) / (LRO[L]*(1+LNU[L])*(1-2*LNU[L])) );
                 if (CMAX < C[L]) CMAX = C[L];
-                CAVERAGE += C[L];
+                CAVERAGE += C[L]/NL;
                 LRC[L]=C[L]*C[L]*LRO[L];
                 LB[L]=.5*(1-2*LNU[L])/(1-LNU[L]);
             }
-            CAVERAGE = CAVERAGE / NL;
 
             C0 = C[0];
             RC0 = LRC[0] / C0;
@@ -424,10 +423,10 @@ define(function (require, exports, module) {
             data.STEP = STEP;
             data.DFI = DFI;
             data.DF = DF;
-            data.TAR = TAR;
+            data.TETA_ARRAY = TETA_ARRAY;
             data.COURB = COURB;
             data.LONG = LONG;
-            data.FAR = FAR;
+            data.FI_ARRAY = FI_ARRAY;
             data.DX = DX;
             data.FIX = FIX;
             data.FIY = FIY;
@@ -671,19 +670,19 @@ define(function (require, exports, module) {
             DFI = 2*Math.PI / NFI;
             NFI = NFI + 1;
 
-            // ALLOCATE (TAR(0:NFI),COURB(0:NFI),FAR(0:NFI),LONG(0:NFI));
-            TAR = MatMult.createArray(NFI+1);
+            // ALLOCATE (TETA_ARRAY(0:NFI),COURB(0:NFI),FI_ARRAY(0:NFI),LONG(0:NFI));
+            TETA_ARRAY = MatMult.createArray(NFI+1);
             COURB = MatMult.createArray(NFI+1);
-            FAR = MatMult.createArray(NFI+1);
+            FI_ARRAY = MatMult.createArray(NFI+1);
             LONG = MatMult.createArray(NFI+1);
             for (I = 0; I <= NFI; I++){
                 TETA = TET0 + I * DFI;
-                TAR[I] = TETA;
+                TETA_ARRAY[I] = TETA;
                 var courbTeta, longTeta, rcurbTetaAns;
                 rcurbTetaAns = FUNC2.RCURB(TETA, courbTeta, longTeta);
                 COURB[I] = rcurbTetaAns.A;
                 LONG[I] = rcurbTetaAns.B;
-                FAR[I] = FUNC2.ATN(TETA) - ALFA;
+                FI_ARRAY[I] = FUNC2.ATN(TETA) - ALFA;
             }
             I = 0;
             J = JTP;
@@ -694,7 +693,7 @@ define(function (require, exports, module) {
                 }
                 TET = TP[J] * Math.PI/180;
                 for (M = I; M <= NFI; M++){
-                    if (TET <= TAR[M]){
+                    if (TET <= TETA_ARRAY[M]){
                         I = M + 1;
                         ITP[J] = M;
                         break;
@@ -777,21 +776,21 @@ define(function (require, exports, module) {
                 }
             }
             DF = new Array(NFI+1 +1);
-            TAR = new Array(NFI+1 +1);
+            TETA_ARRAY = new Array(NFI+1 +1);
             COURB = new Array(NFI+1 +1);
-            FAR = new Array(NFI+1 +1);
+            FI_ARRAY = new Array(NFI+1 +1);
             LONG = new Array(NFI+1 +1);
             for (I = 0; I <= NFI+1; I++){
                 DF[I] = ADF[I];
                 TETA = ATAR[I];
-                TAR[I] = TETA;
+                TETA_ARRAY[I] = TETA;
                 var courbTeta, longTeta, rcurbTetaAns;
                 rcurbTetaAns = FUNC2.RCURB(TETA, courbTeta, longTeta);
                 COURB[I] = rcurbTetaAns.A;
                 LONG[I] = rcurbTetaAns.B;
-                FAR[I] = FUNC2.ATN(TETA) - ALFA;
+                FI_ARRAY[I] = FUNC2.ATN(TETA) - ALFA;
             }
-            // TODO there are small differs in FAR but not too big, I think. Reasons are RCURB and RTET functions
+            // TODO there are small differs in FI_ARRAY but not too big, I think. Reasons are RCURB and RTET functions
             I = 0;
             J = JTP;
             var firstStepITP = true;
@@ -806,7 +805,7 @@ define(function (require, exports, module) {
                 for (M = I; M <= NFI + 1; M++){
                     // TODO there is still bug (ALFA==15), TAR[90] has value 0 which is less than TET so no angle for ITP[10]
                     // Harry's solution solve this well, should take a look on it
-                    if (TET <= TAR[M]){
+                    if (TET <= TETA_ARRAY[M]){
                         I = M + 1;
                         ITP[J] = M;
                         break;
