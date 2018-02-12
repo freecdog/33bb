@@ -192,10 +192,12 @@ define(function (require, exports, module) {
                 HI = data.HI,
                 OnlyStaticLoad = data.OnlyStaticLoad,
                 CMAX = data.CMAX,
-                CAVERAGE = data.CAVERAGE;
+                CAVERAGE = data.CAVERAGE,
+                GSTATIC = data.GSTATIC;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
             var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, CF0, IB, JX, TAT; // float
+            var ACCELMAX, ACCELMIN, AMV = 0;
             var WT; // boolean
             var DZ0, Z; // Complex
             var LX, LAX, E; // [5, 5] of float
@@ -256,6 +258,9 @@ define(function (require, exports, module) {
             TOUT = T;
             NX = NBX - 1;
             DZ0 = ZET(TET0);
+
+            MatMult.fillArray(G, 0);
+            MatMult.fillArray(ACCEL, 0);
 
             //CALCBOUNDARIES(LO,HI);
 
@@ -406,15 +411,15 @@ define(function (require, exports, module) {
                                 COM = COURB[I] * R;
                                 LOM = LONG[I] / R;
                                 //FIM = FI_ARRAY[I];
-                                FIM = FUNC2.ATN(TETA);
+                                //FIM = FUNC2.ATN(TETA);
 
-                                CF = Math.cos(FIM);
-                                SF = Math.sin(FIM);
+                                //CF = Math.cos(FIM);
+                                //SF = Math.sin(FIM);
                                 Z = ZET(TETA);
                                 KSIN = (Z.subtract(DZ0)).re;
                                 CF0 = Math.cos(FI_ARRAY[I]);
-                                TAT = TETA;
-                                if (TETA >= Math.PI) TAT = 2 * Math.PI - TETA;
+                                //TAT = TETA;
+                                //if (TETA >= Math.PI) TAT = 2 * Math.PI - TETA;
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -424,21 +429,24 @@ define(function (require, exports, module) {
                                 for (J = 1; J <= LK[L]; J++){
                                     KJ = GABS - 1 + J;
 
-                                    var SW = 1;
-                                    if (L == 1 && TAT < Math.PI /2){
-                                        KSI=HDAY - FUNC2.RTET(TETA) / R * Math.cos(TETA) - JX*CF;
-                                        if (KSI <= 0) SW = 0;
-                                    }
+                                    //var SW = 1;
+                                    //if (L == 1 && TAT < Math.PI /2){
+                                    //    KSI=HDAY - FUNC2.RTET(TETA) / R * Math.cos(TETA) - JX*CF;
+                                    //    if (KSI <= 0) SW = 0;
+                                    //}
 
-                                    QG.length = 0;
-                                    QG[0] = SW * ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
-                                    QG[1] = -SW * ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
-                                    QG[2] = 0;
-                                    QG[3] = 0;
-                                    QG[4] = 0;
+                                    // TODO ask Harry, he comments all QG except QG=0 and after QG used in W=W+DT*LM*P/DFI*U - DT*LM* QG;
+                                    //QG.length = 0;
+                                    //QG[0] = SW * ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
+                                    //QG[1] = -SW * ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
+                                    //QG[2] = 0;
+                                    //QG[3] = 0;
+                                    //QG[4] = 0;
+
                                     //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
                                     //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
-                                    QG = matrix.vectorTranspose(QG);
+
+                                    //QG = matrix.vectorTranspose(QG);
 
                                     //KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
                                     KSI = JX * CF0 - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
@@ -509,10 +517,11 @@ define(function (require, exports, module) {
                                         for (var i16 = 0; i16 < G.length; i16++)
                                             G[i16][KJ][I] = W[i16][0];
 
+                                        // Harry moved it
                                         // ACCEL(1:2,KJ,I)=(W(1:2)-GVEL(1:2,KJ,I))/(DT*LM);
-                                        for (var i53 = 0; i53 < 2; i53++){
-                                            ACCEL[i53][KJ][I] = (W[i53] - GVEL[i53][KJ][I]) / (DT*LM);
-                                        }
+                                        //for (var i53 = 0; i53 < 2; i53++){
+                                        //    ACCEL[i53][KJ][I] = (W[i53] - GVEL[i53][KJ][I]) / (DT*LM);
+                                        //}
 
                                     }   // end if (KSI >= 0)
 
@@ -536,6 +545,16 @@ define(function (require, exports, module) {
                     //IF(.NOT.BEGIN.AND.(T>0)) STOP;
                     if (OnlyStaticLoad && T > 0) {
                         data.breakCalculation = true;
+                    }
+
+                    // old Harry, ACCEL(1:2,KJ,I)=(W(1:2)-GVEL(1:2,KJ,I))/(DT*LM);
+                    // ACCEL=(G(1:2,:,:)-GVEL)/(DT*LM);
+                    for (var i53 = 0; i53 < 2; i53++){
+                        for (var i54 = 0, i54l = G[i53].length; i54 < i54l; i54++){
+                            for (var i55 = 0, i55l = G[i53][i54].length; i55 < i55l; i55++) {
+                                ACCEL[i53][i54][i55] = (G[i53][i54][i55] - GVEL[i53][i54][i55]) / (DT*LM);
+                            }
+                        }
                     }
 
                     WT = T >= TOUT;
@@ -708,13 +727,12 @@ define(function (require, exports, module) {
                         X = I * STEPX;
                         K = Math.round(X/DX);
                         L = getLayerNumberByCoordinate(X);
-                        // TODO Harry L=NL
 
                         for (J = 1; J <= NTP+1; J++) {
                             if (needRealValues){
                                 // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J));
                                 var ans = 0;
-                                for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * G[lgi][K][ITP[J]];
+                                for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * (G[lgi][K][ITP[J]] + GSTATIC[lgi][K][ITP[J]]);
                                 GOUT[M][I][J-1] = ans;
 
                                 // IF (M<=2)	ACCELOUT(M,I,J)= C(L)*C(L)/R*ACCEL(M,K,ITP(J));
@@ -789,7 +807,8 @@ define(function (require, exports, module) {
                             // TODO check this very carefully, it could be problem with equality
                             if (KSI >= 0){
                                 var IFF = BBLHstart.FF(LC * KSI);
-                                for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] += IFF * UFI[c2];
+                                //for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] += IFF * UFI[c2];
+                                for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] = IFF * UFI[c2];
                             }
                         }
                     }

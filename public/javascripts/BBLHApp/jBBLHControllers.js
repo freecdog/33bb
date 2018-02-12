@@ -1222,6 +1222,7 @@
             self.nearestPointsDots.visible = !self.nearestPointsDots.visible;
             self.controlPointsDots.visible = !self.controlPointsDots.visible;
         }
+        // TODO ctd has an error when dmin is more than dmax, in this case it means that new diap goes in other direction ( ans = dmin - (delta / diap) * (num-ds); )
         // converts Num from diap (ds to df) to diap (dmin to dmax)
         function ctd(num, ds, df, dmin, dmax, invert){
             // after filter adding there is a new case that "num" might be less than "ds" or more than "df"

@@ -98,26 +98,29 @@ define(function (require, exports, module) {
                 needRealValues = data.needRealValues,
 
                 HDAY = data.HDAY,
-                STATICTM = data.STATICTM;
+                STATICTM = data.STATICTM,
+                HEFFECT = data.HEFFECT,
+                LEF = data.LEF;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
-            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX, LEF, CNU, SXX, XEF; // float
+            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, IB, JX, SXX, XEF; // float
             var WT; // boolean
             var DZ0, Z; // Complex
             var LX, LAX, E; // [5, 5] of float
             var W, U, UFI, UEF, QG; // [5] of float
-            var G, GOUT; // [,,] of float
+            var G, GOUT, GSTATIC; // [,,] of float
             var GA; // [5, -1:1] of float
             var GAF1, GAF2; // [,,] of float
             var LO, HI; // [] of integer
-            var HEFFECT;
 
             var ARS = ['V_01.dat','V_02.dat','S011.dat','S022.dat','S012.dat'];
             var genSize = ARS.length;
 
-            //ALLOCATE(G(5, 0:NBX+10,0:NFI));
+            //ALLOCATE(G(5, 0:NBX+10,0:NFI),GSTATIC(5, 0:NBX+10,0:NFI));
             G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
             data.G = G;
+            GSTATIC = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
+            data.GSTATIC = GSTATIC;
 
             //ALLOCATE(GAF1(1:NL-1,5,0:NFI),GAF2(1:NL-1,5,0:NFI));
             GAF1 = MatMult.createArray(NL-1, genSize, NFI+1);
@@ -147,20 +150,23 @@ define(function (require, exports, module) {
             MatMult.fillArray(G, 0);
             for (I = 0; I < 5; I++) QG[I] = 0;
 
-            HEFFECT = 2 + 3 * HTOTAL;
-            var H0 = 0.5 * (HDAY -1 + HTOTAL); // -1 is a typical size
-            if (HEFFECT > H0) HEFFECT = H0;
-            data.HEFFECT = HEFFECT;
+            // moved to START
+            //HEFFECT = 2 + 3 * HTOTAL;
+            //var H0 = 0.5 * (HDAY -1 + HTOTAL); // -1 is a typical size
+            //if (HEFFECT > H0) HEFFECT = H0;
+            //data.HEFFECT = HEFFECT;
+            //LK[0]= Math.round((HEFFECT-HTOTAL)/DX);
+            //LEF = Math.round(HEFFECT/DX);
 
-            LK[0]= Math.round((HEFFECT-HTOTAL)/DX);
-            LEF = Math.round(HEFFECT/DX);
-            UFI[0] = 0;
-            UFI[1] = 0;
-
-            CNU = (1-2*LNU[0])/(1-LNU[0]);
+            // moved to INITLOAD()
+            // UFI[0] = 0;
+            // UFI[1] = 0;
+            // CNU = (1-2*LNU[0])/(1-LNU[0]);
 
             INITLOAD();
 
+            // TODO ask Harry use here, but shouldn't I?
+            // LK(1)= KSTEP*NSTEP(1);
             CALCBOUNDARIES(LO, HI);
 
             async.whilst(
@@ -182,6 +188,9 @@ define(function (require, exports, module) {
                     var timeAtStart = Date.now();
 
                     console.log("T = " + T.toFixed(2));
+
+                    MatMult.fillArray(G[0], 0);
+                    MatMult.fillArray(G[1], 0);
 
                     FICTCELLS(GAF1, GAF2, G);
 
@@ -268,7 +277,8 @@ define(function (require, exports, module) {
                     // GA(1,:,LK(1)+1,0:NFI)=G(:,LEF+1,0:NFI);
                     for (var i6 = 0; i6 < GA[0].length; i6++)
                         for (var i7 = 0; i7 <= NFI; i7++)
-                            GA[0][i6][LK[0]+1][i7] = G[i6][LEF+1][i7];
+                            //GA[0][i6][LK[0]+1][i7] = G[i6][LEF+1][i7];
+                            GA[0][i6][LK[0]+1][i7] = G[i6][ G[i6].length-1 ][i7];
 
                     X = 0;
 
@@ -385,9 +395,10 @@ define(function (require, exports, module) {
                         }   // if T > 0
                     }   // end for L
 
+                    // moved to begin of this part
                     // G(1:2,:,:)=0;
-                    MatMult.fillArray(G[0], 0);
-                    MatMult.fillArray(G[1], 0);
+                    // MatMult.fillArray(G[0], 0);
+                    // MatMult.fillArray(G[1], 0);
 
                     T += DT;
                     data.currentT = T;
@@ -404,6 +415,7 @@ define(function (require, exports, module) {
                 function(err){
                     if (err) console.error(err, "BBLHstatic !!!!!!!!!!!");
 
+                    console.log("GSTATIC", GSTATIC);
                     console.log("CalcStatic has end work", (new Date()) - calcStaticProfiler, "ms to complete CalcStatic");
 
                     callback();
@@ -413,9 +425,12 @@ define(function (require, exports, module) {
             function INITLOAD(){
                 var I, K;
                 var B = LB[0];
+                var CNU;
 
                 UFI[0] = 0;
                 UFI[1] = 0;
+
+                CNU = (1-2*LNU[0])/(1-LNU[0]);
 
                 for (I = 0; I <= NFI; I++){
                     TETA = TETA_ARRAY[I];

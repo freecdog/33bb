@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             R=1,
             LC,
             DFI,DX,DT,TM,XDESTR, CHECK,
-            RC0, C0, HTOTAL, HDAY, STATICTM, CMAX, CAVERAGE;    // float
+            RC0, C0, HTOTAL, HDAY, HEFFECT, STATICTM, CMAX, CAVERAGE;    // float
         var H = Math.PI / 180, DELTA = 1;
         var DF = [],TETA_ARRAY = [],COURB = [],FI_ARRAY = [],LONG = [],TP = []; // of float
         var ITP = []; // of integer
@@ -75,7 +75,7 @@ define(function (require, exports, module) {
             FIY,FIYM,FIYP,
             FG,FR,FL, BOUNDARYS, LAUX, LG; // [Layers,5, 5] of float
         var ALIM,IM = new Complex(0.0,1.0); // complex
-        var NT,NTP,JTP,NFI,NBX,NTIME,NCHECK,INDEX,EPUR,NL, L, LEF; // integer
+        var NT,NTP,JTP,NFI,NBX,NTIME,NEFFECT,NCHECK,KSTEP,INDEX,EPUR,NL, L, LEF; // integer
         var layers = [];
         var LE = [], LRO = [], LNU = [], LH = [], C = [], LB = [], LRC = []; // of float
         var LK = [],NSTEP = []; // of integer
@@ -381,7 +381,7 @@ define(function (require, exports, module) {
 //                }
 //            }
 
-            var KSTEP = Math.round(STEPX / DX);
+            KSTEP = Math.round(STEPX / DX);
             DX = STEPX / KSTEP;
             HTOTAL = 0;
             for (L = 1; L < NL; L++){
@@ -390,16 +390,28 @@ define(function (require, exports, module) {
                 LK[L] = Math.round(LH[L] / DX);
                 HTOTAL += LH[L];
             }
+            HEFFECT = 2 + 3*HTOTAL;
+            H0 = 0.5 * (HDAY - 1 + HTOTAL);
+            if (HEFFECT > H0) HEFFECT = H0;
+            NEFFECT = Math.round((HEFFECT - HTOTAL) / STEPX);
+            HEFFECT = STEPX * NEFFECT;
+
+            // TODO ask Harry; NSTEP(1)=NINT((HEFFECT-HTOTAL)/STEPX);
             NSTEP[0] = Math.round(XDESTR / (R*STEPX));
+
             XDESTR = STEPX * NSTEP[0];
             CHECK = HTOTAL + XDESTR;
+            NCHECK = Math.round(CHECK/STEPX);
 
             NT = Math.round(TM/DT);
 
-            NCHECK = Math.round(CHECK/STEPX);
             NBX = NT + Math.round(CHECK/DX)+10;
-            LK[0] = NBX - Math.round(HTOTAL/DX);
             NTIME = Math.round(TM/STEP)+3;
+
+            LK[0] = NBX - Math.round(HTOTAL/DX);
+            // TODO ask Harry, if I'm not using EFFECT. Change STATIC (270 line: // GA(1,:,LK(1)+1,0:NFI)=G(:,LEF+1,0:NFI);)
+            //LEF = KSTEP * NEFFECT;
+            LEF = NBX;
 
             MTRXPROC();
             console.log((new Date()) - startProcProfiler, "ms passed when MTRXPROC finished");
@@ -472,6 +484,9 @@ define(function (require, exports, module) {
             data.OnlyStaticLoad = OnlyStaticLoad;
             data.CMAX = CMAX;
             data.CAVERAGE = CAVERAGE;
+            data.KSTEP = KSTEP;
+            data.HEFFECT = HEFFECT;
+            data.LEF = LEF;
 
             // jmemOut init
             // 10 files
@@ -1142,7 +1157,7 @@ define(function (require, exports, module) {
                     if (needRealValues){
                         value = -C0 * C0 * LRO[0] * FF(T); // atm * 1E-05 / 0.981;
                     } else {
-                        value = FF(T);
+                        value = -FF(T);
                     }
                     recBuffer = new Buffer(T.toFixedDef() + ' ' + (value).toFixedDef() + '\n');
                     //noinspection JSUnresolvedFunction
