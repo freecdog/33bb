@@ -120,7 +120,6 @@ define(function (require, exports, module) {
             G = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
             data.G = G;
             GSTATIC = MatMult.createArray(genSize, NBX+10 +1, NFI+1);
-            data.GSTATIC = GSTATIC;
 
             //ALLOCATE(GAF1(1:NL-1,5,0:NFI),GAF2(1:NL-1,5,0:NFI));
             GAF1 = MatMult.createArray(NL-1, genSize, NFI+1);
@@ -137,7 +136,6 @@ define(function (require, exports, module) {
             data.LO = LO;
 
             QG = MatMult.createArray(5);
-            data.QG = QG;
 
             E = MatMult.createArray(5,5);
             MatMult.fillArray(E, 0);
@@ -308,6 +306,7 @@ define(function (require, exports, module) {
                                 QG[3] = 0;
                                 QG[4] = 0;
                                 QG = matrix.vectorTranspose(QG);
+                                data.QG = QG;
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -415,7 +414,9 @@ define(function (require, exports, module) {
                 function(err){
                     if (err) console.error(err, "BBLHstatic !!!!!!!!!!!");
 
-                    console.log("GSTATIC", GSTATIC);
+                    GSTATIC = matrix.deepCopy(G);
+                    data.GSTATIC = GSTATIC;
+                    console.log("GSTATIC", GSTATIC, data.GSTATIC);
                     console.log("CalcStatic has end work", (new Date()) - calcStaticProfiler, "ms to complete CalcStatic");
 
                     callback();
