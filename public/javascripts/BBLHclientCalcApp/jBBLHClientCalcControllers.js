@@ -232,7 +232,7 @@
 
         function initObjectShape(data){
             var angleStep = 2;
-            var angles = initAngles();
+            var angles = initAngles(angleStep);
             //console.warn('angles', angles, data.TP);
 
             var vertices = initPositionVertices(angleStep);
@@ -247,16 +247,16 @@
             }
             //console.warn('vertices', vertices);
 
-            function initAngles(){
-                var angles = [];
+            function initAngles(angleStep){
+                var newAngles = [];
                 for (var i = 0; i < data.TP.length; i++){
                     if (data.TP.hasOwnProperty(i)) {
                         if (data.TP[i] != null && data.TP[i] != 360 && data.TP[i] % angleStep == 0) {
-                            angles.push(data.TP[i]);
+                            newAngles.push(data.TP[i]);
                         }
                     }
                 }
-                return angles;
+                return newAngles;
             }
 
             function initPositionVertices(step){
@@ -281,6 +281,9 @@
                 pointHoverBorderColor: "rgba(179,181,198,1)",
                 data: []
             };
+
+            // TODO why don't you use angleStep=10 instead?
+            for (var ai = 0; ai < angles.length; ai++) if (angles[ai] % 10 != 0) angles[ai] = "";
 
             if (objectShapeDomObject){
                 objectShapeChartData.labels = angles;
