@@ -740,7 +740,7 @@ define(function (require, exports, module) {
                                 GOUT[M][I][J-1] = ans;
 
                                 // IF (M<=2)	ACCELOUT(M,I,J)= C(L)*C(L)/R*ACCEL(M,K,ITP(J));
-                                if (M < 2) ACCELOUT[M][I][J] = C[L]*C[L] / R * ACCEL[M][K][ITP[J]];
+                                if (M < 2) ACCELOUT[M][I][J-1] = C[L]*C[L] / R * ACCEL[M][K][ITP[J]];
                             } else {
                                 // GOUT(M,I,J)=G(M,K,ITP(J));
                                 if (OnlyStaticLoad == true){
@@ -750,7 +750,7 @@ define(function (require, exports, module) {
                                 }
 
                                 // IF (M<=2)	ACCELOUT(M,I,J)= ACCEL(M,K,ITP(J));
-                                if (M < 2) ACCELOUT[M][I][J] = ACCEL[M][K][ITP[J]];
+                                if (M < 2) ACCELOUT[M][I][J-1] = ACCEL[M][K][ITP[J]];
                             }
 
                         }
