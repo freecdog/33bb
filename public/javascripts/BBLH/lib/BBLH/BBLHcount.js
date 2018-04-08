@@ -732,14 +732,22 @@ define(function (require, exports, module) {
                             if (needRealValues){
                                 // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J));
                                 var ans = 0;
-                                for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * (G[lgi][K][ITP[J]] + GSTATIC[lgi][K][ITP[J]]);
+                                if (OnlyStaticLoad == true){
+                                    for (var lgis = 0; lgis < LG[L][M].length; lgis++) ans += LG[L][M][lgis] * GSTATIC[lgis][K][ITP[J]];
+                                } else {
+                                    for (var lgi = 0; lgi < LG[L][M].length; lgi++) ans += LG[L][M][lgi] * (G[lgi][K][ITP[J]] + GSTATIC[lgi][K][ITP[J]]);
+                                }
                                 GOUT[M][I][J-1] = ans;
 
                                 // IF (M<=2)	ACCELOUT(M,I,J)= C(L)*C(L)/R*ACCEL(M,K,ITP(J));
                                 if (M < 2) ACCELOUT[M][I][J] = C[L]*C[L] / R * ACCEL[M][K][ITP[J]];
                             } else {
                                 // GOUT(M,I,J)=G(M,K,ITP(J));
-                                GOUT[M][I][J-1] = G[M][K][ITP[J]];
+                                if (OnlyStaticLoad == true){
+                                    GOUT[M][I][J-1] = GSTATIC[M][K][ITP[J]];
+                                } else {
+                                    GOUT[M][I][J-1] = G[M][K][ITP[J]] + GSTATIC[M][K][ITP[J]];
+                                }
 
                                 // IF (M<=2)	ACCELOUT(M,I,J)= ACCEL(M,K,ITP(J));
                                 if (M < 2) ACCELOUT[M][I][J] = ACCEL[M][K][ITP[J]];

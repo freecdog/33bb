@@ -246,6 +246,7 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         //name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
         //name += '_';
         name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(0) + 's';
+        name += '(st'+(data.inputData.STATICTM < 10 ? '0' : '') + data.inputData.STATICTM.toFixed(0) + ')';
         name += '_';
         name += 'H' + data.inputData.HDAY.toFixed(0);
         name += '_';

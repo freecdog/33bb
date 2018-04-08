@@ -185,8 +185,14 @@ define(function (require, exports, module) {
 
                     var timeAtStart = Date.now();
 
-                    console.log("T = " + T.toFixed(2));
+                    console.log("T = " + T.toFixed(2) +
+                        ", G[2][1][0] = " + G[2][1][0]*LRC[2]*1e-5 +
+                        ", G[2][1][2] = " + G[2][1][2]*LRC[2]*1e-5 +
+                        ", G[2][1][45] = " + G[2][1][45]*LRC[2]*1e-5 +
+                        ", G[2][1][90] = " + G[2][1][90]*LRC[2]*1e-5
+                    );
 
+                    // G(1:2,:,:)=0;
                     MatMult.fillArray(G[0], 0);
                     MatMult.fillArray(G[1], 0);
 
@@ -212,18 +218,21 @@ define(function (require, exports, module) {
                         //GA(L,:,J,I)=G(:,GABS+J-1,I)
                         //END DO
                         //END DO
-                        function meUndefined(x){return x === undefined;}
-                        for (var i20 = 0; i20 <= NFI; i20++)
+                        for (var i20 = 1; i20 <= NFI-1; i20++)
                             for (var i21 = 1; i21 <= LK[L]; i21++)
                                 for (var i22 = 0, i22len = GA[0].length; i22 < i22len; i22++) {
                                     //console.log(L, GABS, i20, i21, i22);
-                                    //console.log(meUndefined(GA[L]), meUndefined(G[i22]));
-                                    if (i20 == 0 && i21 == 38 && i22 == 0) {
-                                        var xz = 0;
-                                        xz++;
-                                    }
                                     GA[L][i22][i21][i20] = G[i22][GABS + i21 - 1][i20];
                                 }
+
+                        for (var gi8 = 0; gi8 < G.length; gi8++) {
+                            for (var gi9 = GABS; gi9 <= GABE; gi9++) {
+                                // G(:,GABS:GABE,0)= 	G(:,GABS:GABE,NFI-1);
+                                G[gi8][gi9][0] = G[gi8][gi9][NFI - 1];
+                                // G(:,GABS:GABE,NFI)= G(:,GABS:GABE,1);
+                                G[gi8][gi9][NFI] = G[gi8][gi9][1];
+                            }
+                        }
 
                         // IF (L/=NL) GA(L,:,0,0:NFI)=GAF1(L,:,0:NFI)
                         if (L != NL-1)
@@ -394,11 +403,6 @@ define(function (require, exports, module) {
                         }   // if T > 0
                     }   // end for L
 
-                    // moved to begin of this part
-                    // G(1:2,:,:)=0;
-                    // MatMult.fillArray(G[0], 0);
-                    // MatMult.fillArray(G[1], 0);
-
                     T += DT;
                     data.currentT = T;
 
@@ -414,7 +418,18 @@ define(function (require, exports, module) {
                 function(err){
                     if (err) console.error(err, "BBLHstatic !!!!!!!!!!!");
 
-                    GSTATIC = matrix.deepCopy(G);
+                    // G(1:2,:,:)=0;
+                    MatMult.fillArray(G[0], 0);
+                    MatMult.fillArray(G[1], 0);
+
+                    // matrix.deepCopy works only with 2-dimensional arrays
+                    //GSTATIC = matrix.deepCopy(G);
+                    for (var gi = 0; gi < G.length; gi++){
+                        for (var gj = 0; gj < G[0].length; gj++){
+                            GSTATIC[gi][gj] = G[gi][gj].slice();
+                        }
+                    }
+
                     data.GSTATIC = GSTATIC;
                     console.log("GSTATIC", GSTATIC, data.GSTATIC);
                     console.log("CalcStatic has end work", (new Date()) - calcStaticProfiler, "ms to complete CalcStatic");

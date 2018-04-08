@@ -163,81 +163,84 @@ html
                                                         h4 EPUR
                                                     div(class="col-xs-6 input-group")
                                                         input(ng-model="InputCalcCtrl.inputParams.EPUR" type="number" class="form-control input-md" min="0" max="2" placeholder="EPUR" required)
-
-                                            //fieldset
-                                                div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 S0
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.S0" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="S0" required)
-                                                        span(class="input-group-addon input-md") 1e5, Па
                                             fieldset
                                                 div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 Seismic event energy
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.seismicEventEnergy" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="seismicEventEnergy" required)
-                                                        span(class="input-group-addon input-md") J
-                                            fieldset
-                                                div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 Size of source
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.sizeOfSource" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="sizeOfSource" required)
-                                                        span(class="input-group-addon input-md") m
+                                                    label(class="col-xs-12 control-label")
+                                                        h4 S0 = {{InputCalcCtrl.data.S0 *InputCalcCtrl.data.C0*InputCalcCtrl.data.RC0 | number : 2}} MPa
 
-                                            fieldset
-                                                div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 BETTA
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.BETTA" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="BETTA" required)
-                                            fieldset
-                                                div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 A1
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.A1" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="A1" required)
-                                            fieldset
-                                                div(class="form-group")
-                                                    label(class="col-xs-6 control-label")
-                                                        h4 A2
-                                                    div(class="col-xs-6 input-group")
-                                                        input(ng-model="InputCalcCtrl.inputParams.A2" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="A2" required)
+                                            div(ng-show="InputCalcCtrl.inputParams.EPUR==0")
+                                                //h1 S0 = 1
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-12 control-label")
+                                                            h4 S0 = 1
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-12 control-label")
+                                                            h4 realValues = false
 
+                                            div(ng-show="InputCalcCtrl.inputParams.EPUR==1")
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-6 control-label")
+                                                            h4 Distance
+                                                        div(class="col-xs-6 input-group")
+                                                            input(ng-model="InputCalcCtrl.inputParams.X" type="number" class="form-control input-md" placeholder="sizeOfSource" required)
+                                                            span(class="input-group-addon input-md") m
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-6 control-label")
+                                                            h4 Radius
+                                                        div(class="col-xs-6 input-group")
+                                                            input(ng-model="InputCalcCtrl.inputParams.RZ" type="number" class="form-control input-md" placeholder="sizeOfSource" required)
+                                                            span(class="input-group-addon input-md") m
 
-                            //-div
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 EPUR
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.EPUR" type="number" class="form-control input-md" min="0" max="2" placeholder="EPUR" required)
+                                            div(ng-show="InputCalcCtrl.inputParams.EPUR==2")
+                                                div(ng-show="InputCalcCtrl.inputParams.needRealValues")
+                                                    //fieldset
+                                                        div(class="form-group")
+                                                            label(class="col-xs-6 control-label")
+                                                                h4 S0
+                                                            div(class="col-xs-6 input-group")
+                                                                input(ng-model="InputCalcCtrl.inputParams.S0" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="S0" required)
+                                                                span(class="input-group-addon input-md") 1e5, Па
+                                                    fieldset
+                                                        div(class="form-group")
+                                                            label(class="col-xs-6 control-label")
+                                                                h4 Seismic energy
+                                                            div(class="col-xs-6 input-group")
+                                                                input(ng-model="InputCalcCtrl.inputParams.seismicEventEnergy" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="seismicEventEnergy" required)
+                                                                span(class="input-group-addon input-md") J
+                                                    fieldset
+                                                        div(class="form-group")
+                                                            label(class="col-xs-6 control-label")
+                                                                h4 Size of source
+                                                            div(class="col-xs-6 input-group")
+                                                                input(ng-model="InputCalcCtrl.inputParams.sizeOfSource" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="sizeOfSource" required)
+                                                                span(class="input-group-addon input-md") m
+                                                fieldset(ng-hide="InputCalcCtrl.inputParams.needRealValues")
+                                                    div(class="form-group")
+                                                        label(class="col-xs-12 control-label")
+                                                            h4 S0 = 1
 
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 S0
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.S0" type="number" class="form-control input-md" placeholder="S0" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 BETTA
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.BETTA" type="number" class="form-control input-md" placeholder="BETTA" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 A1
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.A1" type="number" class="form-control input-md" placeholder="A1" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 A2
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.A2" type="number" class="form-control input-md" placeholder="A2" required)
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-6 control-label")
+                                                            h4 BETTA
+                                                        div(class="col-xs-6 input-group")
+                                                            input(ng-model="InputCalcCtrl.inputParams.BETTA" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="BETTA" required)
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-6 control-label")
+                                                            h4 A1
+                                                        div(class="col-xs-6 input-group")
+                                                            input(ng-model="InputCalcCtrl.inputParams.A1" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="A1" required)
+                                                fieldset
+                                                    div(class="form-group")
+                                                        label(class="col-xs-6 control-label")
+                                                            h4 A2
+                                                        div(class="col-xs-6 input-group")
+                                                            input(ng-model="InputCalcCtrl.inputParams.A2" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2" type="number" class="form-control input-md" placeholder="A2" required)
 
 
                             div(class="panel panel-default")
@@ -297,60 +300,7 @@ html
                                                     div(class="col-xs-6 input-group")
                                                         input(ng-model="InputCalcCtrl.inputParams.rtetNoEdge" type="checkbox" class="form-control input-md" placeholder="rtetNoEdge")
 
-                            //-div
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetN
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetN" type="number" class="form-control input-md" min="1" max="8" placeholder="rtetN" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetA
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetA" type="number" class="form-control input-md" min="1" max="10" placeholder="rtetA" required)
-                                            span(class="input-group-addon input-md") m
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetB
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetB" type="number" class="form-control input-md" min="1" max="10" placeholder="rtetB" required)
-                                            span(class="input-group-addon input-md") m
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetN1
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetN1" type="number" class="form-control input-md" min="1" max="6" placeholder="rtetN1" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetN2
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetN2" type="number" class="form-control input-md" min="1" max="6" placeholder="rtetN2" required)
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetC
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetC" type="number" class="form-control input-md" min="0.1" max="10" placeholder="rtetC" required)
-                                            span(class="input-group-addon input-md") m
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetVortex
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetVortex" type="number" class="form-control input-md" min="0" max="20" placeholder="rtetVortex" required)
-                                            span(class="input-group-addon input-md") °
-                                fieldset
-                                    div(class="form-group")
-                                        label(class="col-xs-6 control-label")
-                                            h4 rtetNoEdge
-                                        div(class="col-xs-6 input-group")
-                                            input(ng-model="InputCalcCtrl.inputParams.rtetNoEdge" type="checkbox" class="form-control input-md" placeholder="rtetNoEdge")
-                            fieldset
+                            fieldset(ng-hide="InputCalcCtrl.inputParams.EPUR==0")
                                 div(class="form-group")
                                     label(class="col-xs-6 control-label")
                                         h4 realValues

@@ -112,8 +112,8 @@ define(function (require, exports, module) {
                     // default config
                     inputData = {
                         ALFA: 0,        // degree
-                        RZ: 2.55E-02,   // metres
-                        X: 10,          // metres
+                        RZ: 2.55E-02,   // metres, radius zaryada?
+                        X: 10,          // metres, distance
                         XDESTR: 2,    // metres, TODO XDESTR should be changed to layers[0].H
                         HDAY: 50,       // metres
                         STATICTM: 30,
@@ -258,7 +258,11 @@ define(function (require, exports, module) {
                 A1 = inputData.A1;
                 A2 = inputData.A2;
 
-                needRealValues = inputData.needRealValues;
+                if (EPUR == 0){
+                    needRealValues = false;
+                } else {
+                    needRealValues = inputData.needRealValues;
+                }
             }
             loadData('null');    // json, dat, null (default config). I'm using 'null', because in client version there is no local file with settings
             data.inputData = inputData;
@@ -310,9 +314,10 @@ define(function (require, exports, module) {
             RC0 = LRC[0] / C0;
 
             if (EPUR == 0) {
-                //S0 = 1.0;
+                // TODO I returned this 2018.04.08 but didn't checked it, but I think it should work
+                S0 = 1.0;
                 // because small values and static pressure connected badly
-                S0 = 9.6 * 1e05 / (C0 * RC0);
+                //S0 = 9.6 * 1e05 / (C0 * RC0);
             } else if (EPUR == 1) {
                 // TODO again Harry changed something
                 X = X / RZ;
