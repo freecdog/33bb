@@ -187,7 +187,6 @@ define(function (require, exports, module) {
 
                     console.log("T = " + T.toFixed(2) +
                         ", G[2][1][0] = " + G[2][1][0]*LRC[2]*1e-5 +
-                        ", G[2][1][2] = " + G[2][1][2]*LRC[2]*1e-5 +
                         ", G[2][1][45] = " + G[2][1][45]*LRC[2]*1e-5 +
                         ", G[2][1][90] = " + G[2][1][90]*LRC[2]*1e-5
                     );
