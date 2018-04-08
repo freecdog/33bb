@@ -70,7 +70,8 @@
         }
 
         function loadDataFile(fileObject){
-            console.warn(fileObject);
+            console.log("Folder path:", fileObject.path);
+            document.title += " " + fileObject.path;
 
             self.visible = false;
             $rootScope.$broadcast('loadingChanged', {visible: true});
@@ -225,7 +226,7 @@
                 $rootScope.$broadcast('scrollEvent', params);
 
                 //self.scrollPos = (params.scrollData.scrollStep * data.DT).toFixed(2) + " s";
-                self.scrollPos = (params.scrollData.scrollStep * data.DT * data.LC * 1e3).toFixed(2) + " ms";
+                self.scrollPos = (params.scrollData.scrollStep * data.STEP * data.LC * 1e3).toFixed(2) + " ms";
                 $scope.$digest();
             }
         }

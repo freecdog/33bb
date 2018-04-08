@@ -160,9 +160,9 @@ define(function (require, exports, module) {
                         FRIC: 0,        // friction coefficient
 
                         TM: 22,          // special time (/0.0004 ~ C0 afaik)
-                        DT: 0.1,       // special
+                        DT: 0.05,       // special
                         DFI: 2.0,       // degree
-                        DX: 0.1,       // special
+                        DX: 0.05,       // special
                         //NTP: 11, // it is calculated further NTP = printPoints.length
                         //printPoints: [ 0,5,10,15,30,40,45,60,90,120,335,355 ],
                         printPoints: [ 0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,
