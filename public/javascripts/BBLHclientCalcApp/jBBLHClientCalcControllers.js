@@ -63,13 +63,13 @@
             //});
 
             userData = {
-                TM: 5,
+                TM: 20,
                 ALFA: 0,
 
                 //INDEX: 0,
                 //XDESTR: 4,
-                HDAY: 50,
-                STATICTM: 5,
+                HDAY: 500,
+                STATICTM: 20,
                 OnlyStaticLoad: false,
 
                 NL: 3,
@@ -81,19 +81,19 @@
                         H: 2.0
                     },
                     {
-                        E: 1.23e10,
+                        E: 12.3e9,
                         RO: 2.59e3,
                         NU: 0.3,
                         H: 2.0
                     },
                     {
-                        E: 2.09e10,
+                        E: 20.9e9,
                         RO: 7.8e3,
                         NU: 0.28,
                         H: 1.0
                     },
                     {
-                        E: 5.79e10,
+                        E: 57.9e9,
                         RO: 2.7e3,
                         NU: 0.35,
                         H: 0.5
@@ -101,19 +101,21 @@
                 ],
 
                 EPUR: 2,
-                rtetN: 2,
-                rtetA: 3.0,
-                rtetB: 3.0,
+                rtetN: 4,
+                rtetA: 2.0,
+                rtetB: 4.0,
                 rtetN1: 2,
                 rtetN2: 2,
                 rtetC: 3,
                 rtetVortex: 0,
                 rtetNoEdge: false,
 
-                S0: 9.6,
+                //S0: 9.6,
                 BETTA: 900,
                 A1: 7.917,
                 A2: 48.611,
+                seismicEventEnergy: 1e9,
+                sizeOfSource: 50,
 
                 needRealValues: true
             };

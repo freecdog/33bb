@@ -182,10 +182,13 @@ define(function (require, exports, module) {
                         rtetVortex: 0,
                         rtetNoEdge: true,
 
-                        S0: 9.6,
+                        //S0: 9.6,
                         BETTA: 900,
                         A1: 7.917,
                         A2: 48.611,
+                        seismicEventEnergy: 1e9,    // J
+                        sizeOfSource: 50,           // m
+                        jhK: 80,                    // coefficient of Harry and jaric according to Pi theorem
 
                         needRealValues: true
                     };
@@ -250,7 +253,7 @@ define(function (require, exports, module) {
                 rtetVortex = inputData.rtetVortex;
                 rtetNoEdge = inputData.rtetNoEdge;
 
-                S0 = inputData.S0;
+                //S0 = inputData.S0;
                 BETTA = inputData.BETTA;
                 A1 = inputData.A1;
                 A2 = inputData.A2;
@@ -325,17 +328,13 @@ define(function (require, exports, module) {
                 S0 = 545 / (C0 * (Math.pow(X, 1.1)) );
             } else if (EPUR == 2) {
                 if (needRealValues){
-                    // for calculation SHOULD be in MPa
-//                    S0=9.6*1E06/(C2*RC2);
-
-                    //S0=9.6*1E06/(C0*RC0);
-                    S0 = S0 * 1E05 / (C0 * RC0);
+                    //S0 = S0 * 1E05 / (C0 * RC0);
+                    //S0 = 9.6 * 1E05 / (C0 * RC0);
+                    S0 = inputData.seismicEventEnergy / Math.pow(inputData.sizeOfSource, 3) * inputData.jhK;
+                    S0 = S0 / (C0*RC0);
                 } else {
                     S0 = 1;
                 }
-                //BETTA = 900;
-                //A1 = 7.917;
-                //A2 = 48.611;
                 A2 = A1 * A1 / A2;
                 A1 = 1E03 / A1;
             } else {

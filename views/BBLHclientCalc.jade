@@ -130,6 +130,7 @@ html
                                                         //- var c = 4500, p = 2800, n = 0.22; var E = (c*c*p*(1+n)*(1-2*n))/(1-n);
                                                     li
                                                         a(ng-click="layer.E = 200e9; layer.RO = 7800; layer.NU = 0.28;") Сталь
+                                                        // Steel (ASTM-A36) https://www.engineeringtoolbox.com/young-modulus-d_417.html (и Вики)
                                                     //li
                                                         a(ng-click="layer.E = 2.09e9; layer.RO = 7800; layer.NU = 0.28;") Сталь
                                                         // Гарри Абрамович
@@ -163,13 +164,28 @@ html
                                                     div(class="col-xs-6 input-group")
                                                         input(ng-model="InputCalcCtrl.inputParams.EPUR" type="number" class="form-control input-md" min="0" max="2" placeholder="EPUR" required)
 
-                                            fieldset
+                                            //fieldset
                                                 div(class="form-group")
                                                     label(class="col-xs-6 control-label")
                                                         h4 S0
                                                     div(class="col-xs-6 input-group")
                                                         input(ng-model="InputCalcCtrl.inputParams.S0" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="S0" required)
                                                         span(class="input-group-addon input-md") 1e5, Па
+                                            fieldset
+                                                div(class="form-group")
+                                                    label(class="col-xs-6 control-label")
+                                                        h4 Seismic event energy
+                                                    div(class="col-xs-6 input-group")
+                                                        input(ng-model="InputCalcCtrl.inputParams.seismicEventEnergy" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="seismicEventEnergy" required)
+                                                        span(class="input-group-addon input-md") J
+                                            fieldset
+                                                div(class="form-group")
+                                                    label(class="col-xs-6 control-label")
+                                                        h4 Size of source
+                                                    div(class="col-xs-6 input-group")
+                                                        input(ng-model="InputCalcCtrl.inputParams.sizeOfSource" ng-disabled="InputCalcCtrl.inputParams.EPUR!=2 || !InputCalcCtrl.inputParams.needRealValues" type="number" class="form-control input-md" placeholder="sizeOfSource" required)
+                                                        span(class="input-group-addon input-md") m
+
                                             fieldset
                                                 div(class="form-group")
                                                     label(class="col-xs-6 control-label")
