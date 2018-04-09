@@ -351,7 +351,6 @@ define(function (require, exports, module) {
                     }
 
                     // IF(T>0) G(:,0,0:NFI)=FG(NL,:,:).x.G(:,1,0:NFI);
-                    // TODO check this T > 0
                     if (T > 0) {
                         var g0 = [];
                         for (var g0i = 0; g0i < G.length; g0i++) {
@@ -434,6 +433,15 @@ define(function (require, exports, module) {
                                     //    KSI=HDAY - FUNC2.RTET(TETA) / R * Math.cos(TETA) - JX*CF;
                                     //    if (KSI <= 0) SW = 0;
                                     //}
+
+                                    // TODO ask Harry, added on your own risk
+                                    QG.length = 0;
+                                    QG[0] = ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
+                                    QG[1] = - ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
+                                    QG[2] = 0;
+                                    QG[3] = 0;
+                                    QG[4] = 0;
+                                    QG = matrix.vectorTranspose(QG);
 
                                     // TODO ask Harry, he comments all QG except QG=0 and after QG used in W=W+DT*LM*P/DFI*U - DT*LM* QG;
                                     //QG.length = 0;
@@ -689,7 +697,6 @@ define(function (require, exports, module) {
                 //var L, ans;   // integer
                 //ans=0;
                 //for (L = NL-1; L > 0; L--){
-                //    // TODO this shouldn't be true, but it is (getLayerNumberByCoordinate, probably comparision problems in Fortran)
                 //    if (X < HI[L]*DX + 1e-6){
                 //        ans = L;
                 //        return ans;
@@ -732,6 +739,7 @@ define(function (require, exports, module) {
                             if (needRealValues){
                                 // GOUT(M,I,J)=LG(L,M,:).x.G(:,K,ITP(J));
                                 var ans = 0;
+                                // TODO should add OnlyDynamicLoad behaviour, but it depends on BBLHstatic.js
                                 if (OnlyStaticLoad == true){
                                     for (var lgis = 0; lgis < LG[L][M].length; lgis++) ans += LG[L][M][lgis] * GSTATIC[lgis][K][ITP[J]];
                                 } else {

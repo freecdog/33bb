@@ -82,7 +82,7 @@ define(function (require, exports, module) {
 
         var rtetN, rtetN1, rtetN2, rtetA, rtetB, rtetC, rtetVortex, rtetNoEdge;
 
-        var needRealValues, OnlyStaticLoad;
+        var needRealValues, OnlyStaticLoad, OnlyDynamicLoad;
 
         function STARTPROC(params, callback){
             var startProcProfiler = new Date();
@@ -118,6 +118,7 @@ define(function (require, exports, module) {
                         HDAY: 50,       // metres
                         STATICTM: 30,
                         OnlyStaticLoad: false,
+                        OnlyDynamicLoad: false,
 
                         // 0 - Heaviside function
                         // 1 - exponent
@@ -218,6 +219,7 @@ define(function (require, exports, module) {
                 HDAY = inputData.HDAY;
                 STATICTM = inputData.STATICTM;
                 OnlyStaticLoad = inputData.OnlyStaticLoad;
+                OnlyDynamicLoad = inputData.OnlyDynamicLoad;
 
                 EPUR = inputData.EPUR;
 
@@ -486,6 +488,7 @@ define(function (require, exports, module) {
             data.HDAY = HDAY;
             data.STATICTM = STATICTM;
             data.OnlyStaticLoad = OnlyStaticLoad;
+            data.OnlyDynamicLoad = OnlyDynamicLoad;
             data.CMAX = CMAX;
             data.CAVERAGE = CAVERAGE;
             data.KSTEP = KSTEP;
@@ -1026,7 +1029,6 @@ define(function (require, exports, module) {
                 FIXM[L] = matrix.multiply(FIXM[L], LAX);
                 FIYP[L] = matrix.multiply(FIYP[L], LAY);
                 FIYM[L] = matrix.multiply(FIYM[L], LAY);
-                // TODO Is it correct interpritation? Inverse matrix?
                 //LAX=.Inv.LAX;
                 LAX = matrix.inverse(LAX);
                 LAY = matrix.inverse(LAY);

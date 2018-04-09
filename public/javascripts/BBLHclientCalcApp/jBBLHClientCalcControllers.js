@@ -54,6 +54,7 @@
                 HDAY: 500,
                 STATICTM: 20,
                 OnlyStaticLoad: false,
+                OnlyDynamicLoad: false,
 
                 NL: 3,
                 layers: [

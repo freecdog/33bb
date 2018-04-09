@@ -83,7 +83,14 @@ html
                                     label(class="col-xs-6 control-label")
                                         h4 OnlyStaticLoad
                                     div(class="col-xs-6 input-group")
-                                        input(ng-model="InputCalcCtrl.inputParams.OnlyStaticLoad" type="checkbox" class="form-control input-md" placeholder="OnlyStaticLoad")
+                                        input(ng-model="InputCalcCtrl.inputParams.OnlyStaticLoad" ng-disabled="InputCalcCtrl.inputParams.OnlyDynamicLoad==true" type="checkbox" class="form-control input-md" placeholder="OnlyStaticLoad")
+                            fieldset
+                                div(class="form-group")
+                                    label(class="col-xs-6 control-label")
+                                        h4 OnlyDynamicLoad
+                                    div(class="col-xs-6 input-group")
+                                        input(ng-model="InputCalcCtrl.inputParams.OnlyDynamicLoad" ng-disabled="InputCalcCtrl.inputParams.OnlyStaticLoad==true" type="checkbox" class="form-control input-md" placeholder="OnlyStaticLoad")
+
 
 
                             fieldset
@@ -114,7 +121,7 @@ html
                                             input(ng-model="layer.H" type="number" class="form-control input-sm" placeholder="H" required)
                                         td(class="col-xs-1")
                                             div(class="dropdown" ng-class="{'open': dropdownToggle }" ng-click="dropdownToggle = !dropdownToggle")
-                                                a(href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false")
+                                                a(href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false")
                                                     span(class="caret")
                                                 ul(class="dropdown-menu pull-right" role="menu")
                                                     li

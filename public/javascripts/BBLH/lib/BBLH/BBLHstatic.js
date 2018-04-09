@@ -136,6 +136,7 @@ define(function (require, exports, module) {
             data.LO = LO;
 
             QG = MatMult.createArray(5);
+            data.QG = QG;
 
             E = MatMult.createArray(5,5);
             MatMult.fillArray(E, 0);
@@ -146,7 +147,7 @@ define(function (require, exports, module) {
 
             T = 0;
             MatMult.fillArray(G, 0);
-            for (I = 0; I < 5; I++) QG[I] = 0;
+            MatMult.fillArray(QG, 0);
 
             // moved to START
             //HEFFECT = 2 + 3 * HTOTAL;
@@ -174,6 +175,11 @@ define(function (require, exports, module) {
                     if (data.breakCalculation === true){
                         data.breakCalculation = false;
 
+                        calcNext = false;
+                    }
+
+                    // TODO it is better to not enter in this script, but some variables could be init here (should check before doing this way)
+                    if (data.OnlyDynamicLoad == true){
                         calcNext = false;
                     }
 
@@ -314,7 +320,7 @@ define(function (require, exports, module) {
                                 QG[3] = 0;
                                 QG[4] = 0;
                                 QG = matrix.vectorTranspose(QG);
-                                data.QG = QG;
+                                //data.QG = QG;
 
                                 var constMatrix1 = matrix.scalarSafe(FIX[L], DT * LM / DX);
                                 var constMatrix2 = matrix.scalarSafe(FIY[L], DT * LM  / DFI);
@@ -420,6 +426,10 @@ define(function (require, exports, module) {
                     // G(1:2,:,:)=0;
                     MatMult.fillArray(G[0], 0);
                     MatMult.fillArray(G[1], 0);
+
+                    if (data.OnlyDynamicLoad == true){
+                        MatMult.fillArray(G, 0);
+                    }
 
                     // matrix.deepCopy works only with 2-dimensional arrays
                     //GSTATIC = matrix.deepCopy(G);
