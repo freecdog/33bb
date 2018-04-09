@@ -262,6 +262,9 @@ define(function (require, exports, module) {
             MatMult.fillArray(G, 0);
             MatMult.fillArray(ACCEL, 0);
 
+            MatMult.fillArray(QG, 0);
+            QG = matrix.vectorTranspose(QG);
+
             //CALCBOUNDARIES(LO,HI);
 
             //MatMult.fillArraySafe(G, 0);
@@ -433,28 +436,6 @@ define(function (require, exports, module) {
                                     //    KSI=HDAY - FUNC2.RTET(TETA) / R * Math.cos(TETA) - JX*CF;
                                     //    if (KSI <= 0) SW = 0;
                                     //}
-
-                                    // TODO ask Harry, added on your own risk
-                                    QG.length = 0;
-                                    QG[0] = ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
-                                    QG[1] = - ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
-                                    QG[2] = 0;
-                                    QG[3] = 0;
-                                    QG[4] = 0;
-                                    QG = matrix.vectorTranspose(QG);
-
-                                    // TODO ask Harry, he comments all QG except QG=0 and after QG used in W=W+DT*LM*P/DFI*U - DT*LM* QG;
-                                    //QG.length = 0;
-                                    //QG[0] = SW * ( R*9.81 / (C[L]*C[L]) ) * Math.cos(FIM);
-                                    //QG[1] = -SW * ( R*9.81 / (C[L]*C[L]) ) * Math.sin(FIM);
-                                    //QG[2] = 0;
-                                    //QG[3] = 0;
-                                    //QG[4] = 0;
-
-                                    //QG(1)=( R*9.81 / (C(L)*C(L)) ) * COS(FIM);
-                                    //QG(2)=-( R*9.81 / (C(L)*C(L)) ) * SIN(FIM);
-
-                                    //QG = matrix.vectorTranspose(QG);
 
                                     //KSI = JX * CF - (HTOTAL - CMAX/C0*T + KSIN);
                                     KSI = JX * CF0 - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
