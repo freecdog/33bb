@@ -262,7 +262,8 @@ define(function (require, exports, module) {
             MatMult.fillArray(G, 0);
             MatMult.fillArray(ACCEL, 0);
 
-            MatMult.fillArray(QG, 0);
+            //MatMult.fillArray(QG, 0);
+            for (I = 0; I < 5; I++) QG[I] = 0;
             QG = matrix.vectorTranspose(QG);
 
             //CALCBOUNDARIES(LO,HI);
