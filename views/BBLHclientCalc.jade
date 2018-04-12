@@ -38,7 +38,7 @@ html
                                     label(class="col-xs-6 control-label")
                                         h4 TM ({{ (InputCalcCtrl.inputParams.TM * InputCalcCtrl.data.LC * 1e3).toFixed(2) }} ms)
                                     div(class="col-xs-6 input-group")
-                                        input(ng-model="InputCalcCtrl.inputParams.TM" type="number" class="form-control input-md" min="1" max="120" placeholder="TM" required)
+                                        input(ng-model="InputCalcCtrl.inputParams.TM" type="number" class="form-control input-md" min="1" max="200" placeholder="TM" required)
                                         span(class="input-group-addon input-md") s
                                 h4(class='col-xs-12 text-warning' ng-show="InputCalcCtrl.inputParams.TM>30") Use firefox for TM > 30s
                             fieldset
