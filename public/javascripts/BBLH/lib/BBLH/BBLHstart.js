@@ -189,7 +189,7 @@ define(function (require, exports, module) {
                         A2: 48.611,
                         seismicEventEnergy: 1e9,    // J
                         sizeOfSource: 50,           // m
-                        jhK: 80,                    // coefficient of Harry and jaric according to Pi theorem
+                        jhK: 809,                   // coefficient of Harry and jaric according to Pi theorem
 
                         needRealValues: true
                     };

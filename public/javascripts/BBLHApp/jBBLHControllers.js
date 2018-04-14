@@ -232,7 +232,12 @@
         }
         function wheelAction(event){
             //console.log("wheel");
-            var delta = event.wheelDelta;
+            var delta;
+            if (event.wheelDelta){
+                delta = event.wheelDelta;
+            } else {
+                delta = -40 * event.deltaY;
+            }
             // actually, this and scrollDiv are equal
             scrollDiv.scrollLeft -= (delta);
         }
@@ -751,7 +756,7 @@
                     for (var j = 0; j < ctrlPoints.length; j++) {
                         var pointDataset = angular.copy(datasetTemplate);
 
-                        pointDataset.label = "P" + j.toString() + " (R: " + data.controlPoints[j].radius.toFixed(3) + ", Theta: " + data.controlPoints[j].angle.toFixed(3) + ")";
+                        pointDataset.label = "P" + j.toString() + " (R: " + (data.controlPoints[j].radius*data.geomprocR).toFixed(3) + ", Theta: " + data.controlPoints[j].angle.toFixed(3) + ")";
                         var pointColor = colorsPresets[j % colorsPresets.length];
                         pointDataset.backgroundColor = pointColor;
                         pointDataset.borderColor = pointColor;
@@ -1047,7 +1052,8 @@
             controlPoints = [
                 { radius: data.CHECK + data.rtetA / data.geomprocR, angle: 0 },
                 { radius: data.CHECK + data.rtetB / data.geomprocR, angle: 90 },
-                { radius: 5 / data.geomprocR, angle: 30 }
+                { radius: 5 / data.geomprocR, angle: 30 },
+                { radius: (data.rtetC + 0.5) / data.geomprocR, angle: 0 }
             ];
             nearestPoints = [];
             findNearestPoints();
@@ -1608,7 +1614,7 @@
 
             return renderer;
         }
-        function clickOnCanvas(){
+        function clickOnCanvas(event){
             if (data.settings.showControlPointsData == false){
                 console.log("you can change control points positions only when they are active");
                 return;
