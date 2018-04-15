@@ -196,7 +196,7 @@ define(function (require, exports, module) {
                 GSTATIC = data.GSTATIC;
 
             var I, J, K, N, KJ, NX, ICOUNT = 1, GABS,GABE, II, IK, L, M; // integer
-            var FIM, KSI, KSIN, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, CF0, IB, JX, TAT; // float
+            var FIM, KSI, KSIN, KSIDAY, P, PP, COM, T, X, LM, TETA, TOUT, LOM, CF, SF, CF0, IB, JX, TAT; // float
             var ACCELMAX, ACCELMIN, AMV = 0;
             var WT; // boolean
             var DZ0, Z; // Complex
@@ -442,8 +442,13 @@ define(function (require, exports, module) {
                                     KSI = JX * CF0 - (HTOTAL - CAVERAGE/C[L]*T + KSIN);
                                     //KSI = JX * CF0 - (HTOTAL - CAVERAGE/C0*T + KSIN);    // or C[L]/C[0]
 
+                                    //KSIDAY=HDAY - RTET(TETA)/R*COS(TETA) - JX*CF;
+                                    KSIDAY = HDAY - FUNC2.RTET(TETA)/R*Math.cos(TETA) - JX*CF;
+
                                     JX = JX + DX;
 
+                                    // KSIDAY had been rejected because curves become flat too fast
+                                    //if (KSI >= 0 && KSIDAY > 0) {
                                     if (KSI >= 0) {
                                         P = 1 / ((1 + COM * (JX - DX / 2)) * LOM);
                                         PP = COM / (1 + COM * (JX - DX / 2));
@@ -795,6 +800,9 @@ define(function (require, exports, module) {
                             KSI = K * DX * CF - (HTOTAL + KSIN);
                             //KSI = K*DX*CF - KSIN; // Wave would be near object at T=0
 
+                            //KSIDAY=HDAY - RTET(TETA)/R*COS(TETA) - JX*CF;
+                            KSIDAY = HDAY - FUNC2.RTET(TETA)/R*Math.cos(TETA) - K*CF;
+
                             //if (KSI < 0) {
                             //    for (var c1 = 0; c1 < 5; c1++) G[c1][K][I] = 0;
                             //} else {
@@ -803,6 +811,8 @@ define(function (require, exports, module) {
                             //}
 
                             // TODO check this very carefully, it could be problem with equality
+                            // KSIDAY had been rejected because curves become flat too fast
+                            //if (KSI >= 0 && KSIDAY > 0){
                             if (KSI >= 0){
                                 var IFF = BBLHstart.FF(LC * KSI);
                                 //for (var c2 = 0; c2 < 5; c2++) G[c2][K][I] += IFF * UFI[c2];
