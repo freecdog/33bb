@@ -191,7 +191,9 @@ define(function (require, exports, module) {
                         sizeOfSource: 50,           // m
                         jhK: 809,                   // coefficient of Harry and jaric according to Pi theorem
 
-                        needRealValues: true
+                        needRealValues: true,
+
+                        comment: ''
                     };
                     inputData.printPoints = [];
                     for (var NTPi = 0; NTPi <= 360; NTPi=NTPi+2) inputData.printPoints.push(NTPi);

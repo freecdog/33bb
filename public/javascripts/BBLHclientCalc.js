@@ -273,6 +273,7 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
             name += '_';
             name += '(Edge' + data.inputData.rtetVortex.toFixed(0) + 'deg,' + data.inputData.rtetC.toFixed(0) + 'C,' + data.inputData.rtetN1.toFixed(0) + 'N1,' + data.inputData.rtetN2.toFixed(0) + 'N2' + ')';
         }
+        name += '_' + data.inputData.comment + '_';
         name += '(' + (data.status.duration/1000/60).toFixed(1) + 'min)';
 
         return name;

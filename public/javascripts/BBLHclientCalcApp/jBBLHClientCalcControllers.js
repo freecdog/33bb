@@ -101,7 +101,9 @@
                 seismicEventEnergy: 1e9,
                 sizeOfSource: 50,
 
-                needRealValues: true
+                needRealValues: true,
+
+                comment: ''
             };
 
             inputObject = {
@@ -365,6 +367,8 @@
             }
         }
 
+        // TODO it leads to an error, don't know why. It was for data.inputData.comment (ng-pattern="InputCalcCtrl.regex")
+        //this.regex = '^[a-zA-Z0-9]+$';
     }]);
 
     jBBLHClientCalcControllers.controller('jClientCalcController', ['$scope', function($scope) {
