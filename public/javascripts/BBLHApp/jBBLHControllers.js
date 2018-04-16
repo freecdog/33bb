@@ -1053,8 +1053,10 @@
                 { radius: data.CHECK + data.rtetA / data.geomprocR, angle: 0 },
                 { radius: data.CHECK + data.rtetB / data.geomprocR, angle: 90 },
                 { radius: 5 / data.geomprocR, angle: 30 },
-                { radius: (data.rtetC + 0.5) / data.geomprocR, angle: 0 }
+                { radius: (data.rtetC + 0.5) / data.geomprocR, angle: 0}
             ];
+            if (data.NL > 2) controlPoints.push({ radius: (data.rtetC + data.layers[data.NL-1].H + 0.5*data.layers[data.NL-2].H) / data.geomprocR, angle: 0});
+
             nearestPoints = [];
             findNearestPoints();
             data.controlPoints = controlPoints;

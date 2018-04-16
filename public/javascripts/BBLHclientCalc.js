@@ -209,6 +209,9 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
                         domCurrentProgress.style.width = "100%";
                     });
                 });
+
+                // TODO send inputData
+
             }
         );
 
@@ -245,6 +248,7 @@ requirejs(['BBLH', 'Chart', 'angular', 'jBBLHClientCalcApp', 'jBBLHClientCalcCon
         //name += data.inputData.printPoints[data.inputData.printPoints.length-1].toFixed(0);
         //name += 'x' + (data.inputData.printPoints[data.inputData.printPoints.length-1] - data.inputData.printPoints[data.inputData.printPoints.length-2]).toFixed(0);
         //name += '_';
+        name += (data.S0*data.C0*data.RC0*1e-6).toFixed(1)+ "S_";    //CalcCtrl.data.S0 * CalcCtrl.data.C0 * CalcCtrl.data.RC0 * 1e-6
         name += (data.inputData.seismicEventEnergy*1e-9).toFixed(1)+ "J_";
         name += (data.inputData.TM < 10 ? '0' : '') + data.inputData.TM.toFixed(0) + 's';
         name += '(st'+(data.inputData.STATICTM < 10 ? '0' : '') + data.inputData.STATICTM.toFixed(0) + ')';
