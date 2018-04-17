@@ -37,16 +37,28 @@
     jBBLHControllers.controller('jBBLHloadingController', ['$rootScope', function($rootScope) {
         var self = this;
 
+        var domLoadingProgress;
+
         init();
 
         function init(){
             console.log('jBBLHloadingController is here');
+
+            domLoadingProgress = document.getElementById("loadingProgress");
 
             self.visible = false;
         }
 
         $rootScope.$on('loadingChanged', function(event, params){
             self.visible = params.visible;
+        });
+
+        $rootScope.$on('loadingProgressUpdate', function(event, params){
+            self.progress = params.loadingIndex.toString() + "/" + params.loadingLength.toString();
+
+            domLoadingProgress.style.width = (params.loadingIndex/params.loadingLength*100).toFixed(0).toString() + "%";
+
+            //$rootScope.$digest();
         });
     }]);
 
@@ -92,6 +104,8 @@
                 async.whilst(
                     function(){
                         var calcNext = dataIterator < dataLength;
+
+                        $rootScope.$broadcast('loadingProgressUpdate', {loadingIndex: dataIterator+1, loadingLength: dataLength});
 
                         return calcNext;
                     },

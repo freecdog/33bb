@@ -21,6 +21,11 @@ html
 
         div(ng-controller="jBBLHloadingController as loading" ng-show="loading.visible")
             img(src="/images/30_2.gif" width="100%")
+            h1 {{loading.progress}}
+            div(class="container")
+                div(class="row")
+                    div(class="progress")
+                        div(id="loadingProgress" class="progress-bar progress-bar-success" style="width: 0%")
 
         div(ng-controller="jBBLHcanvasHolderController as canvasHolder" ng-show="canvasHolder.visible")
             //-div(id="statsHolder")
