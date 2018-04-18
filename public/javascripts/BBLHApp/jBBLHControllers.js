@@ -690,6 +690,54 @@
 
             Chart.defaults.global.defaultFontColor = '#aaaaaa';
 
+            var originalDraw = Chart.controllers.line.prototype.draw;
+            Chart.controllers.line.prototype.draw = function (ease) {
+                originalDraw.call(this, ease);
+
+                var scale = this.chart.scales['x-axis-0'];
+
+                // calculate the portion of the axis and multiply by total axis width
+                var height = -100;
+                var datasets = this.chart.config.data.datasets;
+                for (var di = 0; di < ctrlPoints.length; di++){
+                    var obj = datasets[di];
+                    if (obj) {
+                        var meta = obj._meta[3] || obj._meta[4] || obj._meta[5];
+                        if (meta) height = meta.data[0]._model.y;
+                        // data[] is point index
+
+                        // draw line
+                        this.chart.chart.ctx.setLineDash([10, 10])
+                        this.chart.chart.ctx.beginPath();
+                        this.chart.chart.ctx.strokeStyle = '#aaaaaa';
+                        this.chart.chart.ctx.moveTo(scale.left, height);
+                        this.chart.chart.ctx.lineTo(scale.left+ scale.maxWidth, height);
+                        this.chart.chart.ctx.stroke();
+                    }
+                }
+
+                // write label
+                //this.chart.chart.ctx.textAlign = 'center';
+                //this.chart.chart.ctx.fillText('YOU', scale.left, 200);
+
+                //var point = {x: 10};
+                //var scale = this.chart.scales['x-axis-0'];
+                //
+                //// calculate the portion of the axis and multiply by total axis width
+                //var left = (point.x / scale.width * (scale.right - scale.left));
+                //
+                //// draw line
+                //this.chart.chart.ctx.beginPath();
+                //this.chart.chart.ctx.strokeStyle = '#ffffff';
+                //this.chart.chart.ctx.moveTo(scale.left + left, 0);
+                //this.chart.chart.ctx.lineTo(scale.left + left, 1000000);
+                //this.chart.chart.ctx.stroke();
+                //
+                //// write label
+                //this.chart.chart.ctx.textAlign = 'center';
+                //this.chart.chart.ctx.fillText('YOU', scale.left + left, 200);
+            };
+
             if (ctrlPoints.length > 0) {
 
                 // color.adobe.com Circus III, Honey Pot and others
