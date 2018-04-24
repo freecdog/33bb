@@ -43,7 +43,7 @@
             userData = {};
 
             userData = {
-                TM: 30,
+                TM: 99,
                 ALFA: 0,
 
                 RZ: 2.55E-02,
@@ -56,31 +56,31 @@
                 OnlyStaticLoad: false,
                 OnlyDynamicLoad: false,
 
-                NL: 3,
+                NL: 4,
                 layers: [
                     {
-                        E: 5.79e10,
-                        RO: 2.7e3,
-                        NU: 0.35,
+                        E: 42e9,
+                        RO: 2630,
+                        NU: 0.25,
+                        H: 2
+                    },
+                    {
+                        E: 55e9,
+                        RO: 2920,
+                        NU: 0.27,
                         H: 2.0
                     },
                     {
-                        E: 12.3e9,
-                        RO: 2.59e3,
-                        NU: 0.3,
+                        E: 80e9,
+                        RO: 2790,
+                        NU: 0.21,
                         H: 2.0
                     },
                     {
                         E: 200e9,
-                        RO: 7.8e3,
+                        RO: 7800,
                         NU: 0.28,
-                        H: 1.0
-                    },
-                    {
-                        E: 57.9e9,
-                        RO: 2.7e3,
-                        NU: 0.35,
-                        H: 0.5
+                        H: 0.1
                     }
                 ],
 

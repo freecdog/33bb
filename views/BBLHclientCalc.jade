@@ -173,7 +173,7 @@ html
                                             fieldset
                                                 div(class="form-group")
                                                     label(class="col-xs-12 control-label")
-                                                        h4 S0 = {{InputCalcCtrl.data.S0 *InputCalcCtrl.data.C0*InputCalcCtrl.data.RC0}} Pa
+                                                        h4 S0 = {{ (InputCalcCtrl.data.S0 *InputCalcCtrl.data.C0*InputCalcCtrl.data.RC0).toFixed(0) }} Pa
 
                                             div(ng-show="InputCalcCtrl.inputParams.EPUR==0")
                                                 //h1 S0 = 1
