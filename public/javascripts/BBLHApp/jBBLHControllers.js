@@ -792,13 +792,35 @@
                         datasets: []
                     };
 
-                    for (var j = 0; j < ctrlPoints.length; j++) {
+                    for (var j = 0, jlen = ctrlPoints.length; j < jlen; j++) {
                         var pointDataset = angular.copy(datasetTemplate);
 
                         pointDataset.label = "P" + j.toString() + " (R: " + (data.controlPoints[j].radius*data.geomprocR).toFixed(3) + ", Theta: " + data.controlPoints[j].angle.toFixed(3) + ")";
                         var pointColor = colorsPresets[j % colorsPresets.length];
                         pointDataset.backgroundColor = pointColor;
                         pointDataset.borderColor = pointColor;
+
+                        var coef = 10;
+                        switch(j % jlen) {
+                            case 0:
+                                pointDataset.borderDash = [0,0];
+                                break;
+                            case 1:
+                                pointDataset.borderDash = [coef/2,coef/2];
+                                break;
+                            case 2:
+                                pointDataset.borderDash = [2*coef,coef/2];
+                                break;
+                            case 3:
+                                pointDataset.borderDash = [coef,coef]; //[coef,2*coef,3*coef];
+                                break;
+                            case 4:
+                                pointDataset.borderDash = [2*coef,2*coef];
+                                break;
+                        }
+                        pointDataset.pointRadius = 0;
+                        //pointDataset.borderDash = [(j % jlen) * 5, (j % jlen) * 5];
+
                         pointDataset.pointBorderColor = pointColor;
                         pointDataset.pointHoverBackgroundColor = pointColor;
                         pointDataset.pointHoverBorderColor = pointColor;
